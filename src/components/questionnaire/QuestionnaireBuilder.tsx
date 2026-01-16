@@ -2,18 +2,15 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, HelpCircle, GitBranch } from "lucide-react";
+import { Plus, HelpCircle } from "lucide-react";
 import {
   Question,
   ConditionalBranch,
   Questionnaire,
   LayoutItem,
   AnswerSet,
-  RuleGroup,
-  AnswerLevelRuleGroup,
 } from "@/types/questionnaire";
 import Sidebar from "./Sidebar";
-import QuestionnaireDetails from "./QuestionnaireDetails";
 import QuestionEditor from "./QuestionEditor";
 import BranchEditor from "./BranchEditor";
 
@@ -224,56 +221,50 @@ const QuestionnaireBuilder = () => {
           setSelectedQuestionId(null);
           setSelectedBranchId(null);
         }}
+        onUpdateQuestionnaire={setQuestionnaire}
       />
 
       <div className="w-[70%] flex-1 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="p-6 space-y-6">
             {questionnaire && (
-              <>
-                <QuestionnaireDetails
-                  questionnaire={questionnaire}
-                  onUpdate={setQuestionnaire}
-                />
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg">Questions & Branches</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex gap-3">
+                    <Button onClick={() => handleAddQuestion()}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Question
+                    </Button>
+                    <Button variant="secondary" onClick={handleAddBranch}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Conditional Branching
+                    </Button>
+                  </div>
 
-                <Card>
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-lg">Questions & Branches</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex gap-3">
-                      <Button onClick={() => handleAddQuestion()}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Question
-                      </Button>
-                      <Button variant="secondary" onClick={handleAddBranch}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Conditional Branching
-                      </Button>
-                    </div>
+                  {selectedBranch && (
+                    <BranchEditor
+                      branch={selectedBranch}
+                      allQuestions={allQuestions}
+                      selectedQuestionId={selectedQuestionId}
+                      onUpdateBranch={updateBranch}
+                      onAddQuestion={handleAddQuestion}
+                      onAddChildBranch={handleAddBranchUnderParent}
+                      onSelectQuestion={setSelectedQuestionId}
+                    />
+                  )}
 
-                    {selectedBranch && (
-                      <BranchEditor
-                        branch={selectedBranch}
-                        allQuestions={allQuestions}
-                        selectedQuestionId={selectedQuestionId}
-                        onUpdateBranch={updateBranch}
-                        onAddQuestion={handleAddQuestion}
-                        onAddChildBranch={handleAddBranchUnderParent}
-                        onSelectQuestion={setSelectedQuestionId}
-                      />
-                    )}
-
-                    {selectedQuestion && (
-                      <QuestionEditor
-                        question={selectedQuestion}
-                        allQuestions={allQuestions}
-                        onUpdate={updateQuestion}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-              </>
+                  {selectedQuestion && (
+                    <QuestionEditor
+                      question={selectedQuestion}
+                      allQuestions={allQuestions}
+                      onUpdate={updateQuestion}
+                    />
+                  )}
+                </CardContent>
+              </Card>
             )}
 
             {!questionnaire && (

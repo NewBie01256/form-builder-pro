@@ -1,8 +1,23 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, FileText, GitBranch, HelpCircle, RotateCcw } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Plus, FileText, GitBranch, HelpCircle, RotateCcw, ChevronDown, ChevronUp, Settings } from "lucide-react";
 import { Question, ConditionalBranch, Questionnaire, LayoutItem } from "@/types/questionnaire";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface SidebarProps {
   questionnaire: Questionnaire | null;
@@ -15,6 +30,7 @@ interface SidebarProps {
   onSelectQuestion: (id: string, branchId: string | null) => void;
   onSelectBranch: (id: string) => void;
   onReset: () => void;
+  onUpdateQuestionnaire: (updated: Questionnaire) => void;
 }
 
 const Sidebar = ({
@@ -28,7 +44,10 @@ const Sidebar = ({
   onSelectQuestion,
   onSelectBranch,
   onReset,
+  onUpdateQuestionnaire,
 }: SidebarProps) => {
+  const [detailsOpen, setDetailsOpen] = useState(true);
+
   const renderBranchTree = (branch: ConditionalBranch, depth: number = 0): JSX.Element => (
     <div key={branch.id} className="relative">
       <div
@@ -83,13 +102,91 @@ const Sidebar = ({
         <div className="p-2">
           {questionnaire ? (
             <div className="space-y-1">
+              {/* Questionnaire Header */}
               <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/10">
                 <FileText className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate text-sm font-semibold text-primary">
                   {questionnaire.name || 'Untitled Questionnaire'}
                 </span>
               </div>
+
+              {/* Collapsible Questionnaire Details */}
+              <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer hover:bg-accent transition-colors">
+                    <Settings className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="text-sm font-medium flex-1">Details</span>
+                    {detailsOpen ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="px-3 py-2 space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Name</Label>
+                      <Input
+                        placeholder="Questionnaire name"
+                        value={questionnaire.name}
+                        onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, name: e.target.value })}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Description</Label>
+                      <Input
+                        placeholder="Description"
+                        value={questionnaire.description}
+                        onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, description: e.target.value })}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Service Catalog</Label>
+                      <Select
+                        value={questionnaire.serviceCatalog}
+                        onValueChange={(value) => onUpdateQuestionnaire({ ...questionnaire, serviceCatalog: value })}
+                      >
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue placeholder="Select catalog" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Catalog A">Catalog A</SelectItem>
+                          <SelectItem value="Catalog B">Catalog B</SelectItem>
+                          <SelectItem value="Catalog C">Catalog C</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="space-y-1 flex-1">
+                        <Label className="text-xs text-muted-foreground">Status</Label>
+                        <Select
+                          value={questionnaire.status}
+                          onValueChange={(value) => onUpdateQuestionnaire({ ...questionnaire, status: value })}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Draft">Draft</SelectItem>
+                            <SelectItem value="Active">Active</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button size="sm" className="mt-5 h-8 text-xs">
+                        Publish
+                      </Button>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
               
+              {/* Tree Items */}
               <div className="mt-2 space-y-0.5">
                 {layoutOrder.map(item => {
                   if (item.type === 'question') {
