@@ -6,17 +6,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Layers, Filter } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Plus, ChevronDown, Trash2 } from "lucide-react";
 import { RuleGroup, QuestionLevelRule, Question } from "@/types/questionnaire";
-import { cn } from "@/lib/utils";
 
 interface RuleGroupEditorProps {
   group: RuleGroup;
   allQuestions: Question[];
   onUpdate: (updated: RuleGroup) => void;
+  isRoot?: boolean;
+  onDelete?: () => void;
 }
 
-const RuleGroupEditor = ({ group, allQuestions, onUpdate }: RuleGroupEditorProps) => {
+const RuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = true, onDelete }: RuleGroupEditorProps) => {
   const updateGroup = (partial: Partial<RuleGroup>) => {
     onUpdate({ ...group, ...partial });
   };
@@ -24,6 +31,11 @@ const RuleGroupEditor = ({ group, allQuestions, onUpdate }: RuleGroupEditorProps
   const updateChild = (index: number, updatedChild: RuleGroup | QuestionLevelRule) => {
     const newChildren = [...group.children];
     newChildren[index] = updatedChild;
+    updateGroup({ children: newChildren });
+  };
+
+  const deleteChild = (index: number) => {
+    const newChildren = group.children.filter((_, i) => i !== index);
     updateGroup({ children: newChildren });
   };
 
@@ -49,108 +61,189 @@ const RuleGroupEditor = ({ group, allQuestions, onUpdate }: RuleGroupEditorProps
     updateGroup({ children: [...group.children, newRule] });
   };
 
+  const allAnswers = allQuestions.flatMap(q => q.answerSets.flatMap(as => as.answers));
+
   return (
-    <div className="border border-border rounded-lg p-4 bg-card">
-      <div className="flex items-center gap-3 mb-4">
-        <Layers className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">Rule Group</span>
-        <Select
-          value={group.matchType}
-          onValueChange={(value: 'AND' | 'OR') => updateGroup({ matchType: value })}
-        >
-          <SelectTrigger className="w-24 h-8">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="AND">AND</SelectItem>
-            <SelectItem value="OR">OR</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="border border-border bg-card">
+      {/* Header Row with AND/OR and Column Labels */}
+      <div className="flex items-center border-b border-border bg-muted/30">
+        <div className="flex items-center gap-2 px-3 py-2 min-w-[80px] border-r border-border">
+          <Select
+            value={group.matchType}
+            onValueChange={(value: 'AND' | 'OR') => updateGroup({ matchType: value })}
+          >
+            <SelectTrigger className="h-7 w-16 text-xs font-medium">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="AND">AND</SelectItem>
+              <SelectItem value="OR">OR</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1 grid grid-cols-4 gap-2 px-3 py-2">
+          <span className="text-xs font-medium text-muted-foreground">Source Question</span>
+          <span className="text-xs font-medium text-muted-foreground">Source Answer</span>
+          <span className="text-xs font-medium text-muted-foreground">Action</span>
+          <span className="text-xs font-medium text-muted-foreground">Target Question</span>
+        </div>
+        <div className="w-10 px-2 flex items-center justify-center">
+          {!isRoot && onDelete && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-3">
+      {/* Rules and Nested Groups */}
+      <div className="relative">
         {group.children.map((child, index) => (
-          <div key={child.id} className="ml-4 tree-line pl-4">
-            {child.type === 'group' ? (
-              <RuleGroupEditor
-                group={child}
-                allQuestions={allQuestions}
-                onUpdate={(updated) => updateChild(index, updated)}
-              />
-            ) : (
-              <div className="border border-border rounded-lg p-4 bg-muted/50">
-                <div className="flex items-center gap-2 mb-3">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Rule</span>
-                </div>
-                
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <Select
-                    value={child.sourceQuestionId}
-                    onValueChange={(value) => {
-                      updateChild(index, { ...child, sourceQuestionId: value });
-                    }}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Source Question" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {allQuestions.map(q => (
-                        <SelectItem key={q.id} value={q.id}>
-                          {q.text || 'Untitled Question'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+          <div key={child.id} className="relative">
+            {/* Tree connector lines */}
+            <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
+            <div className="absolute left-4 top-1/2 w-4 h-px bg-border" />
+            
+            <div className="flex items-stretch border-b border-border last:border-b-0">
+              {/* Left connector area */}
+              <div className="w-8 flex items-center justify-center relative" />
 
-                  <Select
-                    value={child.action}
-                    onValueChange={(value: 'Show' | 'Hide') => {
-                      updateChild(index, { ...child, action: value });
-                    }}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Show">Show</SelectItem>
-                      <SelectItem value="Hide">Hide</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Select
-                    value={child.targetQuestionId}
-                    onValueChange={(value) => {
-                      updateChild(index, { ...child, targetQuestionId: value });
-                    }}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Target Question" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {allQuestions.map(q => (
-                        <SelectItem key={q.id} value={q.id}>
-                          {q.text || 'Untitled Question'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {child.type === 'group' ? (
+                <div className="flex-1 py-2 pr-2">
+                  <RuleGroupEditor
+                    group={child}
+                    allQuestions={allQuestions}
+                    onUpdate={(updated) => updateChild(index, updated)}
+                    isRoot={false}
+                    onDelete={() => deleteChild(index)}
+                  />
                 </div>
-              </div>
-            )}
+              ) : (
+                <>
+                  {/* Rule Row */}
+                  <div className="flex-1 grid grid-cols-4 gap-2 py-2 px-2">
+                    <Select
+                      value={child.sourceQuestionId}
+                      onValueChange={(value) => {
+                        updateChild(index, { ...child, sourceQuestionId: value });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select question" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allQuestions.map(q => (
+                          <SelectItem key={q.id} value={q.id}>
+                            {q.text || 'Untitled Question'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={child.sourceAnswerId}
+                      onValueChange={(value) => {
+                        updateChild(index, { ...child, sourceAnswerId: value });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select answer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allAnswers.map(ans => (
+                          <SelectItem key={ans.id} value={ans.id}>
+                            {ans.label || 'Untitled Answer'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={child.action}
+                      onValueChange={(value: 'Show' | 'Hide') => {
+                        updateChild(index, { ...child, action: value });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Show">Show</SelectItem>
+                        <SelectItem value="Hide">Hide</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={child.targetQuestionId}
+                      onValueChange={(value) => {
+                        updateChild(index, { ...child, targetQuestionId: value });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select question" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allQuestions.map(q => (
+                          <SelectItem key={q.id} value={q.id}>
+                            {q.text || 'Untitled Question'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="w-10 flex items-center justify-center">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => deleteChild(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         ))}
-      </div>
 
-      <div className="flex gap-2 mt-4">
-        <Button variant="outline" size="sm" onClick={addGroup}>
-          <Plus className="h-4 w-4 mr-1" />
-          Add Group
-        </Button>
-        <Button variant="outline" size="sm" onClick={addRule}>
-          <Plus className="h-4 w-4 mr-1" />
-          Add Rule
-        </Button>
+        {/* Add Button Row */}
+        <div className="flex items-center border-t border-border">
+          <div className="w-8 flex items-center justify-center relative">
+            {group.children.length > 0 && (
+              <>
+                <div className="absolute left-4 top-0 h-1/2 w-px bg-border" />
+                <div className="absolute left-4 top-1/2 w-4 h-px bg-border" />
+              </>
+            )}
+          </div>
+          <div className="py-2 px-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-xs">
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={addRule}>
+                  Add Rule
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={addGroup}>
+                  Add Group
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
       </div>
     </div>
   );
