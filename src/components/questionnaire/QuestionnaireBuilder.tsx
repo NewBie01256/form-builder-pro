@@ -2,318 +2,260 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, HelpCircle } from "lucide-react";
+import { Plus, HelpCircle, Layers } from "lucide-react";
 import {
   Question,
   ConditionalBranch,
   Questionnaire,
-  LayoutItem,
-  AnswerSet,
+  Page,
+  Section,
 } from "@/types/questionnaire";
 import Sidebar from "./Sidebar";
-import QuestionEditor from "./QuestionEditor";
-import BranchEditor from "./BranchEditor";
+import PageTabs from "./PageTabs";
+import SectionEditor from "./SectionEditor";
 
 const QuestionnaireBuilder = () => {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [branches, setBranches] = useState<ConditionalBranch[]>([]);
-  const [layoutOrder, setLayoutOrder] = useState<LayoutItem[]>([]);
+  const [activePageId, setActivePageId] = useState<string | null>(null);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
 
   const handleCreateQuestionnaire = () => {
+    const defaultPage: Page = {
+      id: `page-${Date.now()}`,
+      name: 'Page 1',
+      description: '',
+      sections: []
+    };
     setQuestionnaire({
       name: '',
       description: '',
       status: 'Draft',
       version: '1.0',
-      serviceCatalog: ''
+      serviceCatalog: '',
+      pages: [defaultPage]
     });
+    setActivePageId(defaultPage.id);
   };
 
-  const handleAddQuestion = (branchId?: string) => {
-    const defaultAnswerSet: AnswerSet = {
-      id: `as-${Date.now()}`,
-      name: 'Default Answer Set',
-      tag: '',
-      isDefault: true,
-      answers: [
-        {
-          id: `ans-${Date.now()}`,
-          label: '',
-          value: '',
-          active: true
-        }
-      ]
-    };
-    const newQuestion: Question = {
-      id: `q-${Date.now()}`,
-      text: '',
-      type: 'Choice',
-      required: false,
-      order: questions.length + 1,
-      answerSets: [defaultAnswerSet],
-      questionLevelRuleGroup: {
-        type: 'group',
-        id: `g-${Date.now()}`,
-        matchType: 'AND',
-        children: []
-      },
-      answerLevelRuleGroups: []
-    };
+  const activePage = questionnaire?.pages.find(p => p.id === activePageId) || null;
 
-    if (branchId) {
-      const addQuestionToBranch = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-        branchList.map(b => {
-          if (b.id === branchId) {
-            return { ...b, questions: [...b.questions, newQuestion] };
-          }
-          return { ...b, childBranches: addQuestionToBranch(b.childBranches) };
-        });
-      setBranches(prev => addQuestionToBranch(prev));
-      setSelectedBranchId(branchId);
-      setSelectedQuestionId(newQuestion.id);
-    } else {
-      setQuestions(prev => [...prev, newQuestion]);
-      let insertIndex = layoutOrder.length;
-      for (let i = layoutOrder.length - 1; i >= 0; i--) {
-        if (layoutOrder[i].type === 'branch') {
-          insertIndex = i + 1;
-          break;
-        }
-      }
-      const newOrder = [...layoutOrder];
-      newOrder.splice(insertIndex, 0, { type: 'question', id: newQuestion.id });
-      setLayoutOrder(newOrder);
-      setSelectedQuestionId(newQuestion.id);
+  const handleAddPage = () => {
+    if (!questionnaire) return;
+    const newPage: Page = {
+      id: `page-${Date.now()}`,
+      name: `Page ${questionnaire.pages.length + 1}`,
+      description: '',
+      sections: []
+    };
+    setQuestionnaire({
+      ...questionnaire,
+      pages: [...questionnaire.pages, newPage]
+    });
+    setActivePageId(newPage.id);
+    setSelectedSectionId(null);
+    setSelectedQuestionId(null);
+    setSelectedBranchId(null);
+  };
+
+  const handleDeletePage = (pageId: string) => {
+    if (!questionnaire || questionnaire.pages.length <= 1) return;
+    const newPages = questionnaire.pages.filter(p => p.id !== pageId);
+    setQuestionnaire({ ...questionnaire, pages: newPages });
+    if (activePageId === pageId) {
+      setActivePageId(newPages[0]?.id || null);
+      setSelectedSectionId(null);
+      setSelectedQuestionId(null);
       setSelectedBranchId(null);
     }
   };
 
-  const handleAddBranch = () => {
-    const newBranch: ConditionalBranch = {
-      id: `cb-${Date.now()}`,
-      name: 'Conditional Branch',
-      ruleGroup: {
-        type: 'group',
-        id: `g-${Date.now()}`,
-        matchType: 'AND',
-        children: []
-      },
-      questions: [],
-      childBranches: []
-    };
-    setBranches(prev => [...prev, newBranch]);
-    setLayoutOrder(prev => [...prev, { type: 'branch', id: newBranch.id }]);
-    setSelectedBranchId(newBranch.id);
-    setSelectedQuestionId(null);
+  const handleUpdatePage = (pageId: string, updated: Partial<Page>) => {
+    if (!questionnaire) return;
+    setQuestionnaire({
+      ...questionnaire,
+      pages: questionnaire.pages.map(p => p.id === pageId ? { ...p, ...updated } : p)
+    });
   };
 
-  const handleAddBranchUnderParent = (parentId: string) => {
-    const newBranch: ConditionalBranch = {
-      id: `cb-${Date.now()}`,
-      name: 'Conditional Branch',
-      ruleGroup: {
-        type: 'group',
-        id: `g-${Date.now()}`,
-        matchType: 'AND',
-        children: []
-      },
+  const handleAddSection = () => {
+    if (!questionnaire || !activePageId) return;
+    const newSection: Section = {
+      id: `section-${Date.now()}`,
+      name: '',
+      description: '',
       questions: [],
-      childBranches: []
+      branches: []
     };
-    const addBranchToParent = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-      branchList.map(b => {
-        if (b.id === parentId) {
-          return { ...b, childBranches: [...b.childBranches, newBranch] };
-        }
-        return { ...b, childBranches: addBranchToParent(b.childBranches) };
+    setQuestionnaire({
+      ...questionnaire,
+      pages: questionnaire.pages.map(p =>
+        p.id === activePageId
+          ? { ...p, sections: [...p.sections, newSection] }
+          : p
+      )
+    });
+    setSelectedSectionId(newSection.id);
+    setSelectedQuestionId(null);
+    setSelectedBranchId(null);
+  };
+
+  const handleUpdateSection = (sectionId: string, updated: Section) => {
+    if (!questionnaire || !activePageId) return;
+    setQuestionnaire({
+      ...questionnaire,
+      pages: questionnaire.pages.map(p =>
+        p.id === activePageId
+          ? { ...p, sections: p.sections.map(s => s.id === sectionId ? updated : s) }
+          : p
+      )
+    });
+  };
+
+  const handleDeleteSection = (sectionId: string) => {
+    if (!questionnaire || !activePageId) return;
+    setQuestionnaire({
+      ...questionnaire,
+      pages: questionnaire.pages.map(p =>
+        p.id === activePageId
+          ? { ...p, sections: p.sections.filter(s => s.id !== sectionId) }
+          : p
+      )
+    });
+    if (selectedSectionId === sectionId) {
+      setSelectedSectionId(null);
+      setSelectedQuestionId(null);
+      setSelectedBranchId(null);
+    }
+  };
+
+  // Collect all questions for rule references
+  const getAllQuestions = (): Question[] => {
+    if (!questionnaire) return [];
+    const questions: Question[] = [];
+    
+    const collectFromBranch = (branch: ConditionalBranch) => {
+      questions.push(...branch.questions);
+      branch.childBranches.forEach(collectFromBranch);
+    };
+
+    questionnaire.pages.forEach(page => {
+      page.sections.forEach(section => {
+        questions.push(...section.questions);
+        section.branches.forEach(collectFromBranch);
       });
-    setBranches(prev => addBranchToParent(prev));
-    setSelectedBranchId(newBranch.id);
+    });
+
+    return questions;
+  };
+
+  const allQuestions = getAllQuestions();
+
+  const handleSelectQuestion = (questionId: string, branchId: string | null) => {
+    setSelectedQuestionId(questionId);
+    setSelectedBranchId(branchId);
+  };
+
+  const handleSelectBranch = (branchId: string) => {
+    setSelectedBranchId(branchId);
     setSelectedQuestionId(null);
   };
 
-  const findBranchById = (branchList: ConditionalBranch[], id: string): ConditionalBranch | null => {
-    for (const b of branchList) {
-      if (b.id === id) return b;
-      const found = findBranchById(b.childBranches, id);
-      if (found) return found;
-    }
-    return null;
+  const handleSelectSection = (sectionId: string) => {
+    setSelectedSectionId(sectionId);
+    setSelectedQuestionId(null);
+    setSelectedBranchId(null);
   };
-
-  const selectedQuestion = selectedQuestionId
-    ? questions.find(q => q.id === selectedQuestionId) ||
-      (() => {
-        const findQuestion = (branchList: ConditionalBranch[]): Question | null => {
-          for (const b of branchList) {
-            const q = b.questions.find(q => q.id === selectedQuestionId);
-            if (q) return q;
-            const found = findQuestion(b.childBranches);
-            if (found) return found;
-          }
-          return null;
-        };
-        return findQuestion(branches);
-      })()
-    : null;
-
-  const updateQuestionInBranch = (branch: ConditionalBranch, id: string, updated: Partial<Question>): ConditionalBranch => {
-    return {
-      ...branch,
-      questions: branch.questions.map(q => q.id === id ? { ...q, ...updated } : q),
-      childBranches: branch.childBranches.map(cb => updateQuestionInBranch(cb, id, updated))
-    };
-  };
-
-  const updateQuestion = (id: string, updated: Partial<Question>) => {
-    setQuestions(prev => prev.map(q => q.id === id ? { ...q, ...updated } : q));
-    const updateBranchQuestions = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-      branchList.map(b => updateQuestionInBranch(b, id, updated));
-    setBranches(prev => updateBranchQuestions(prev));
-  };
-
-  const updateBranch = (id: string, updated: Partial<ConditionalBranch>) => {
-    const updateBranchRecursive = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-      branchList.map(b => ({
-        ...b,
-        ...(b.id === id ? updated : {}),
-        childBranches: updateBranchRecursive(b.childBranches)
-      }));
-    setBranches(prev => updateBranchRecursive(prev));
-  };
-
-  const deleteQuestion = (questionId: string) => {
-    // Delete from top-level questions
-    setQuestions(prev => prev.filter(q => q.id !== questionId));
-    setLayoutOrder(prev => prev.filter(item => !(item.type === 'question' && item.id === questionId)));
-    
-    // Delete from branches recursively
-    const deleteFromBranch = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-      branchList.map(b => ({
-        ...b,
-        questions: b.questions.filter(q => q.id !== questionId),
-        childBranches: deleteFromBranch(b.childBranches)
-      }));
-    setBranches(prev => deleteFromBranch(prev));
-    
-    if (selectedQuestionId === questionId) {
-      setSelectedQuestionId(null);
-    }
-  };
-
-  const deleteBranch = (branchId: string) => {
-    // Delete from top-level branches
-    setBranches(prev => {
-      const deleteRecursive = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-        branchList
-          .filter(b => b.id !== branchId)
-          .map(b => ({ ...b, childBranches: deleteRecursive(b.childBranches) }));
-      return deleteRecursive(prev);
-    });
-    setLayoutOrder(prev => prev.filter(item => !(item.type === 'branch' && item.id === branchId)));
-    
-    if (selectedBranchId === branchId) {
-      setSelectedBranchId(null);
-      setSelectedQuestionId(null);
-    }
-  };
-
-  const allQuestions = [...questions, ...branches.flatMap(b => {
-    const collectQuestions = (branch: ConditionalBranch): Question[] => [
-      ...branch.questions,
-      ...branch.childBranches.flatMap(collectQuestions)
-    ];
-    return collectQuestions(b);
-  })];
-
-  const selectedBranch = selectedBranchId ? findBranchById(branches, selectedBranchId) : null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar
         questionnaire={questionnaire}
-        questions={questions}
-        branches={branches}
-        layoutOrder={layoutOrder}
+        activePageId={activePageId}
+        selectedSectionId={selectedSectionId}
         selectedQuestionId={selectedQuestionId}
         selectedBranchId={selectedBranchId}
         onCreateQuestionnaire={handleCreateQuestionnaire}
-        onSelectQuestion={(id, branchId) => {
-          setSelectedQuestionId(id);
-          setSelectedBranchId(branchId);
-        }}
-        onSelectBranch={(id) => {
-          setSelectedBranchId(id);
-          setSelectedQuestionId(null);
-        }}
+        onSelectPage={setActivePageId}
+        onSelectSection={handleSelectSection}
+        onSelectQuestion={handleSelectQuestion}
+        onSelectBranch={handleSelectBranch}
         onReset={() => {
           setQuestionnaire(null);
-          setQuestions([]);
-          setBranches([]);
-          setLayoutOrder([]);
+          setActivePageId(null);
+          setSelectedSectionId(null);
           setSelectedQuestionId(null);
           setSelectedBranchId(null);
         }}
         onUpdateQuestionnaire={setQuestionnaire}
       />
 
-      <div className="w-[70%] flex-1 overflow-hidden">
-        <ScrollArea className="h-full">
+      <div className="w-[70%] flex-1 overflow-hidden flex flex-col">
+        {questionnaire && (
+          <PageTabs
+            pages={questionnaire.pages}
+            activePageId={activePageId}
+            onSelectPage={(id) => {
+              setActivePageId(id);
+              setSelectedSectionId(null);
+              setSelectedQuestionId(null);
+              setSelectedBranchId(null);
+            }}
+            onAddPage={handleAddPage}
+            onDeletePage={handleDeletePage}
+            onUpdatePage={handleUpdatePage}
+          />
+        )}
+
+        <ScrollArea className="flex-1">
           <div className="p-6 space-y-6">
-            {questionnaire && (
-              <Card>
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg">Questions & Branches</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex gap-3">
-                    <Button onClick={() => handleAddQuestion()}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Question
-                    </Button>
-                    <Button variant="secondary" onClick={handleAddBranch}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Conditional Branching
-                    </Button>
-                  </div>
+            {questionnaire && activePage && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">{activePage.name || 'Untitled Page'}</h2>
+                  <Button onClick={handleAddSection}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Section
+                  </Button>
+                </div>
 
-                  {selectedBranch && (
-                    <BranchEditor
-                      branch={selectedBranch}
-                      allQuestions={allQuestions}
-                      selectedQuestionId={selectedQuestionId}
-                      onUpdateBranch={updateBranch}
-                      onAddQuestion={handleAddQuestion}
-                      onAddChildBranch={handleAddBranchUnderParent}
-                      onSelectQuestion={setSelectedQuestionId}
-                      onDeleteBranch={deleteBranch}
-                      onDeleteQuestion={deleteQuestion}
-                      questionEditor={
-                        selectedQuestion && selectedBranch.questions.some(q => q.id === selectedQuestionId) ? (
-                          <QuestionEditor
-                            question={selectedQuestion}
-                            allQuestions={allQuestions}
-                            onUpdate={updateQuestion}
-                            onDelete={deleteQuestion}
-                          />
-                        ) : undefined
-                      }
-                    />
-                  )}
+                {activePage.sections.length === 0 && (
+                  <Card className="border-dashed">
+                    <CardContent className="py-12 text-center">
+                      <Layers className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="font-medium mb-2">No sections yet</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Add a section to start adding questions and conditional branches.
+                      </p>
+                      <Button onClick={handleAddSection}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Section
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
 
-                  {selectedQuestion && !selectedBranch && (
-                    <QuestionEditor
-                      question={selectedQuestion}
-                      allQuestions={allQuestions}
-                      onUpdate={updateQuestion}
-                      onDelete={deleteQuestion}
-                    />
-                  )}
-                </CardContent>
-              </Card>
+                {activePage.sections.map(section => (
+                  <SectionEditor
+                    key={section.id}
+                    section={section}
+                    allQuestions={allQuestions}
+                    selectedQuestionId={selectedSectionId === section.id ? selectedQuestionId : null}
+                    selectedBranchId={selectedSectionId === section.id ? selectedBranchId : null}
+                    onUpdate={(updated) => handleUpdateSection(section.id, updated)}
+                    onDelete={() => handleDeleteSection(section.id)}
+                    onSelectQuestion={(qId, bId) => {
+                      setSelectedSectionId(section.id);
+                      handleSelectQuestion(qId, bId);
+                    }}
+                    onSelectBranch={(bId) => {
+                      setSelectedSectionId(section.id);
+                      handleSelectBranch(bId);
+                    }}
+                  />
+                ))}
+              </div>
             )}
 
             {!questionnaire && (
@@ -324,7 +266,7 @@ const QuestionnaireBuilder = () => {
                   </div>
                   <h2 className="text-xl font-semibold">Create a Questionnaire</h2>
                   <p className="text-muted-foreground max-w-md">
-                    Build dynamic questionnaires with conditional branching and flexible answer sets.
+                    Build dynamic questionnaires with pages, sections, conditional branching and flexible answer sets.
                   </p>
                   <Button size="lg" onClick={handleCreateQuestionnaire}>
                     <Plus className="h-4 w-4 mr-2" />

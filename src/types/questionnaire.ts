@@ -109,12 +109,28 @@ export interface ConditionalBranch {
   childBranches: ConditionalBranch[];
 }
 
+export interface Section {
+  id: string;
+  name: string;
+  description?: string;
+  questions: Question[];
+  branches: ConditionalBranch[];
+}
+
+export interface Page {
+  id: string;
+  name: string;
+  description?: string;
+  sections: Section[];
+}
+
 export interface Questionnaire {
   name: string;
   description: string;
   status: string;
   version: string;
   serviceCatalog: string;
+  pages: Page[];
 }
 
 export interface LayoutItem {
