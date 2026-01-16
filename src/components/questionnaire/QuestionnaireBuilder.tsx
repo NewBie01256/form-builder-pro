@@ -42,6 +42,72 @@ const QuestionnaireBuilder = () => {
     setActivePageId(defaultPage.id);
   };
 
+  const handleEditRecord = (record: ITSMRecord) => {
+    const defaultPage: Page = {
+      id: `page-${Date.now()}`,
+      name: 'General Information',
+      description: `Questions for ${record.name}`,
+      sections: [
+        {
+          id: `section-${Date.now()}`,
+          name: 'Basic Details',
+          description: 'Collect initial information',
+          questions: [
+            {
+              id: `q-${Date.now()}-1`,
+              text: 'Please describe the issue or request',
+              type: 'Text',
+              required: true,
+              order: 1,
+              answerSets: [{
+                id: `as-${Date.now()}-1`,
+                name: 'Description',
+                tag: '',
+                isDefault: false,
+                answers: [{ id: `a-${Date.now()}-1`, label: '', value: '', active: true }]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${Date.now()}-1`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            },
+            {
+              id: `q-${Date.now()}-2`,
+              text: 'What is the urgency level?',
+              type: 'Choice',
+              required: true,
+              order: 2,
+              answerSets: [{
+                id: `as-${Date.now()}-2`,
+                name: 'Urgency Options',
+                tag: 'priority',
+                isDefault: false,
+                answers: [
+                  { id: `a-${Date.now()}-2a`, label: 'Critical - Service Down', value: 'critical', active: true },
+                  { id: `a-${Date.now()}-2b`, label: 'High - Major Impact', value: 'high', active: true },
+                  { id: `a-${Date.now()}-2c`, label: 'Medium - Moderate Impact', value: 'medium', active: true },
+                  { id: `a-${Date.now()}-2d`, label: 'Low - Minor Impact', value: 'low', active: true }
+                ]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${Date.now()}-2`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            }
+          ],
+          branches: []
+        }
+      ]
+    };
+    
+    setQuestionnaire({
+      name: record.name,
+      description: record.description,
+      status: record.status,
+      version: '1.0',
+      serviceCatalog: record.serviceCatalog,
+      pages: [defaultPage]
+    });
+    setActivePageId(defaultPage.id);
+    setSelectedSectionId(defaultPage.sections[0].id);
+  };
+
   const activePage = questionnaire?.pages.find(p => p.id === activePageId) || null;
 
   const handleAddPage = () => {
@@ -337,6 +403,7 @@ const QuestionnaireBuilder = () => {
                             variant="ghost" 
                             size="sm"
                             className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                            onClick={() => handleEditRecord(record)}
                           >
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
