@@ -1,8 +1,23 @@
+export type ImpactLevel = '1' | '2' | '3' | '4';
+export type UrgencyLevel = '1' | '2' | '3' | '4';
+
+export interface ActionRecord {
+  operationCategoryTier1: string;
+  operationCategoryTier2: string;
+  operationCategoryTier3: string;
+  productCategoryTier1: string;
+  productCategoryTier2: string;
+  productCategoryTier3: string;
+  impact: ImpactLevel | '';
+  urgency: UrgencyLevel | '';
+}
+
 export interface Answer {
   id: string;
   label: string;
   value: string;
   active: boolean;
+  actionRecord?: ActionRecord;
 }
 
 export interface AnswerSet {
