@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Plus, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer } from "@/types/questionnaire";
+import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer, AnswerLevelOperator } from "@/types/questionnaire";
 import {
   Collapsible,
   CollapsibleContent,
@@ -181,10 +181,28 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
       type: 'answerRule',
       id: `ar-${Date.now()}`,
       previousQuestionId: '',
+      operator: 'equals',
       previousAnswerId: '',
       selectedAnswerSetId: ''
     };
     updateGroup({ children: [...group.children, newRule] });
+  };
+
+  const operatorOptions: { value: AnswerLevelOperator; label: string }[] = [
+    { value: 'equals', label: 'Equals' },
+    { value: 'not_equals', label: 'Not Equals' },
+    { value: 'greater_than', label: 'Greater Than' },
+    { value: 'less_than', label: 'Less Than' },
+    { value: 'contains', label: 'Contains' },
+    { value: 'not_contains', label: 'Not Contains' },
+    { value: 'starts_with', label: 'Starts With' },
+    { value: 'ends_with', label: 'Ends With' },
+  ];
+
+  // Get answers for selected question
+  const getAnswersForQuestion = (questionId: string) => {
+    const question = allQuestions.find(q => q.id === questionId);
+    return question?.answerSets.flatMap(as => as.answers) || [];
   };
 
   const allAnswers = allQuestions.flatMap(q => q.answerSets.flatMap(as => as.answers));
@@ -221,9 +239,9 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
           </Select>
         </div>
         <div className="flex-1 grid grid-cols-3 gap-2 px-3 py-2">
-          <span className="text-xs font-medium text-muted-foreground">Field</span>
+          <span className="text-xs font-medium text-muted-foreground">Select Question</span>
           <span className="text-xs font-medium text-muted-foreground">Operator</span>
-          <span className="text-xs font-medium text-muted-foreground">Value</span>
+          <span className="text-xs font-medium text-muted-foreground">Answer</span>
         </div>
         <div className="w-10 px-2 flex items-center justify-center">
           {!isRoot && onDelete && (
@@ -284,43 +302,38 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
                     </Select>
 
                     <Select
-                      value={child.previousAnswerId}
-                      onValueChange={(value) => {
-                        updateChild(index, { ...child, previousAnswerId: value });
+                      value={child.operator || 'equals'}
+                      onValueChange={(value: AnswerLevelOperator) => {
+                        updateChild(index, { ...child, operator: value });
                       }}
                     >
                       <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Equals" />
+                        <SelectValue placeholder="Select operator" />
                       </SelectTrigger>
                       <SelectContent>
-                        {allAnswers.map(ans => (
-                          <SelectItem key={ans.id} value={ans.id}>
-                            {ans.label || 'Untitled Answer'}
+                        {operatorOptions.map(op => (
+                          <SelectItem key={op.value} value={op.value}>
+                            {op.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
 
                     <Select
-                      value={child.selectedAnswerSetId}
+                      value={child.previousAnswerId}
                       onValueChange={(value) => {
-                        updateChild(index, { ...child, selectedAnswerSetId: value });
+                        updateChild(index, { ...child, previousAnswerId: value });
                       }}
                     >
                       <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Value" />
+                        <SelectValue placeholder="Select answer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {allAnswerSets.map(as => (
-                          <SelectItem key={as.id} value={as.id}>
-                            {as.name || 'Untitled Answer Set'}
+                        {getAnswersForQuestion(child.previousQuestionId).map(ans => (
+                          <SelectItem key={ans.id} value={ans.id}>
+                            {ans.label || 'Untitled Answer'}
                           </SelectItem>
                         ))}
-                        {group.inlineAnswerSet && (
-                          <SelectItem value={group.inlineAnswerSet.id}>
-                            {group.inlineAnswerSet.name || 'Inline Answer Set'}
-                          </SelectItem>
-                        )}
                       </SelectContent>
                     </Select>
                   </div>
