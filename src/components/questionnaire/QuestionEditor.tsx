@@ -317,6 +317,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                     currentQuestion={question}
                     onUpdate={(updated) => handleUpdateAnswerLevelGroup(selectedBranching.id, updated)}
                     onAddFromExisting={() => handleOpenPickerForBranching(selectedBranching.id)}
+                    questionType={question.type}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-32 border border-dashed border-border rounded-lg bg-muted/20">
