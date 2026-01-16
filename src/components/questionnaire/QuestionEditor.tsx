@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,10 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { HelpCircle, Plus, X } from "lucide-react";
+import { HelpCircle, Plus, X, GitBranch, Trash2 } from "lucide-react";
 import { Question, AnswerLevelRuleGroup } from "@/types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";
 import AnswerLevelRuleGroupEditor from "./AnswerLevelRuleGroupEditor";
+import { cn } from "@/lib/utils";
 
 interface QuestionEditorProps {
   question: Question;
@@ -22,6 +24,10 @@ interface QuestionEditorProps {
 }
 
 const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProps) => {
+  const [selectedBranchingId, setSelectedBranchingId] = useState<string | null>(
+    question.answerLevelRuleGroups.length > 0 ? question.answerLevelRuleGroups[0].id : null
+  );
+
   const handleAddAnswerLevelBranching = () => {
     const newGroup: AnswerLevelRuleGroup = {
       type: 'group',
@@ -46,12 +52,17 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
     onUpdate(question.id, { 
       answerLevelRuleGroups: [...question.answerLevelRuleGroups, newGroup] 
     });
+    setSelectedBranchingId(newGroup.id);
   };
 
   const handleRemoveAnswerLevelBranching = (groupId: string) => {
-    onUpdate(question.id, { 
-      answerLevelRuleGroups: question.answerLevelRuleGroups.filter(g => g.id !== groupId) 
-    });
+    const newGroups = question.answerLevelRuleGroups.filter(g => g.id !== groupId);
+    onUpdate(question.id, { answerLevelRuleGroups: newGroups });
+    
+    // Update selection
+    if (selectedBranchingId === groupId) {
+      setSelectedBranchingId(newGroups.length > 0 ? newGroups[0].id : null);
+    }
   };
 
   const handleUpdateAnswerLevelGroup = (groupId: string, updated: AnswerLevelRuleGroup) => {
@@ -61,6 +72,8 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
       ) 
     });
   };
+
+  const selectedBranching = question.answerLevelRuleGroups.find(g => g.id === selectedBranchingId);
 
   return (
     <Card className="border-dashed-custom">
@@ -138,41 +151,74 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
 
         {/* Answer-Level Conditional Branching */}
         <div className="space-y-4">
-          <Label className="text-base font-semibold">Answer-Level Conditional Branching</Label>
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-semibold">Answer-Level Conditional Branching</Label>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleAddAnswerLevelBranching}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add Branching
+            </Button>
+          </div>
           
-          {question.answerLevelRuleGroups.map((group, index) => (
-            <div key={group.id} className="relative">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Branching #{index + 1}
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-7 text-xs text-destructive hover:text-destructive"
-                  onClick={() => handleRemoveAnswerLevelBranching(group.id)}
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Remove
-                </Button>
+          {question.answerLevelRuleGroups.length > 0 ? (
+            <div className="flex gap-4">
+              {/* Left panel - Branching list (20%) */}
+              <div className="w-[20%] min-w-[160px] space-y-2">
+                {question.answerLevelRuleGroups.map((group, index) => (
+                  <div
+                    key={group.id}
+                    className={cn(
+                      "flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors",
+                      "hover:bg-accent hover:border-accent",
+                      selectedBranchingId === group.id 
+                        ? "bg-accent border-primary" 
+                        : "bg-card border-border"
+                    )}
+                    onClick={() => setSelectedBranchingId(group.id)}
+                  >
+                    <GitBranch className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-sm flex-1 truncate">
+                      {group.inlineAnswerSet?.name || `Branching #${index + 1}`}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveAnswerLevelBranching(group.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               </div>
-              <AnswerLevelRuleGroupEditor
-                group={group}
-                allQuestions={allQuestions}
-                currentQuestion={question}
-                onUpdate={(updated) => handleUpdateAnswerLevelGroup(group.id, updated)}
-              />
-            </div>
-          ))}
 
-          <Button 
-            variant="outline" 
-            className="w-full h-10 border-dashed"
-            onClick={handleAddAnswerLevelBranching}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Answer-Level Conditional Branching
-          </Button>
+              {/* Right panel - Branching details (80%) */}
+              <div className="w-[80%] flex-1">
+                {selectedBranching ? (
+                  <AnswerLevelRuleGroupEditor
+                    group={selectedBranching}
+                    allQuestions={allQuestions}
+                    currentQuestion={question}
+                    onUpdate={(updated) => handleUpdateAnswerLevelGroup(selectedBranching.id, updated)}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-32 border border-dashed border-border rounded-lg bg-muted/20">
+                    <p className="text-sm text-muted-foreground">Select a branching to view details</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-24 border border-dashed border-border rounded-lg bg-muted/20">
+              <p className="text-sm text-muted-foreground">No conditional branching configured</p>
+            </div>
+          )}
         </div>
 
       </CardContent>
