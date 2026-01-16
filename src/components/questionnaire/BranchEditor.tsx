@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Plus, GitBranch, HelpCircle } from "lucide-react";
+import { Plus, GitBranch, HelpCircle, Trash2 } from "lucide-react";
 import { ConditionalBranch, Question } from "@/types/questionnaire";
 import RuleGroupEditor from "./RuleGroupEditor";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ interface BranchEditorProps {
   onAddQuestion: (branchId: string) => void;
   onAddChildBranch: (parentId: string) => void;
   onSelectQuestion: (questionId: string) => void;
+  onDeleteQuestion?: (branchId: string, questionId: string) => void;
 }
 
 const BranchEditor = ({
@@ -25,6 +26,7 @@ const BranchEditor = ({
   onAddQuestion,
   onAddChildBranch,
   onSelectQuestion,
+  onDeleteQuestion,
 }: BranchEditorProps) => {
   return (
     <Card className="border-dashed-custom">
@@ -82,7 +84,20 @@ const BranchEditor = ({
                   onClick={() => onSelectQuestion(q.id)}
                 >
                   <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{q.text || 'Untitled Question'}</span>
+                  <span className="text-sm flex-1">{q.text || 'Untitled Question'}</span>
+                  {onDeleteQuestion && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteQuestion(branch.id, q.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
