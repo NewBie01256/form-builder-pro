@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -10,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, HelpCircle } from "lucide-react";
-import { Question, AnswerSet, AnswerLevelRuleGroup } from "@/types/questionnaire";
+import { HelpCircle } from "lucide-react";
+import { Question } from "@/types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";
 import AnswerLevelRuleGroupEditor from "./AnswerLevelRuleGroupEditor";
 
@@ -21,25 +20,7 @@ interface QuestionEditorProps {
   onUpdate: (id: string, updated: Partial<Question>) => void;
 }
 
-const hasAnswerLevelRule = (group: AnswerLevelRuleGroup): boolean => {
-  for (const child of group.children) {
-    if (child.type === 'answerRule') return true;
-    if (child.type === 'group' && hasAnswerLevelRule(child)) return true;
-  }
-  return false;
-};
-
 const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProps) => {
-  const addAnswerSet = () => {
-    const newSet: AnswerSet = {
-      id: `as-${Date.now()}`,
-      name: '',
-      tag: '',
-      isDefault: false,
-      answers: []
-    };
-    onUpdate(question.id, { answerSets: [...question.answerSets, newSet] });
-  };
 
   return (
     <Card className="border-dashed-custom">
@@ -125,15 +106,6 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
           />
         </div>
 
-        {/* Add Answer Set Button */}
-        <Button
-          variant="outline"
-          onClick={addAnswerSet}
-          disabled={!hasAnswerLevelRule(question.answerLevelRuleGroup)}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Answer Set
-        </Button>
       </CardContent>
     </Card>
   );
