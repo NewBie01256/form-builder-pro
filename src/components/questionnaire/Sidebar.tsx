@@ -61,7 +61,7 @@ const Sidebar = ({
   );
 
   return (
-    <div className="w-64 border-r border-border h-full flex flex-col bg-card">
+    <div className="w-[30%] min-w-[250px] max-w-[400px] border-r border-border h-full flex flex-col bg-card">
       <div className="p-4 border-b border-border">
         <h2 className="font-semibold text-sm text-foreground">Questionnaire Tree</h2>
       </div>
