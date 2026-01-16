@@ -28,7 +28,6 @@ export interface AnswerLevelRule {
   previousQuestionId: string;
   previousAnswerId: string;
   selectedAnswerSetId: string;
-  inlineAnswerSet?: AnswerSet;
 }
 
 export interface RuleGroup {
@@ -43,6 +42,7 @@ export interface AnswerLevelRuleGroup {
   id: string;
   matchType: 'AND' | 'OR';
   children: Array<AnswerLevelRuleGroup | AnswerLevelRule>;
+  inlineAnswerSet?: AnswerSet;
 }
 
 export interface Question {
