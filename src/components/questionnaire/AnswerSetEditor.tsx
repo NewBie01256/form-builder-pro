@@ -4,17 +4,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Library } from "lucide-react";
-import { AnswerSet, Answer } from "@/types/questionnaire";
+import { AnswerSet, Answer, QuestionType } from "@/types/questionnaire";
 
 interface AnswerSetEditorProps {
   answerSet: AnswerSet;
   onUpdate: (updated: AnswerSet) => void;
   onAddFromExisting?: () => void;
-  questionType?: string;
+  questionType?: QuestionType;
 }
 
 const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice' }: AnswerSetEditorProps) => {
-  const isTextType = questionType === 'Text';
+  // Types that don't need the full answer set UI
+  const isSimpleType = ['Text', 'Number', 'Date', 'Rating'].includes(questionType);
+  // Types that use the choice-based answer set UI
+  const isChoiceType = ['Choice', 'MultiSelect'].includes(questionType);
 
   const addAnswer = () => {
     const newAnswer: Answer = {
@@ -33,28 +36,90 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
     });
   };
 
-  // For text type, ensure there's always exactly one answer
-  const textAnswer = answerSet.answers[0] || { id: `ans-${Date.now()}`, label: '', value: '', active: true };
+  // For simple types, ensure there's always exactly one answer
+  const simpleAnswer = answerSet.answers[0] || { id: `ans-${Date.now()}`, label: '', value: '', active: true };
 
-  const updateTextAnswer = (value: string) => {
+  const updateSimpleAnswer = (value: string, label: string) => {
     if (answerSet.answers.length === 0) {
       onUpdate({ 
         ...answerSet, 
-        answers: [{ id: `ans-${Date.now()}`, label: 'Text Response', value, active: true }] 
+        answers: [{ id: `ans-${Date.now()}`, label, value, active: true }] 
       });
     } else {
       onUpdate({
         ...answerSet,
-        answers: [{ ...answerSet.answers[0], value, label: 'Text Response' }]
+        answers: [{ ...answerSet.answers[0], value, label }]
       });
     }
   };
 
+  const getSimpleTypeLabel = () => {
+    switch (questionType) {
+      case 'Text': return 'Default Text Answer';
+      case 'Number': return 'Default Number Value';
+      case 'Date': return 'Default Date Value';
+      case 'Rating': return 'Default Rating Value';
+      default: return 'Default Value';
+    }
+  };
+
+  const getSimpleTypePlaceholder = () => {
+    switch (questionType) {
+      case 'Text': return 'Enter default text response (optional)';
+      case 'Number': return 'Enter default number (optional)';
+      case 'Date': return 'Select default date (optional)';
+      case 'Rating': return 'Enter default rating (optional)';
+      default: return 'Enter default value (optional)';
+    }
+  };
+
+  // For simple types, show a minimal UI
+  if (isSimpleType) {
+    return (
+      <div className="border border-border rounded-lg p-4 bg-muted/30">
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+          {questionType === 'Text' ? (
+            <Textarea
+              placeholder={getSimpleTypePlaceholder()}
+              value={simpleAnswer.value}
+              onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Response')}
+              className="min-h-[80px]"
+            />
+          ) : questionType === 'Number' ? (
+            <Input
+              type="number"
+              placeholder={getSimpleTypePlaceholder()}
+              value={simpleAnswer.value}
+              onChange={(e) => updateSimpleAnswer(e.target.value, 'Number Response')}
+            />
+          ) : questionType === 'Date' ? (
+            <Input
+              type="date"
+              value={simpleAnswer.value}
+              onChange={(e) => updateSimpleAnswer(e.target.value, 'Date Response')}
+            />
+          ) : questionType === 'Rating' ? (
+            <Input
+              type="number"
+              placeholder={getSimpleTypePlaceholder()}
+              value={simpleAnswer.value}
+              onChange={(e) => updateSimpleAnswer(e.target.value, 'Rating Response')}
+            />
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  // For Choice and MultiSelect types, show the full answer set UI
   return (
     <div className="border border-border rounded-lg p-4 bg-muted/30">
       <div className="flex items-center justify-between mb-3">
-        <Label className="text-sm font-medium">Answer Set</Label>
-        {onAddFromExisting && !isTextType && (
+        <Label className="text-sm font-medium">
+          Answer Set {questionType === 'MultiSelect' && <span className="text-muted-foreground">(Multiple selections allowed)</span>}
+        </Label>
+        {onAddFromExisting && (
           <Button 
             variant="outline" 
             size="sm"
@@ -66,91 +131,73 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
         )}
       </div>
       
-      {!isTextType && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Set Name</Label>
-            <Input
-              placeholder="Answer Set Name"
-              value={answerSet.name}
-              onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Tag</Label>
-            <Input
-              placeholder="Tag"
-              value={answerSet.tag}
-              onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
-            />
-          </div>
-        </div>
-      )}
-
-      {!isTextType && (
-        <div className="flex items-center space-x-2 mt-3">
-          <Checkbox
-            id={`default-${answerSet.id}`}
-            checked={answerSet.isDefault}
-            onCheckedChange={(checked) => onUpdate({ ...answerSet, isDefault: !!checked })}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Set Name</Label>
+          <Input
+            placeholder="Answer Set Name"
+            value={answerSet.name}
+            onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
           />
-          <Label htmlFor={`default-${answerSet.id}`} className="text-sm font-normal">
-            Is Default
-          </Label>
         </div>
-      )}
+        <div className="space-y-2">
+          <Label>Tag</Label>
+          <Input
+            placeholder="Tag"
+            value={answerSet.tag}
+            onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
+          />
+        </div>
+      </div>
 
-      <div className={isTextType ? "" : "mt-4"}>
-        {isTextType ? (
-          <div className="space-y-2">
-            <Label className="text-sm">Default Text Answer</Label>
-            <Textarea
-              placeholder="Enter default text response (optional)"
-              value={textAnswer.value}
-              onChange={(e) => updateTextAnswer(e.target.value)}
-              className="min-h-[80px]"
-            />
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm">Answers</Label>
-              <Button variant="ghost" size="sm" onClick={addAnswer}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Answer
-              </Button>
-            </div>
+      <div className="flex items-center space-x-2 mt-3">
+        <Checkbox
+          id={`default-${answerSet.id}`}
+          checked={answerSet.isDefault}
+          onCheckedChange={(checked) => onUpdate({ ...answerSet, isDefault: !!checked })}
+        />
+        <Label htmlFor={`default-${answerSet.id}`} className="text-sm font-normal">
+          Is Default
+        </Label>
+      </div>
 
-            <div className="space-y-2">
-              {answerSet.answers.map(ans => (
-                <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
-                  <Input
-                    placeholder="Label"
-                    value={ans.label}
-                    onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
-                    className="flex-1 h-8"
-                  />
-                  <Input
-                    placeholder="Value"
-                    value={ans.value}
-                    onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
-                    className="flex-1 h-8"
-                  />
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`active-${ans.id}`}
-                      checked={ans.active}
-                      onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
-                    />
-                    <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal whitespace-nowrap">
-                      Active
-                    </Label>
-                  </div>
-                </div>
-              ))}
+      <div className="mt-4">
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-sm">Answers</Label>
+          <Button variant="ghost" size="sm" onClick={addAnswer}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Answer
+          </Button>
+        </div>
+
+        <div className="space-y-2">
+          {answerSet.answers.map(ans => (
+            <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
+              <Input
+                placeholder="Label"
+                value={ans.label}
+                onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
+                className="flex-1 h-8"
+              />
+              <Input
+                placeholder="Value"
+                value={ans.value}
+                onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
+                className="flex-1 h-8"
+              />
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`active-${ans.id}`}
+                  checked={ans.active}
+                  onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
+                />
+                <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal whitespace-nowrap">
+                  Active
+                </Label>
+              </div>
             </div>
-          </>
-        )}
+          ))}
+        </div>
       </div>
     </div>
   );
