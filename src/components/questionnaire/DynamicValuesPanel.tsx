@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -247,14 +247,24 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
 };
 
 const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPanelProps) => {
-  const [tableName, setTableName] = useState(config?.tableName || '');
-  const [labelField, setLabelField] = useState(config?.labelField || '');
-  const [valueField, setValueField] = useState(config?.valueField || '');
-  const [filterGroup, setFilterGroup] = useState<DynamicValueFilterGroup>(
-    config?.filterGroup || createEmptyFilterGroup()
-  );
-  const [orderByField, setOrderByField] = useState(config?.orderByField || '');
-  const [orderDirection, setOrderDirection] = useState<'asc' | 'desc'>(config?.orderDirection || 'asc');
+  const [tableName, setTableName] = useState('');
+  const [labelField, setLabelField] = useState('');
+  const [valueField, setValueField] = useState('');
+  const [filterGroup, setFilterGroup] = useState<DynamicValueFilterGroup>(createEmptyFilterGroup());
+  const [orderByField, setOrderByField] = useState('');
+  const [orderDirection, setOrderDirection] = useState<'asc' | 'desc'>('asc');
+
+  // Sync state with config prop when panel opens or config changes
+  useEffect(() => {
+    if (isOpen) {
+      setTableName(config?.tableName || '');
+      setLabelField(config?.labelField || '');
+      setValueField(config?.valueField || '');
+      setFilterGroup(config?.filterGroup || createEmptyFilterGroup());
+      setOrderByField(config?.orderByField || '');
+      setOrderDirection(config?.orderDirection || 'asc');
+    }
+  }, [isOpen, config]);
 
   const selectedTable = SAMPLE_TABLES.find(t => t.name === tableName);
   const availableFields = selectedTable?.fields || [];
