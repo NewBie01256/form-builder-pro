@@ -181,7 +181,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
                   >
                     <GitBranch className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-sm flex-1 truncate">
-                      {group.inlineAnswerSet?.name || `Branching #${index + 1}`}
+                      {group.inlineAnswerSet?.name || 'Untitled Answer Set'}
                     </span>
                     <Button
                       variant="ghost"
