@@ -22,6 +22,7 @@ interface AnswerLevelRuleGroupEditorProps {
   group: AnswerLevelRuleGroup;
   allQuestions: Question[];
   onUpdate: (updated: AnswerLevelRuleGroup) => void;
+  isRoot?: boolean; // Only root level shows Answer Set button
 }
 
 interface InlineAnswerSetEditorProps {
@@ -140,7 +141,7 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate }: InlineAnswerSetEditorPro
   );
 };
 
-const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate }: AnswerLevelRuleGroupEditorProps) => {
+const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = true }: AnswerLevelRuleGroupEditorProps) => {
   const [answerSetExpanded, setAnswerSetExpanded] = useState(!!group.inlineAnswerSet);
 
   const updateGroup = (partial: Partial<AnswerLevelRuleGroup>) => {
@@ -222,6 +223,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate }: AnswerLev
                 group={child}
                 allQuestions={allQuestions}
                 onUpdate={(updated) => updateChild(index, updated)}
+                isRoot={false}
               />
             ) : (
               <div className="border border-border rounded-lg p-4 bg-muted/50">
@@ -296,53 +298,55 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate }: AnswerLev
         ))}
       </div>
 
-      {/* Inline Answer Set Section - at Group Level */}
-      {group.inlineAnswerSet ? (
-        <Collapsible 
-          open={answerSetExpanded} 
-          onOpenChange={setAnswerSetExpanded}
-          className="mt-4"
-        >
-          <div className="flex items-center justify-between">
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-7 text-xs">
-                {answerSetExpanded ? (
-                  <ChevronUp className="h-3 w-3 mr-1" />
-                ) : (
-                  <ChevronDown className="h-3 w-3 mr-1" />
-                )}
-                {answerSetExpanded ? 'Hide' : 'Show'} Answer Set
+      {/* Inline Answer Set Section - Only at Root Level */}
+      {isRoot && (
+        group.inlineAnswerSet ? (
+          <Collapsible 
+            open={answerSetExpanded} 
+            onOpenChange={setAnswerSetExpanded}
+            className="mt-4"
+          >
+            <div className="flex items-center justify-between">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-7 text-xs">
+                  {answerSetExpanded ? (
+                    <ChevronUp className="h-3 w-3 mr-1" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 mr-1" />
+                  )}
+                  {answerSetExpanded ? 'Hide' : 'Show'} Answer Set
+                </Button>
+              </CollapsibleTrigger>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 text-xs text-destructive hover:text-destructive"
+                onClick={removeInlineAnswerSet}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Remove Answer Set
               </Button>
-            </CollapsibleTrigger>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-xs text-destructive hover:text-destructive"
-              onClick={removeInlineAnswerSet}
-            >
-              <Trash2 className="h-3 w-3 mr-1" />
-              Remove Answer Set
-            </Button>
-          </div>
-          <CollapsibleContent>
-            <InlineAnswerSetEditor
-              answerSet={group.inlineAnswerSet}
-              onUpdate={(updated) => {
-                updateGroup({ inlineAnswerSet: updated });
-              }}
-            />
-          </CollapsibleContent>
-        </Collapsible>
-      ) : (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="mt-4 h-8"
-          onClick={createInlineAnswerSet}
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Add Answer Set
-        </Button>
+            </div>
+            <CollapsibleContent>
+              <InlineAnswerSetEditor
+                answerSet={group.inlineAnswerSet}
+                onUpdate={(updated) => {
+                  updateGroup({ inlineAnswerSet: updated });
+                }}
+              />
+            </CollapsibleContent>
+          </Collapsible>
+        ) : (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-4 h-8"
+            onClick={createInlineAnswerSet}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add Answer Set
+          </Button>
+        )
       )}
 
       <div className="flex gap-2 mt-4">
