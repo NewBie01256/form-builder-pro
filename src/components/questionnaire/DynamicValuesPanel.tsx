@@ -80,16 +80,16 @@ const createEmptyFilter = (): DynamicValueFilter => ({
   value: ''
 });
 
-// Recursive component for rendering filter groups
+// Recursive component for rendering filter groups - matching the table-based layout
 interface FilterGroupEditorProps {
   group: DynamicValueFilterGroup;
   availableFields: string[];
   onUpdate: (updated: DynamicValueFilterGroup) => void;
   onDelete?: () => void;
-  depth?: number;
+  isRoot?: boolean;
 }
 
-const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, depth = 0 }: FilterGroupEditorProps) => {
+const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot = true }: FilterGroupEditorProps) => {
   const handleAddFilter = () => {
     onUpdate({
       ...group,
@@ -123,16 +123,12 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, depth =
   };
 
   return (
-    <div className={cn(
-      "border rounded-lg p-3 space-y-3",
-      depth === 0 ? "border-border bg-muted/20" : "border-dashed border-muted-foreground/30 bg-background"
-    )}>
-      {/* Group Header */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Label className="text-xs font-medium text-muted-foreground">Match</Label>
+    <div className="border border-border bg-card">
+      {/* Header Row with AND/OR and Column Labels */}
+      <div className="flex items-center border-b border-border bg-muted/30">
+        <div className="flex items-center gap-2 px-3 py-2 min-w-[80px] border-r border-border">
           <Select value={group.matchType} onValueChange={(v) => handleMatchTypeChange(v as 'AND' | 'OR')}>
-            <SelectTrigger className="h-7 w-20 text-xs">
+            <SelectTrigger className="h-7 w-16 text-xs font-medium">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -140,135 +136,132 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, depth =
               <SelectItem value="OR">OR</SelectItem>
             </SelectContent>
           </Select>
-          <span className="text-xs text-muted-foreground">
-            {group.matchType === 'AND' ? 'All conditions must match' : 'Any condition can match'}
-          </span>
         </div>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleAddFilter}>
-            <Plus className="h-3 w-3 mr-1" />
-            Filter
-          </Button>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleAddGroup}>
-            <FolderPlus className="h-3 w-3 mr-1" />
-            Group
-          </Button>
-          {onDelete && (
+        <div className="flex-1 grid grid-cols-3 gap-2 px-3 py-2">
+          <span className="text-xs font-medium text-muted-foreground">Field</span>
+          <span className="text-xs font-medium text-muted-foreground">Operator</span>
+          <span className="text-xs font-medium text-muted-foreground">Value</span>
+        </div>
+        <div className="w-10 px-2 flex items-center justify-center">
+          {!isRoot && onDelete && (
             <Button 
               variant="ghost" 
-              size="icon" 
-              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+              size="sm" 
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
               onClick={onDelete}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           )}
         </div>
       </div>
 
-      {/* Children */}
-      {group.children.length === 0 ? (
-        <div className="text-center py-4 border border-dashed border-border rounded bg-muted/10">
-          <p className="text-xs text-muted-foreground">
-            No conditions. Click "+ Filter" to add a condition.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {group.children.map((child, index) => (
-            <div key={child.id}>
-              {index > 0 && (
-                <div className="flex items-center justify-center py-1">
-                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">
-                    {group.matchType}
-                  </span>
-                </div>
-              )}
-              {child.type === 'group' ? (
-                <FilterGroupEditor
-                  group={child}
-                  availableFields={availableFields}
-                  onUpdate={(updated) => handleUpdateChild(child.id, updated)}
-                  onDelete={() => handleRemoveChild(child.id)}
-                  depth={depth + 1}
-                />
-              ) : (
-                <FilterRow
-                  filter={child}
-                  availableFields={availableFields}
-                  onUpdate={(updated) => handleUpdateChild(child.id, updated)}
-                  onDelete={() => handleRemoveChild(child.id)}
-                />
-              )}
+      {/* Rules and Nested Groups */}
+      <div className="relative">
+        {group.children.length === 0 ? (
+          <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+            No conditions. Use buttons below to add filters.
+          </div>
+        ) : (
+          group.children.map((child, index) => (
+            <div key={child.id} className="relative">
+              {/* Tree connector lines */}
+              <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
+              <div className="absolute left-4 top-1/2 w-4 h-px bg-border" />
+              
+              <div className="flex items-stretch border-b border-border last:border-b-0">
+                {/* Left connector area */}
+                <div className="w-8 flex items-center justify-center relative" />
+
+                {child.type === 'group' ? (
+                  <div className="flex-1 py-2 pr-2">
+                    <FilterGroupEditor
+                      group={child}
+                      availableFields={availableFields}
+                      onUpdate={(updated) => handleUpdateChild(child.id, updated)}
+                      onDelete={() => handleRemoveChild(child.id)}
+                      isRoot={false}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    {/* Filter Row */}
+                    <div className="flex-1 grid grid-cols-3 gap-2 py-2 px-2">
+                      <Select 
+                        value={child.field || '__empty__'} 
+                        onValueChange={(v) => handleUpdateChild(child.id, { ...child, field: v === '__empty__' ? '' : v })}
+                      >
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue placeholder="Select field" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__empty__" disabled>Select field...</SelectItem>
+                          {availableFields.map(field => (
+                            <SelectItem key={field} value={field}>
+                              {field}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <Select 
+                        value={child.operator} 
+                        onValueChange={(v) => handleUpdateChild(child.id, { ...child, operator: v as DynamicValueFilter['operator'] })}
+                      >
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {OPERATORS.map(op => (
+                            <SelectItem key={op.value} value={op.value}>
+                              {op.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      {!['is_null', 'is_not_null'].includes(child.operator) ? (
+                        <Input
+                          placeholder="Value"
+                          value={child.value}
+                          onChange={(e) => handleUpdateChild(child.id, { ...child, value: e.target.value })}
+                          className="h-8"
+                        />
+                      ) : (
+                        <div className="h-8" /> // Empty placeholder for alignment
+                      )}
+                    </div>
+
+                    {/* Delete button */}
+                    <div className="w-10 px-2 flex items-center justify-center">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleRemoveChild(child.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+          ))
+        )}
+      </div>
 
-// Single filter row component
-interface FilterRowProps {
-  filter: DynamicValueFilter;
-  availableFields: string[];
-  onUpdate: (updated: DynamicValueFilter) => void;
-  onDelete: () => void;
-}
-
-const FilterRow = ({ filter, availableFields, onUpdate, onDelete }: FilterRowProps) => {
-  return (
-    <div className="flex items-center gap-2 p-2 border border-border rounded bg-background">
-      <Select 
-        value={filter.field || '__empty__'} 
-        onValueChange={(v) => onUpdate({ ...filter, field: v === '__empty__' ? '' : v })}
-      >
-        <SelectTrigger className="h-8 flex-1">
-          <SelectValue placeholder="Select field..." />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__empty__" disabled>Select field...</SelectItem>
-          {availableFields.map(field => (
-            <SelectItem key={field} value={field}>
-              {field}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select 
-        value={filter.operator} 
-        onValueChange={(v) => onUpdate({ ...filter, operator: v as DynamicValueFilter['operator'] })}
-      >
-        <SelectTrigger className="h-8 w-36">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {OPERATORS.map(op => (
-            <SelectItem key={op.value} value={op.value}>
-              {op.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {!['is_null', 'is_not_null'].includes(filter.operator) && (
-        <Input
-          placeholder="Value"
-          value={filter.value}
-          onChange={(e) => onUpdate({ ...filter, value: e.target.value })}
-          className="h-8 flex-1"
-        />
-      )}
-
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-        onClick={onDelete}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      {/* Add buttons footer */}
+      <div className="flex items-center gap-2 px-3 py-2 border-t border-border bg-muted/20">
+        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleAddFilter}>
+          <Plus className="h-3 w-3 mr-1" />
+          Add Filter
+        </Button>
+        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleAddGroup}>
+          <FolderPlus className="h-3 w-3 mr-1" />
+          Add Group
+        </Button>
+      </div>
     </div>
   );
 };
