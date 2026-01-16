@@ -33,7 +33,14 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
         name: '',
         tag: '',
         isDefault: false,
-        answers: []
+        answers: [
+          {
+            id: `ans-${Date.now()}`,
+            label: '',
+            value: '',
+            active: true
+          }
+        ]
       }
     };
     onUpdate(question.id, { 
