@@ -214,6 +214,14 @@ const QuestionnaireBuilder = () => {
           setSelectedBranchId(id);
           setSelectedQuestionId(null);
         }}
+        onReset={() => {
+          setQuestionnaire(null);
+          setQuestions([]);
+          setBranches([]);
+          setLayoutOrder([]);
+          setSelectedQuestionId(null);
+          setSelectedBranchId(null);
+        }}
       />
 
       <div className="w-[70%] flex-1 overflow-hidden">
