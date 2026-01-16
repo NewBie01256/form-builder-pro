@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,6 +18,8 @@ import { sampleITSMRecords, ITSMRecord } from "@/data/sampleITSMRecords";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+const DRAFTS_STORAGE_KEY = 'questionnaire-drafts';
+
 interface SavedDraft {
   id: string;
   questionnaire: Questionnaire;
@@ -28,6 +30,23 @@ interface SavedDraft {
   branchCount: number;
 }
 
+const loadDraftsFromStorage = (): SavedDraft[] => {
+  try {
+    const stored = localStorage.getItem(DRAFTS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveDraftsToStorage = (drafts: SavedDraft[]) => {
+  try {
+    localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(drafts));
+  } catch (e) {
+    console.error('Failed to save drafts to localStorage', e);
+  }
+};
+
 const QuestionnaireBuilder = () => {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [activePageId, setActivePageId] = useState<string | null>(null);
@@ -35,6 +54,16 @@ const QuestionnaireBuilder = () => {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const [savedDrafts, setSavedDrafts] = useState<SavedDraft[]>([]);
+
+  // Load drafts from localStorage on mount
+  useEffect(() => {
+    setSavedDrafts(loadDraftsFromStorage());
+  }, []);
+
+  // Save drafts to localStorage whenever they change
+  useEffect(() => {
+    saveDraftsToStorage(savedDrafts);
+  }, [savedDrafts]);
 
   const handleCreateQuestionnaire = () => {
     const defaultPage: Page = {
