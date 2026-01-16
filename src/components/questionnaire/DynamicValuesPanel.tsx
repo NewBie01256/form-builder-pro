@@ -12,29 +12,9 @@ import {
 import { X, Plus, Trash2, FolderPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export interface DynamicValueFilter {
-  type: 'filter';
-  id: string;
-  field: string;
-  operator: 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'greater_than' | 'less_than' | 'starts_with' | 'ends_with' | 'is_null' | 'is_not_null';
-  value: string;
-}
-
-export interface DynamicValueFilterGroup {
-  type: 'group';
-  id: string;
-  matchType: 'AND' | 'OR';
-  children: Array<DynamicValueFilter | DynamicValueFilterGroup>;
-}
-
-export interface DynamicValueConfig {
-  tableName: string;
-  labelField: string;
-  valueField: string;
-  filterGroup: DynamicValueFilterGroup;
-  orderByField?: string;
-  orderDirection?: 'asc' | 'desc';
-}
+// Re-export types from questionnaire.ts for backward compatibility
+export type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig, DynamicValueOperator } from "@/types/questionnaire";
+import type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig, DynamicValueOperator } from "@/types/questionnaire";
 
 interface DynamicValuesPanelProps {
   isOpen: boolean;

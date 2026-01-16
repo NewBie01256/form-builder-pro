@@ -20,12 +20,40 @@ export interface Answer {
   actionRecord?: ActionRecord;
 }
 
+export type DynamicValueOperator = 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'not_contains' | 'starts_with' | 'ends_with' | 'is_null' | 'is_not_null';
+
+export interface DynamicValueFilter {
+  type: 'filter';
+  id: string;
+  field: string;
+  operator: DynamicValueOperator;
+  value: string;
+}
+
+export interface DynamicValueFilterGroup {
+  type: 'group';
+  id: string;
+  matchType: 'AND' | 'OR';
+  children: Array<DynamicValueFilter | DynamicValueFilterGroup>;
+}
+
+export interface DynamicValueConfig {
+  tableName: string;
+  labelField: string;
+  valueField: string;
+  filterGroup: DynamicValueFilterGroup;
+  orderByField?: string;
+  orderDirection?: 'asc' | 'desc';
+}
+
 export interface AnswerSet {
   id: string;
   name: string;
   tag: string;
   isDefault: boolean;
   answers: Answer[];
+  dynamicValues?: boolean;
+  dynamicConfig?: DynamicValueConfig;
 }
 
 export interface QuestionLevelRule {
