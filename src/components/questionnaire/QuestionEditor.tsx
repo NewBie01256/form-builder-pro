@@ -11,7 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { HelpCircle, Plus, X, GitBranch, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { HelpCircle, Plus, GitBranch, Trash2 } from "lucide-react";
 import { Question, AnswerLevelRuleGroup } from "@/types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";
 import AnswerLevelRuleGroupEditor from "./AnswerLevelRuleGroupEditor";
@@ -21,9 +32,10 @@ interface QuestionEditorProps {
   question: Question;
   allQuestions: Question[];
   onUpdate: (id: string, updated: Partial<Question>) => void;
+  onDelete?: (questionId: string) => void;
 }
 
-const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProps) => {
+const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: QuestionEditorProps) => {
   const [selectedBranchingId, setSelectedBranchingId] = useState<string | null>(
     question.answerLevelRuleGroups.length > 0 ? question.answerLevelRuleGroups[0].id : null
   );
@@ -78,10 +90,45 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
   return (
     <Card className="border-dashed-custom">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <HelpCircle className="h-5 w-5 text-primary" />
-          Question Details
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <HelpCircle className="h-5 w-5 text-primary" />
+            Question Details
+          </CardTitle>
+          {onDelete && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete Question
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Question</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete "{question.text || 'Untitled Question'}"? 
+                    This will also delete all answer sets and conditional branching rules. 
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => onDelete(question.id)}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
@@ -183,17 +230,37 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
                     <span className="text-sm flex-1 truncate">
                       {group.inlineAnswerSet?.name || 'Untitled Answer Set'}
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive flex-shrink-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveAnswerLevelBranching(group.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive flex-shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Answer Set</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{group.inlineAnswerSet?.name || 'Untitled Answer Set'}"? 
+                            This will also delete all associated branching rules. 
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => handleRemoveAnswerLevelBranching(group.id)}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 ))}
               </div>
