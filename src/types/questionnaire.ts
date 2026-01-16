@@ -92,7 +92,7 @@ export interface AnswerLevelRuleGroup {
   inlineAnswerSet?: AnswerSet;
 }
 
-export type QuestionType = 'Choice' | 'Text' | 'Number' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean';
+export type QuestionType = 'Choice' | 'Text' | 'Number' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean' | 'RadioButton';
 
 export interface NumberConfig {
   min?: number;

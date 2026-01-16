@@ -28,7 +28,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   // Types that don't need the full answer set UI
   const isSimpleType = ['Text', 'Number', 'Date', 'Rating', 'Boolean'].includes(questionType);
   // Types that use the choice-based answer set UI
-  const isChoiceType = ['Choice', 'MultiSelect'].includes(questionType);
+  const isChoiceType = ['Choice', 'MultiSelect', 'RadioButton'].includes(questionType);
 
   const addAnswer = () => {
     const newAnswer: Answer = {
