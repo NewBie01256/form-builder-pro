@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Layers } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Plus, Trash2, Layers, ChevronDown, ChevronUp } from "lucide-react";
 import { Section, Question, ConditionalBranch, AnswerSet } from "@/types/questionnaire";
 import QuestionEditor from "./QuestionEditor";
 import BranchEditor from "./BranchEditor";
@@ -29,7 +35,7 @@ const SectionEditor = ({
   onSelectQuestion,
   onSelectBranch,
 }: SectionEditorProps) => {
-  
+  const [isExpanded, setIsExpanded] = useState(true);
   const handleAddQuestion = (branchId?: string) => {
     const defaultAnswerSet: AnswerSet = {
       id: `as-${Date.now()}`,
@@ -180,138 +186,149 @@ const SectionEditor = ({
     : null;
 
   return (
-    <Card className="border-l-4 border-l-primary/50">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-primary" />
-            <CardTitle className="text-base">Section</CardTitle>
+    <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+      <Card className="border-l-4 border-l-primary/50">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CollapsibleTrigger asChild>
+              <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                <Layers className="h-5 w-5 text-primary" />
+                <CardTitle className="text-base">{section.name || 'Untitled Section'}</CardTitle>
+                {isExpanded ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
+            </CollapsibleTrigger>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDelete}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Section Name</Label>
-            <Input
-              placeholder="Enter section name"
-              value={section.name}
-              onChange={(e) => onUpdate({ ...section, name: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Input
-              placeholder="Optional description"
-              value={section.description || ''}
-              onChange={(e) => onUpdate({ ...section, description: e.target.value })}
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-2 pt-2">
-          <Button size="sm" onClick={() => handleAddQuestion()}>
-            <Plus className="h-4 w-4 mr-1" />
-            Add Question
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => handleAddBranch()}>
-            <Plus className="h-4 w-4 mr-1" />
-            Add Branch
-          </Button>
-        </div>
-
-        {/* Questions List */}
-        {section.questions.length > 0 && (
-          <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Questions</Label>
-            <div className="space-y-1">
-              {section.questions.map(q => (
-                <div
-                  key={q.id}
-                  onClick={() => onSelectQuestion(q.id, null)}
-                  className={cn(
-                    "px-3 py-2 rounded-md cursor-pointer transition-colors text-sm",
-                    "hover:bg-accent border border-transparent",
-                    selectedQuestionId === q.id && !selectedBranchId && "bg-accent border-primary/30"
-                  )}
-                >
-                  {q.text || 'Untitled Question'}
-                </div>
-              ))}
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent className="space-y-4 pt-0">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Section Name</Label>
+                <Input
+                  placeholder="Enter section name"
+                  value={section.name}
+                  onChange={(e) => onUpdate({ ...section, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Input
+                  placeholder="Optional description"
+                  value={section.description || ''}
+                  onChange={(e) => onUpdate({ ...section, description: e.target.value })}
+                />
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Branches List */}
-        {section.branches.length > 0 && (
-          <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Conditional Branches</Label>
-            <div className="space-y-1">
-              {section.branches.map(b => (
-                <div
-                  key={b.id}
-                  onClick={() => onSelectBranch(b.id)}
-                  className={cn(
-                    "px-3 py-2 rounded-md cursor-pointer transition-colors text-sm",
-                    "hover:bg-accent border border-transparent",
-                    selectedBranchId === b.id && "bg-accent border-primary/30"
-                  )}
-                >
-                  {b.name || 'Untitled Branch'}
-                </div>
-              ))}
+            <div className="flex gap-2 pt-2">
+              <Button size="sm" onClick={() => handleAddQuestion()}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Question
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => handleAddBranch()}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Branch
+              </Button>
             </div>
-          </div>
-        )}
 
-        {/* Selected Branch Editor */}
-        {selectedBranch && (
-          <div className="pt-4 border-t">
-            <BranchEditor
-              branch={selectedBranch}
-              allQuestions={allQuestions}
-              selectedQuestionId={selectedQuestionId}
-              onUpdateBranch={updateBranch}
-              onAddQuestion={handleAddQuestion}
-              onAddChildBranch={handleAddBranch}
-              onSelectQuestion={(id) => onSelectQuestion(id, selectedBranchId)}
-              onDeleteBranch={deleteBranch}
-              onDeleteQuestion={deleteQuestion}
-              questionEditor={
-                selectedQuestion && selectedBranch.questions.some(q => q.id === selectedQuestionId) ? (
-                  <QuestionEditor
-                    question={selectedQuestion}
-                    allQuestions={allQuestions}
-                    onUpdate={updateQuestion}
-                    onDelete={deleteQuestion}
-                  />
-                ) : undefined
-              }
-            />
-          </div>
-        )}
+            {/* Questions List */}
+            {section.questions.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Questions</Label>
+                <div className="space-y-1">
+                  {section.questions.map(q => (
+                    <div
+                      key={q.id}
+                      onClick={() => onSelectQuestion(q.id, null)}
+                      className={cn(
+                        "px-3 py-2 rounded-md cursor-pointer transition-colors text-sm",
+                        "hover:bg-accent border border-transparent",
+                        selectedQuestionId === q.id && !selectedBranchId && "bg-accent border-primary/30"
+                      )}
+                    >
+                      {q.text || 'Untitled Question'}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Selected Question Editor (not in branch) */}
-        {selectedQuestion && !selectedBranch && section.questions.some(q => q.id === selectedQuestionId) && (
-          <div className="pt-4 border-t">
-            <QuestionEditor
-              question={selectedQuestion}
-              allQuestions={allQuestions}
-              onUpdate={updateQuestion}
-              onDelete={deleteQuestion}
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            {/* Branches List */}
+            {section.branches.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Conditional Branches</Label>
+                <div className="space-y-1">
+                  {section.branches.map(b => (
+                    <div
+                      key={b.id}
+                      onClick={() => onSelectBranch(b.id)}
+                      className={cn(
+                        "px-3 py-2 rounded-md cursor-pointer transition-colors text-sm",
+                        "hover:bg-accent border border-transparent",
+                        selectedBranchId === b.id && "bg-accent border-primary/30"
+                      )}
+                    >
+                      {b.name || 'Untitled Branch'}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Selected Branch Editor */}
+            {selectedBranch && (
+              <div className="pt-4 border-t">
+                <BranchEditor
+                  branch={selectedBranch}
+                  allQuestions={allQuestions}
+                  selectedQuestionId={selectedQuestionId}
+                  onUpdateBranch={updateBranch}
+                  onAddQuestion={handleAddQuestion}
+                  onAddChildBranch={handleAddBranch}
+                  onSelectQuestion={(id) => onSelectQuestion(id, selectedBranchId)}
+                  onDeleteBranch={deleteBranch}
+                  onDeleteQuestion={deleteQuestion}
+                  questionEditor={
+                    selectedQuestion && selectedBranch.questions.some(q => q.id === selectedQuestionId) ? (
+                      <QuestionEditor
+                        question={selectedQuestion}
+                        allQuestions={allQuestions}
+                        onUpdate={updateQuestion}
+                        onDelete={deleteQuestion}
+                      />
+                    ) : undefined
+                  }
+                />
+              </div>
+            )}
+
+            {/* Selected Question Editor (not in branch) */}
+            {selectedQuestion && !selectedBranch && section.questions.some(q => q.id === selectedQuestionId) && (
+              <div className="pt-4 border-t">
+                <QuestionEditor
+                  question={selectedQuestion}
+                  allQuestions={allQuestions}
+                  onUpdate={updateQuestion}
+                  onDelete={deleteQuestion}
+                />
+              </div>
+            )}
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 };
 
