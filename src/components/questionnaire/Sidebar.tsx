@@ -14,7 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Plus, FileText, GitBranch, HelpCircle, RotateCcw, ChevronDown, ChevronUp, Settings } from "lucide-react";
+import { Plus, FileText, GitBranch, HelpCircle, RotateCcw, ChevronDown, ChevronUp, Settings, Zap } from "lucide-react";
 import { Question, ConditionalBranch, Questionnaire, LayoutItem } from "@/types/questionnaire";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -47,6 +47,25 @@ const Sidebar = ({
   onUpdateQuestionnaire,
 }: SidebarProps) => {
   const [detailsOpen, setDetailsOpen] = useState(true);
+
+  // Check if a question has any action attached to its answers
+  const questionHasAction = (question: Question): boolean => {
+    // Check in answer sets
+    for (const answerSet of question.answerSets) {
+      for (const answer of answerSet.answers) {
+        if (answer.actionRecord) return true;
+      }
+    }
+    // Check in answer level rule groups (inline answer sets)
+    for (const ruleGroup of question.answerLevelRuleGroups) {
+      if (ruleGroup.inlineAnswerSet) {
+        for (const answer of ruleGroup.inlineAnswerSet.answers) {
+          if (answer.actionRecord) return true;
+        }
+      }
+    }
+    return false;
+  };
 
   const renderBranchTree = (branch: ConditionalBranch, depth: number = 0, isLast: boolean = true, parentLines: boolean[] = []): JSX.Element => {
     const allItems = [
@@ -122,7 +141,10 @@ const Sidebar = ({
                   onClick={() => onSelectQuestion(child.item.id, branch.id)}
                 >
                   <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="truncate text-sm">{child.item.text || 'Untitled Question'}</span>
+                  <span className="truncate text-sm flex-1">{child.item.text || 'Untitled Question'}</span>
+                  {questionHasAction(child.item) && (
+                    <Zap className="h-3 w-3 text-amber-500 shrink-0" />
+                  )}
                 </div>
               </div>
             );
@@ -256,7 +278,10 @@ const Sidebar = ({
                         onClick={() => onSelectQuestion(q.id, null)}
                       >
                         <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="truncate text-sm">{q.text || 'Untitled Question'}</span>
+                        <span className="truncate text-sm flex-1">{q.text || 'Untitled Question'}</span>
+                        {questionHasAction(q) && (
+                          <Zap className="h-3 w-3 text-amber-500 shrink-0" />
+                        )}
                       </div>
                     ) : null;
                   } else {
