@@ -191,14 +191,18 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
               <Label>Question Type</Label>
               <Select
                 value={question.type}
-                onValueChange={(value) => onUpdate(question.id, { type: value })}
+                onValueChange={(value) => onUpdate(question.id, { type: value as any })}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Choice">Choice</SelectItem>
+                  <SelectItem value="Choice">Choice (Single Select)</SelectItem>
+                  <SelectItem value="MultiSelect">Multi-Select</SelectItem>
                   <SelectItem value="Text">Text</SelectItem>
+                  <SelectItem value="Number">Number</SelectItem>
+                  <SelectItem value="Date">Date</SelectItem>
+                  <SelectItem value="Rating">Rating</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -216,6 +220,206 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
               </div>
             </div>
           </div>
+
+          {/* Number Configuration */}
+          {question.type === 'Number' && (
+            <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-4">
+              <Label className="text-sm font-semibold">Number Configuration</Label>
+              <div className="grid gap-4 sm:grid-cols-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Min Value</Label>
+                  <Input
+                    type="number"
+                    placeholder="No min"
+                    value={question.numberConfig?.min ?? ''}
+                    onChange={(e) => onUpdate(question.id, { 
+                      numberConfig: { 
+                        ...question.numberConfig, 
+                        min: e.target.value ? Number(e.target.value) : undefined 
+                      } 
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Max Value</Label>
+                  <Input
+                    type="number"
+                    placeholder="No max"
+                    value={question.numberConfig?.max ?? ''}
+                    onChange={(e) => onUpdate(question.id, { 
+                      numberConfig: { 
+                        ...question.numberConfig, 
+                        max: e.target.value ? Number(e.target.value) : undefined 
+                      } 
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Step</Label>
+                  <Input
+                    type="number"
+                    placeholder="1"
+                    value={question.numberConfig?.step ?? ''}
+                    onChange={(e) => onUpdate(question.id, { 
+                      numberConfig: { 
+                        ...question.numberConfig, 
+                        step: e.target.value ? Number(e.target.value) : undefined 
+                      } 
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Default Value</Label>
+                  <Input
+                    type="number"
+                    placeholder="None"
+                    value={question.numberConfig?.defaultValue ?? ''}
+                    onChange={(e) => onUpdate(question.id, { 
+                      numberConfig: { 
+                        ...question.numberConfig, 
+                        defaultValue: e.target.value ? Number(e.target.value) : undefined 
+                      } 
+                    })}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Date Configuration */}
+          {question.type === 'Date' && (
+            <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-4">
+              <Label className="text-sm font-semibold">Date Configuration</Label>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label className="text-xs">Min Date</Label>
+                  <Input
+                    type="date"
+                    value={question.dateConfig?.minDate ?? ''}
+                    onChange={(e) => onUpdate(question.id, { 
+                      dateConfig: { 
+                        ...question.dateConfig, 
+                        minDate: e.target.value || undefined 
+                      } 
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Max Date</Label>
+                  <Input
+                    type="date"
+                    value={question.dateConfig?.maxDate ?? ''}
+                    onChange={(e) => onUpdate(question.id, { 
+                      dateConfig: { 
+                        ...question.dateConfig, 
+                        maxDate: e.target.value || undefined 
+                      } 
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Default Date</Label>
+                  <Input
+                    type="date"
+                    value={question.dateConfig?.defaultValue ?? ''}
+                    onChange={(e) => onUpdate(question.id, { 
+                      dateConfig: { 
+                        ...question.dateConfig, 
+                        defaultValue: e.target.value || undefined 
+                      } 
+                    })}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Rating Configuration */}
+          {question.type === 'Rating' && (
+            <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-4">
+              <Label className="text-sm font-semibold">Rating Configuration</Label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-xs">Min Value</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={question.ratingConfig?.minValue ?? 1}
+                    onChange={(e) => onUpdate(question.id, { 
+                      ratingConfig: { 
+                        ...question.ratingConfig,
+                        minValue: Number(e.target.value) || 1,
+                        maxValue: question.ratingConfig?.maxValue ?? 5
+                      } 
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Max Value</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={question.ratingConfig?.maxValue ?? 5}
+                    onChange={(e) => onUpdate(question.id, { 
+                      ratingConfig: { 
+                        ...question.ratingConfig,
+                        minValue: question.ratingConfig?.minValue ?? 1,
+                        maxValue: Number(e.target.value) || 5
+                      } 
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Min Label (optional)</Label>
+                  <Input
+                    placeholder="e.g., Poor"
+                    value={question.ratingConfig?.minLabel ?? ''}
+                    onChange={(e) => onUpdate(question.id, { 
+                      ratingConfig: { 
+                        ...question.ratingConfig,
+                        minValue: question.ratingConfig?.minValue ?? 1,
+                        maxValue: question.ratingConfig?.maxValue ?? 5,
+                        minLabel: e.target.value || undefined
+                      } 
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Max Label (optional)</Label>
+                  <Input
+                    placeholder="e.g., Excellent"
+                    value={question.ratingConfig?.maxLabel ?? ''}
+                    onChange={(e) => onUpdate(question.id, { 
+                      ratingConfig: { 
+                        ...question.ratingConfig,
+                        minValue: question.ratingConfig?.minValue ?? 1,
+                        maxValue: question.ratingConfig?.maxValue ?? 5,
+                        maxLabel: e.target.value || undefined
+                      } 
+                    })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Default Value (optional)</Label>
+                <Input
+                  type="number"
+                  placeholder="None"
+                  min={question.ratingConfig?.minValue ?? 1}
+                  max={question.ratingConfig?.maxValue ?? 5}
+                  value={question.ratingConfig?.defaultValue ?? ''}
+                  onChange={(e) => onUpdate(question.id, { 
+                    ratingConfig: { 
+                      ...question.ratingConfig,
+                      minValue: question.ratingConfig?.minValue ?? 1,
+                      maxValue: question.ratingConfig?.maxValue ?? 5,
+                      defaultValue: e.target.value ? Number(e.target.value) : undefined
+                    } 
+                  })}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">

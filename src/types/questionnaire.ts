@@ -49,15 +49,41 @@ export interface AnswerLevelRuleGroup {
   inlineAnswerSet?: AnswerSet;
 }
 
+export type QuestionType = 'Choice' | 'Text' | 'Number' | 'Date' | 'MultiSelect' | 'Rating';
+
+export interface NumberConfig {
+  min?: number;
+  max?: number;
+  step?: number;
+  defaultValue?: number;
+}
+
+export interface DateConfig {
+  minDate?: string;
+  maxDate?: string;
+  defaultValue?: string;
+}
+
+export interface RatingConfig {
+  minValue: number;
+  maxValue: number;
+  minLabel?: string;
+  maxLabel?: string;
+  defaultValue?: number;
+}
+
 export interface Question {
   id: string;
   text: string;
-  type: string;
+  type: QuestionType;
   required: boolean;
   order: number;
   answerSets: AnswerSet[];
   questionLevelRuleGroup: RuleGroup;
   answerLevelRuleGroups: AnswerLevelRuleGroup[];
+  numberConfig?: NumberConfig;
+  dateConfig?: DateConfig;
+  ratingConfig?: RatingConfig;
 }
 
 export interface ConditionalBranch {
