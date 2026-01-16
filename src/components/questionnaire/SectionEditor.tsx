@@ -13,6 +13,89 @@ import { Section, Question, ConditionalBranch, AnswerSet } from "@/types/questio
 import QuestionEditor from "./QuestionEditor";
 import BranchEditor from "./BranchEditor";
 import { cn } from "@/lib/utils";
+import { HelpCircle } from "lucide-react";
+
+// Recursive component to render branch with nested children
+interface BranchContainerProps {
+  branch: ConditionalBranch;
+  selectedBranchId: string | null;
+  selectedQuestionId: string | null;
+  onSelectBranch: (branchId: string) => void;
+  onSelectQuestion: (questionId: string, branchId: string | null) => void;
+  depth?: number;
+}
+
+const BranchContainer = ({
+  branch,
+  selectedBranchId,
+  selectedQuestionId,
+  onSelectBranch,
+  onSelectQuestion,
+  depth = 0,
+}: BranchContainerProps) => {
+  const hasChildren = branch.questions.length > 0 || branch.childBranches.length > 0;
+  
+  return (
+    <div
+      className={cn(
+        "rounded-md border-2 border-dashed p-1.5",
+        depth === 0 ? "border-muted-foreground/30" : "border-muted-foreground/20",
+        "bg-muted/20"
+      )}
+    >
+      {/* Branch header */}
+      <div
+        onClick={() => onSelectBranch(branch.id)}
+        className={cn(
+          "px-2 py-1 rounded text-xs cursor-pointer transition-colors flex items-center gap-1",
+          "bg-muted hover:bg-accent border",
+          selectedBranchId === branch.id 
+            ? "border-primary bg-primary/10 text-primary" 
+            : "border-transparent"
+        )}
+      >
+        <GitBranch className="h-3 w-3 shrink-0" />
+        <span className="truncate">{branch.name || 'Untitled Branch'}</span>
+      </div>
+      
+      {/* Nested children */}
+      {hasChildren && (
+        <div className="flex flex-wrap gap-1 mt-1.5 pl-2 border-l-2 border-muted-foreground/20 ml-1">
+          {/* Branch questions */}
+          {branch.questions.map(q => (
+            <div
+              key={q.id}
+              onClick={() => onSelectQuestion(q.id, branch.id)}
+              className={cn(
+                "px-2 py-1 rounded text-xs cursor-pointer transition-colors flex items-center gap-1",
+                "bg-background hover:bg-accent border",
+                selectedQuestionId === q.id 
+                  ? "border-primary bg-primary/10 text-primary" 
+                  : "border-transparent"
+              )}
+            >
+              <HelpCircle className="h-3 w-3 shrink-0" />
+              <span className="truncate max-w-[120px]">{q.text || 'Untitled'}</span>
+            </div>
+          ))}
+          
+          {/* Child branches (recursive) */}
+          {branch.childBranches.map(cb => (
+            <BranchContainer
+              key={cb.id}
+              branch={cb}
+              selectedBranchId={selectedBranchId}
+              selectedQuestionId={selectedQuestionId}
+              onSelectBranch={onSelectBranch}
+              onSelectQuestion={onSelectQuestion}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface SectionEditorProps {
   section: Section;
@@ -232,9 +315,10 @@ const SectionEditor = ({
               </Button>
             </div>
 
-            {/* Compact Questions & Branches List */}
+            {/* Compact Questions & Branches List with Hierarchy */}
             {(section.questions.length > 0 || section.branches.length > 0) && (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 items-start">
+                {/* Section-level Questions */}
                 {section.questions.map(q => (
                   <div
                     key={q.id}
@@ -250,21 +334,17 @@ const SectionEditor = ({
                     {q.text || 'Untitled Question'}
                   </div>
                 ))}
+                
+                {/* Branches with nested content in dotted containers */}
                 {section.branches.map(b => (
-                  <div
+                  <BranchContainer
                     key={b.id}
-                    onClick={() => onSelectBranch(b.id)}
-                    className={cn(
-                      "px-2 py-1 rounded text-xs cursor-pointer transition-colors flex items-center gap-1",
-                      "bg-muted hover:bg-accent border",
-                      selectedBranchId === b.id 
-                        ? "border-primary bg-primary/10 text-primary" 
-                        : "border-transparent"
-                    )}
-                  >
-                    <GitBranch className="h-3 w-3" />
-                    {b.name || 'Untitled Branch'}
-                  </div>
+                    branch={b}
+                    selectedBranchId={selectedBranchId}
+                    selectedQuestionId={selectedQuestionId}
+                    onSelectBranch={onSelectBranch}
+                    onSelectQuestion={onSelectQuestion}
+                  />
                 ))}
               </div>
             )}
