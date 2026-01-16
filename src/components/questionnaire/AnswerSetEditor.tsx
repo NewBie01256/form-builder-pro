@@ -19,9 +19,12 @@ interface AnswerSetEditorProps {
 }
 
 const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice' }: AnswerSetEditorProps) => {
-  const [dynamicValues, setDynamicValues] = useState(false);
   const [showDynamicPanel, setShowDynamicPanel] = useState(false);
-  const [dynamicConfig, setDynamicConfig] = useState<DynamicValueConfig | undefined>();
+  
+  // Use answerSet's stored values instead of local state
+  const dynamicValues = answerSet.dynamicValues ?? false;
+  const dynamicConfig = answerSet.dynamicConfig;
+  
   // Types that don't need the full answer set UI
   const isSimpleType = ['Text', 'Number', 'Date', 'Rating', 'Boolean'].includes(questionType);
   // Types that use the choice-based answer set UI
@@ -164,7 +167,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                 id={`dynamic-${answerSet.id}`}
                 checked={dynamicValues}
                 onCheckedChange={(checked) => {
-                  setDynamicValues(checked);
+                  onUpdate({ ...answerSet, dynamicValues: checked });
                   if (checked) {
                     setShowDynamicPanel(true);
                   }
@@ -349,8 +352,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
         onClose={() => setShowDynamicPanel(false)}
         config={dynamicConfig}
         onSave={(config) => {
-          setDynamicConfig(config);
-          setDynamicValues(true);
+          onUpdate({ ...answerSet, dynamicConfig: config, dynamicValues: true });
         }}
       />
     </div>
