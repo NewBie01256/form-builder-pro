@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Plus, Library, Zap } from "lucide-react";
 import { AnswerSet, Answer, QuestionType } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
@@ -15,6 +17,8 @@ interface AnswerSetEditorProps {
 }
 
 const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice' }: AnswerSetEditorProps) => {
+  const [dynamicValues, setDynamicValues] = useState(false);
+  
   // Types that don't need the full answer set UI
   const isSimpleType = ['Text', 'Number', 'Date', 'Rating'].includes(questionType);
   // Types that use the choice-based answer set UI
@@ -120,16 +124,30 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
         <Label className="text-sm font-medium">
           Answer Set {questionType === 'MultiSelect' && <span className="text-muted-foreground">(Multiple selections allowed)</span>}
         </Label>
-        {onAddFromExisting && (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={onAddFromExisting}
-          >
-            <Library className="h-4 w-4 mr-1" />
-            Add from Existing
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          {onAddFromExisting && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onAddFromExisting}
+            >
+              <Library className="h-4 w-4 mr-1" />
+              Add from Existing
+            </Button>
+          )}
+          {isChoiceType && (
+            <div className="flex items-center gap-2">
+              <Switch
+                id={`dynamic-${answerSet.id}`}
+                checked={dynamicValues}
+                onCheckedChange={setDynamicValues}
+              />
+              <Label htmlFor={`dynamic-${answerSet.id}`} className="text-sm font-normal cursor-pointer">
+                Dynamic Values
+              </Label>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="grid gap-3 sm:grid-cols-2">
