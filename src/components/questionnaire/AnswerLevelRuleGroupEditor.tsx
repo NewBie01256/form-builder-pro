@@ -298,6 +298,17 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
         ))}
       </div>
 
+      <div className="flex gap-2 mt-4">
+        <Button variant="outline" size="sm" onClick={addGroup}>
+          <Plus className="h-4 w-4 mr-1" />
+          Add Group
+        </Button>
+        <Button variant="outline" size="sm" onClick={addRule}>
+          <Plus className="h-4 w-4 mr-1" />
+          Add Answer-Level Rule
+        </Button>
+      </div>
+
       {/* Inline Answer Set Section - Only at Root Level */}
       {isRoot && (
         group.inlineAnswerSet ? (
@@ -348,17 +359,6 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
           </Button>
         )
       )}
-
-      <div className="flex gap-2 mt-4">
-        <Button variant="outline" size="sm" onClick={addGroup}>
-          <Plus className="h-4 w-4 mr-1" />
-          Add Group
-        </Button>
-        <Button variant="outline" size="sm" onClick={addRule}>
-          <Plus className="h-4 w-4 mr-1" />
-          Add Answer-Level Rule
-        </Button>
-      </div>
     </div>
   );
 };
