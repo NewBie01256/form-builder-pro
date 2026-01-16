@@ -41,7 +41,14 @@ const QuestionnaireBuilder = () => {
       name: 'Default Answer Set',
       tag: '',
       isDefault: true,
-      answers: []
+      answers: [
+        {
+          id: `ans-${Date.now()}`,
+          label: '',
+          value: '',
+          active: true
+        }
+      ]
     };
     const newQuestion: Question = {
       id: `q-${Date.now()}`,
