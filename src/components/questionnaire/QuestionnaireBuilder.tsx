@@ -43,51 +43,426 @@ const QuestionnaireBuilder = () => {
   };
 
   const handleEditRecord = (record: ITSMRecord) => {
-    const defaultPage: Page = {
-      id: `page-${Date.now()}`,
-      name: 'General Information',
-      description: `Questions for ${record.name}`,
+    const ts = Date.now();
+    
+    // Page 1: Initial Assessment
+    const page1: Page = {
+      id: `page-${ts}-1`,
+      name: 'Initial Assessment',
+      description: 'Gather basic information about the request',
       sections: [
         {
-          id: `section-${Date.now()}`,
-          name: 'Basic Details',
-          description: 'Collect initial information',
+          id: `section-${ts}-1`,
+          name: 'Contact Information',
+          description: 'Requester details',
           questions: [
             {
-              id: `q-${Date.now()}-1`,
-              text: 'Please describe the issue or request',
-              type: 'Text',
+              id: `q-${ts}-1`,
+              text: 'What is your department?',
+              type: 'Choice',
               required: true,
               order: 1,
               answerSets: [{
-                id: `as-${Date.now()}-1`,
-                name: 'Description',
-                tag: '',
+                id: `as-${ts}-1`,
+                name: 'Departments',
+                tag: 'department',
                 isDefault: false,
-                answers: [{ id: `a-${Date.now()}-1`, label: '', value: '', active: true }]
+                answers: [
+                  { id: `a-${ts}-1a`, label: 'IT', value: 'it', active: true },
+                  { id: `a-${ts}-1b`, label: 'HR', value: 'hr', active: true },
+                  { id: `a-${ts}-1c`, label: 'Finance', value: 'finance', active: true },
+                  { id: `a-${ts}-1d`, label: 'Operations', value: 'operations', active: true },
+                  { id: `a-${ts}-1e`, label: 'Sales', value: 'sales', active: true }
+                ]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${Date.now()}-1`, matchType: 'AND', children: [] },
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-1`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             },
             {
-              id: `q-${Date.now()}-2`,
+              id: `q-${ts}-2`,
+              text: 'Preferred contact method?',
+              type: 'Choice',
+              required: true,
+              order: 2,
+              answerSets: [{
+                id: `as-${ts}-2`,
+                name: 'Contact Methods',
+                tag: 'contact',
+                isDefault: false,
+                answers: [
+                  { id: `a-${ts}-2a`, label: 'Email', value: 'email', active: true },
+                  { id: `a-${ts}-2b`, label: 'Phone', value: 'phone', active: true },
+                  { id: `a-${ts}-2c`, label: 'Teams/Slack', value: 'chat', active: true }
+                ]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-2`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            }
+          ],
+          branches: []
+        },
+        {
+          id: `section-${ts}-2`,
+          name: 'Issue Classification',
+          description: 'Categorize the request',
+          questions: [
+            {
+              id: `q-${ts}-3`,
+              text: 'What type of issue are you experiencing?',
+              type: 'Choice',
+              required: true,
+              order: 1,
+              answerSets: [{
+                id: `as-${ts}-3`,
+                name: 'Issue Types',
+                tag: 'issue-type',
+                isDefault: false,
+                answers: [
+                  { id: `a-${ts}-3a`, label: 'Hardware', value: 'hardware', active: true },
+                  { id: `a-${ts}-3b`, label: 'Software', value: 'software', active: true },
+                  { id: `a-${ts}-3c`, label: 'Network', value: 'network', active: true },
+                  { id: `a-${ts}-3d`, label: 'Access/Permissions', value: 'access', active: true }
+                ]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-3`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            },
+            {
+              id: `q-${ts}-4`,
               text: 'What is the urgency level?',
               type: 'Choice',
               required: true,
               order: 2,
               answerSets: [{
-                id: `as-${Date.now()}-2`,
-                name: 'Urgency Options',
-                tag: 'priority',
+                id: `as-${ts}-4`,
+                name: 'Urgency Levels',
+                tag: 'urgency',
                 isDefault: false,
                 answers: [
-                  { id: `a-${Date.now()}-2a`, label: 'Critical - Service Down', value: 'critical', active: true },
-                  { id: `a-${Date.now()}-2b`, label: 'High - Major Impact', value: 'high', active: true },
-                  { id: `a-${Date.now()}-2c`, label: 'Medium - Moderate Impact', value: 'medium', active: true },
-                  { id: `a-${Date.now()}-2d`, label: 'Low - Minor Impact', value: 'low', active: true }
+                  { id: `a-${ts}-4a`, label: 'Critical - Service Down', value: 'critical', active: true },
+                  { id: `a-${ts}-4b`, label: 'High - Major Impact', value: 'high', active: true },
+                  { id: `a-${ts}-4c`, label: 'Medium - Moderate Impact', value: 'medium', active: true },
+                  { id: `a-${ts}-4d`, label: 'Low - Minor Impact', value: 'low', active: true }
                 ]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${Date.now()}-2`, matchType: 'AND', children: [] },
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-4`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            }
+          ],
+          branches: [
+            {
+              id: `branch-${ts}-1`,
+              name: 'Hardware Issues',
+              ruleGroup: { type: 'group', id: `brg-${ts}-1`, matchType: 'AND', children: [] },
+              questions: [
+                {
+                  id: `q-${ts}-5`,
+                  text: 'What hardware is affected?',
+                  type: 'Choice',
+                  required: true,
+                  order: 1,
+                  answerSets: [{
+                    id: `as-${ts}-5`,
+                    name: 'Hardware Types',
+                    tag: 'hardware',
+                    isDefault: false,
+                    answers: [
+                      { id: `a-${ts}-5a`, label: 'Laptop/Desktop', value: 'computer', active: true },
+                      { id: `a-${ts}-5b`, label: 'Monitor', value: 'monitor', active: true },
+                      { id: `a-${ts}-5c`, label: 'Printer', value: 'printer', active: true },
+                      { id: `a-${ts}-5d`, label: 'Keyboard/Mouse', value: 'peripheral', active: true }
+                    ]
+                  }],
+                  questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-5`, matchType: 'AND', children: [] },
+                  answerLevelRuleGroups: []
+                },
+                {
+                  id: `q-${ts}-6`,
+                  text: 'Is this hardware under warranty?',
+                  type: 'Choice',
+                  required: false,
+                  order: 2,
+                  answerSets: [{
+                    id: `as-${ts}-6`,
+                    name: 'Yes/No',
+                    tag: 'yesno',
+                    isDefault: true,
+                    answers: [
+                      { id: `a-${ts}-6a`, label: 'Yes', value: 'yes', active: true },
+                      { id: `a-${ts}-6b`, label: 'No', value: 'no', active: true },
+                      { id: `a-${ts}-6c`, label: 'Not Sure', value: 'unknown', active: true }
+                    ]
+                  }],
+                  questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-6`, matchType: 'AND', children: [] },
+                  answerLevelRuleGroups: []
+                }
+              ],
+              childBranches: []
+            },
+            {
+              id: `branch-${ts}-2`,
+              name: 'Software Issues',
+              ruleGroup: { type: 'group', id: `brg-${ts}-2`, matchType: 'AND', children: [] },
+              questions: [
+                {
+                  id: `q-${ts}-7`,
+                  text: 'Which application is affected?',
+                  type: 'Text',
+                  required: true,
+                  order: 1,
+                  answerSets: [{
+                    id: `as-${ts}-7`,
+                    name: 'Application Name',
+                    tag: '',
+                    isDefault: false,
+                    answers: [{ id: `a-${ts}-7a`, label: '', value: '', active: true }]
+                  }],
+                  questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-7`, matchType: 'AND', children: [] },
+                  answerLevelRuleGroups: []
+                }
+              ],
+              childBranches: [
+                {
+                  id: `branch-${ts}-2-1`,
+                  name: 'Installation Issues',
+                  ruleGroup: { type: 'group', id: `brg-${ts}-2-1`, matchType: 'AND', children: [] },
+                  questions: [
+                    {
+                      id: `q-${ts}-8`,
+                      text: 'What error message do you see during installation?',
+                      type: 'Text',
+                      required: false,
+                      order: 1,
+                      answerSets: [{
+                        id: `as-${ts}-8`,
+                        name: 'Error Message',
+                        tag: '',
+                        isDefault: false,
+                        answers: [{ id: `a-${ts}-8a`, label: '', value: '', active: true }]
+                      }],
+                      questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-8`, matchType: 'AND', children: [] },
+                      answerLevelRuleGroups: []
+                    }
+                  ],
+                  childBranches: []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    // Page 2: Detailed Information
+    const page2: Page = {
+      id: `page-${ts}-2`,
+      name: 'Detailed Information',
+      description: 'Provide more details about the issue',
+      sections: [
+        {
+          id: `section-${ts}-3`,
+          name: 'Problem Description',
+          description: 'Describe the issue in detail',
+          questions: [
+            {
+              id: `q-${ts}-9`,
+              text: 'Please describe the issue in detail',
+              type: 'Text',
+              required: true,
+              order: 1,
+              answerSets: [{
+                id: `as-${ts}-9`,
+                name: 'Description',
+                tag: '',
+                isDefault: false,
+                answers: [{ id: `a-${ts}-9a`, label: '', value: '', active: true }]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-9`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            },
+            {
+              id: `q-${ts}-10`,
+              text: 'When did this issue first occur?',
+              type: 'Date',
+              required: true,
+              order: 2,
+              answerSets: [{
+                id: `as-${ts}-10`,
+                name: 'Date',
+                tag: '',
+                isDefault: false,
+                answers: [{ id: `a-${ts}-10a`, label: '', value: '', active: true }]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-10`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            },
+            {
+              id: `q-${ts}-11`,
+              text: 'How many users are affected?',
+              type: 'Number',
+              required: false,
+              order: 3,
+              answerSets: [{
+                id: `as-${ts}-11`,
+                name: 'User Count',
+                tag: '',
+                isDefault: false,
+                answers: [{ id: `a-${ts}-11a`, label: '', value: '', active: true }]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-11`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: [],
+              numberConfig: { min: 1, max: 1000, step: 1 }
+            }
+          ],
+          branches: []
+        },
+        {
+          id: `section-${ts}-4`,
+          name: 'Impact Assessment',
+          description: 'Assess the business impact',
+          questions: [
+            {
+              id: `q-${ts}-12`,
+              text: 'Is this preventing you from completing your work?',
+              type: 'Choice',
+              required: true,
+              order: 1,
+              answerSets: [{
+                id: `as-${ts}-12`,
+                name: 'Work Impact',
+                tag: 'impact',
+                isDefault: false,
+                answers: [
+                  { id: `a-${ts}-12a`, label: 'Yes, completely blocked', value: 'blocked', active: true },
+                  { id: `a-${ts}-12b`, label: 'Partially, using workaround', value: 'workaround', active: true },
+                  { id: `a-${ts}-12c`, label: 'No, minor inconvenience', value: 'minor', active: true }
+                ]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-12`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            },
+            {
+              id: `q-${ts}-13`,
+              text: 'Rate the severity of this issue',
+              type: 'Rating',
+              required: true,
+              order: 2,
+              answerSets: [{
+                id: `as-${ts}-13`,
+                name: 'Severity Rating',
+                tag: '',
+                isDefault: false,
+                answers: [{ id: `a-${ts}-13a`, label: '', value: '', active: true }]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-13`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: [],
+              ratingConfig: { minValue: 1, maxValue: 5, minLabel: 'Low', maxLabel: 'Critical' }
+            }
+          ],
+          branches: [
+            {
+              id: `branch-${ts}-3`,
+              name: 'Critical Impact Follow-up',
+              ruleGroup: { type: 'group', id: `brg-${ts}-3`, matchType: 'AND', children: [] },
+              questions: [
+                {
+                  id: `q-${ts}-14`,
+                  text: 'Is there a deadline affected by this issue?',
+                  type: 'Date',
+                  required: true,
+                  order: 1,
+                  answerSets: [{
+                    id: `as-${ts}-14`,
+                    name: 'Deadline',
+                    tag: '',
+                    isDefault: false,
+                    answers: [{ id: `a-${ts}-14a`, label: '', value: '', active: true }]
+                  }],
+                  questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-14`, matchType: 'AND', children: [] },
+                  answerLevelRuleGroups: []
+                }
+              ],
+              childBranches: []
+            }
+          ]
+        }
+      ]
+    };
+
+    // Page 3: Resolution & Follow-up
+    const page3: Page = {
+      id: `page-${ts}-3`,
+      name: 'Resolution & Follow-up',
+      description: 'Preferences for resolution',
+      sections: [
+        {
+          id: `section-${ts}-5`,
+          name: 'Resolution Preferences',
+          description: 'How would you like this resolved?',
+          questions: [
+            {
+              id: `q-${ts}-15`,
+              text: 'Preferred resolution method',
+              type: 'MultiSelect',
+              required: false,
+              order: 1,
+              answerSets: [{
+                id: `as-${ts}-15`,
+                name: 'Resolution Methods',
+                tag: 'resolution',
+                isDefault: false,
+                answers: [
+                  { id: `a-${ts}-15a`, label: 'Remote Support', value: 'remote', active: true },
+                  { id: `a-${ts}-15b`, label: 'On-site Visit', value: 'onsite', active: true },
+                  { id: `a-${ts}-15c`, label: 'Phone Call', value: 'phone', active: true },
+                  { id: `a-${ts}-15d`, label: 'Email Instructions', value: 'email', active: true }
+                ]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-15`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            },
+            {
+              id: `q-${ts}-16`,
+              text: 'Best time to contact you',
+              type: 'Choice',
+              required: true,
+              order: 2,
+              answerSets: [{
+                id: `as-${ts}-16`,
+                name: 'Contact Times',
+                tag: 'time',
+                isDefault: false,
+                answers: [
+                  { id: `a-${ts}-16a`, label: 'Morning (9am-12pm)', value: 'morning', active: true },
+                  { id: `a-${ts}-16b`, label: 'Afternoon (12pm-5pm)', value: 'afternoon', active: true },
+                  { id: `a-${ts}-16c`, label: 'Anytime', value: 'anytime', active: true }
+                ]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-16`, matchType: 'AND', children: [] },
+              answerLevelRuleGroups: []
+            }
+          ],
+          branches: []
+        },
+        {
+          id: `section-${ts}-6`,
+          name: 'Additional Notes',
+          description: 'Any other information',
+          questions: [
+            {
+              id: `q-${ts}-17`,
+              text: 'Any additional comments or information?',
+              type: 'Text',
+              required: false,
+              order: 1,
+              answerSets: [{
+                id: `as-${ts}-17`,
+                name: 'Comments',
+                tag: '',
+                isDefault: false,
+                answers: [{ id: `a-${ts}-17a`, label: '', value: '', active: true }]
+              }],
+              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-17`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             }
           ],
@@ -102,10 +477,10 @@ const QuestionnaireBuilder = () => {
       status: record.status,
       version: '1.0',
       serviceCatalog: record.serviceCatalog,
-      pages: [defaultPage]
+      pages: [page1, page2, page3]
     });
-    setActivePageId(defaultPage.id);
-    setSelectedSectionId(defaultPage.sections[0].id);
+    setActivePageId(page1.id);
+    setSelectedSectionId(page1.sections[0].id);
   };
 
   const activePage = questionnaire?.pages.find(p => p.id === activePageId) || null;
