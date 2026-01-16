@@ -13,17 +13,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Plus, ChevronDown, Trash2 } from "lucide-react";
-import { RuleGroup, QuestionLevelRule, Question } from "@/types/questionnaire";
+import { RuleGroup, QuestionLevelRule, Question, AnswerLevelOperator } from "@/types/questionnaire";
 
 interface RuleGroupEditorProps {
   group: RuleGroup;
   allQuestions: Question[];
+  currentQuestionOrder?: number; // If provided, filter to questions with order < this
   onUpdate: (updated: RuleGroup) => void;
   isRoot?: boolean;
   onDelete?: () => void;
 }
 
-const RuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = true, onDelete }: RuleGroupEditorProps) => {
+const OPERATORS: { value: AnswerLevelOperator; label: string }[] = [
+  { value: 'equals', label: 'Equals' },
+  { value: 'not_equals', label: 'Not Equals' },
+  { value: 'greater_than', label: 'Greater Than' },
+  { value: 'less_than', label: 'Less Than' },
+  { value: 'contains', label: 'Contains' },
+  { value: 'not_contains', label: 'Not Contains' },
+  { value: 'starts_with', label: 'Starts With' },
+  { value: 'ends_with', label: 'Ends With' },
+];
+
+const RuleGroupEditor = ({ group, allQuestions, currentQuestionOrder, onUpdate, isRoot = true, onDelete }: RuleGroupEditorProps) => {
+  // Filter to previous questions if currentQuestionOrder is provided
+  const availableQuestions = currentQuestionOrder !== undefined
+    ? allQuestions.filter(q => q.order < currentQuestionOrder)
+    : allQuestions;
+
   const updateGroup = (partial: Partial<RuleGroup>) => {
     onUpdate({ ...group, ...partial });
   };
@@ -54,14 +71,46 @@ const RuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = true, onDelet
       type: 'rule',
       id: `r-${Date.now()}`,
       sourceQuestionId: '',
-      sourceAnswerId: '',
-      action: 'Show',
-      targetQuestionId: ''
+      sourceAnswerSetId: '',
+      operator: 'equals',
+      sourceAnswerId: ''
     };
     updateGroup({ children: [...group.children, newRule] });
   };
 
-  const allAnswers = allQuestions.flatMap(q => q.answerSets.flatMap(as => as.answers));
+  // Get answer sets for a specific question (including inline answer sets)
+  const getAnswerSetsForQuestion = (questionId: string) => {
+    const question = allQuestions.find(q => q.id === questionId);
+    if (!question) return [];
+
+    const allAnswerSets = [...question.answerSets];
+    question.answerLevelRuleGroups?.forEach(ruleGroup => {
+      if (ruleGroup.inlineAnswerSet) {
+        allAnswerSets.push(ruleGroup.inlineAnswerSet);
+      }
+    });
+
+    return allAnswerSets;
+  };
+
+  // Get answers for a specific answer set
+  const getAnswersForAnswerSet = (questionId: string, answerSetId: string) => {
+    const question = allQuestions.find(q => q.id === questionId);
+    if (!question || !answerSetId) return [];
+
+    let answerSet = question.answerSets.find(as => as.id === answerSetId);
+
+    if (!answerSet) {
+      for (const ruleGroup of question.answerLevelRuleGroups || []) {
+        if (ruleGroup.inlineAnswerSet?.id === answerSetId) {
+          answerSet = ruleGroup.inlineAnswerSet;
+          break;
+        }
+      }
+    }
+
+    return answerSet?.answers || [];
+  };
 
   return (
     <div className="border border-border bg-card">
@@ -83,9 +132,9 @@ const RuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = true, onDelet
         </div>
         <div className="flex-1 grid grid-cols-4 gap-2 px-3 py-2">
           <span className="text-xs font-medium text-muted-foreground">Source Question</span>
-          <span className="text-xs font-medium text-muted-foreground">Source Answer</span>
-          <span className="text-xs font-medium text-muted-foreground">Action</span>
-          <span className="text-xs font-medium text-muted-foreground">Target Question</span>
+          <span className="text-xs font-medium text-muted-foreground">Answer Set</span>
+          <span className="text-xs font-medium text-muted-foreground">Operator</span>
+          <span className="text-xs font-medium text-muted-foreground">Answer</span>
         </div>
         <div className="w-10 px-2 flex items-center justify-center">
           {!isRoot && onDelete && (
@@ -118,6 +167,7 @@ const RuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = true, onDelet
                   <RuleGroupEditor
                     group={child}
                     allQuestions={allQuestions}
+                    currentQuestionOrder={currentQuestionOrder}
                     onUpdate={(updated) => updateChild(index, updated)}
                     isRoot={false}
                     onDelete={() => deleteChild(index)}
@@ -127,17 +177,23 @@ const RuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = true, onDelet
                 <>
                   {/* Rule Row */}
                   <div className="flex-1 grid grid-cols-4 gap-2 py-2 px-2">
+                    {/* Source Question */}
                     <Select
                       value={child.sourceQuestionId}
                       onValueChange={(value) => {
-                        updateChild(index, { ...child, sourceQuestionId: value });
+                        updateChild(index, { 
+                          ...child, 
+                          sourceQuestionId: value,
+                          sourceAnswerSetId: '',
+                          sourceAnswerId: ''
+                        });
                       }}
                     >
                       <SelectTrigger className="h-8 text-sm">
                         <SelectValue placeholder="Select question" />
                       </SelectTrigger>
                       <SelectContent>
-                        {allQuestions.map(q => (
+                        {availableQuestions.map(q => (
                           <SelectItem key={q.id} value={q.id}>
                             {q.text || 'Untitled Question'}
                           </SelectItem>
@@ -145,52 +201,64 @@ const RuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = true, onDelet
                       </SelectContent>
                     </Select>
 
+                    {/* Answer Set */}
+                    <Select
+                      value={child.sourceAnswerSetId}
+                      onValueChange={(value) => {
+                        updateChild(index, { 
+                          ...child, 
+                          sourceAnswerSetId: value,
+                          sourceAnswerId: ''
+                        });
+                      }}
+                      disabled={!child.sourceQuestionId}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select answer set" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getAnswerSetsForQuestion(child.sourceQuestionId).map(as => (
+                          <SelectItem key={as.id} value={as.id}>
+                            {as.name || 'Untitled Answer Set'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Operator */}
+                    <Select
+                      value={child.operator}
+                      onValueChange={(value: AnswerLevelOperator) => {
+                        updateChild(index, { ...child, operator: value });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select operator" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {OPERATORS.map(op => (
+                          <SelectItem key={op.value} value={op.value}>
+                            {op.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Answer */}
                     <Select
                       value={child.sourceAnswerId}
                       onValueChange={(value) => {
                         updateChild(index, { ...child, sourceAnswerId: value });
                       }}
+                      disabled={!child.sourceAnswerSetId}
                     >
                       <SelectTrigger className="h-8 text-sm">
                         <SelectValue placeholder="Select answer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {allAnswers.map(ans => (
+                        {getAnswersForAnswerSet(child.sourceQuestionId, child.sourceAnswerSetId).map(ans => (
                           <SelectItem key={ans.id} value={ans.id}>
                             {ans.label || 'Untitled Answer'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select
-                      value={child.action}
-                      onValueChange={(value: 'Show' | 'Hide') => {
-                        updateChild(index, { ...child, action: value });
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Show">Show</SelectItem>
-                        <SelectItem value="Hide">Hide</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Select
-                      value={child.targetQuestionId}
-                      onValueChange={(value) => {
-                        updateChild(index, { ...child, targetQuestionId: value });
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Select question" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allQuestions.map(q => (
-                          <SelectItem key={q.id} value={q.id}>
-                            {q.text || 'Untitled Question'}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -17,9 +17,9 @@ export interface QuestionLevelRule {
   type: 'rule';
   id: string;
   sourceQuestionId: string;
+  sourceAnswerSetId: string;
+  operator: AnswerLevelOperator;
   sourceAnswerId: string;
-  action: 'Show' | 'Hide';
-  targetQuestionId: string;
 }
 
 export type AnswerLevelOperator = 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'not_contains' | 'starts_with' | 'ends_with';
