@@ -218,10 +218,24 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
     return allAnswerSets;
   };
 
-  // Get answers for selected answer set
+  // Get answers for selected answer set (including inline answer sets)
   const getAnswersForAnswerSet = (questionId: string, answerSetId: string) => {
     const question = allQuestions.find(q => q.id === questionId);
-    const answerSet = question?.answerSets.find(as => as.id === answerSetId);
+    if (!question || !answerSetId) return [];
+    
+    // First check regular answer sets
+    let answerSet = question.answerSets.find(as => as.id === answerSetId);
+    
+    // If not found, check inline answer sets from answer-level rule groups
+    if (!answerSet) {
+      for (const ruleGroup of question.answerLevelRuleGroups || []) {
+        if (ruleGroup.inlineAnswerSet?.id === answerSetId) {
+          answerSet = ruleGroup.inlineAnswerSet;
+          break;
+        }
+      }
+    }
+    
     return answerSet?.answers || [];
   };
 
