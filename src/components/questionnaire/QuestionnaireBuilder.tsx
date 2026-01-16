@@ -54,6 +54,7 @@ const QuestionnaireBuilder = () => {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const [savedDrafts, setSavedDrafts] = useState<SavedDraft[]>([]);
+  const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
 
   // Load drafts from localStorage on mount
   useEffect(() => {
@@ -568,15 +569,31 @@ const QuestionnaireBuilder = () => {
     if (!questionnaire) return;
     
     const stats = getQuestionnaireStats(questionnaire);
-    const newDraft: SavedDraft = {
-      id: `draft-${Date.now()}`,
-      questionnaire: { ...questionnaire, status: 'Draft' },
-      savedAt: new Date().toLocaleString(),
-      ...stats
-    };
-
-    setSavedDrafts(prev => [...prev, newDraft]);
-    toast.success("Questionnaire saved as draft!");
+    
+    if (editingDraftId) {
+      // Update existing draft
+      setSavedDrafts(prev => prev.map(draft => 
+        draft.id === editingDraftId
+          ? {
+              ...draft,
+              questionnaire: { ...questionnaire, status: 'Draft' },
+              savedAt: new Date().toLocaleString(),
+              ...stats
+            }
+          : draft
+      ));
+      toast.success("Draft updated!");
+    } else {
+      // Create new draft
+      const newDraft: SavedDraft = {
+        id: `draft-${Date.now()}`,
+        questionnaire: { ...questionnaire, status: 'Draft' },
+        savedAt: new Date().toLocaleString(),
+        ...stats
+      };
+      setSavedDrafts(prev => [...prev, newDraft]);
+      toast.success("Questionnaire saved as draft!");
+    }
     
     // Return to list view
     setQuestionnaire(null);
@@ -584,12 +601,14 @@ const QuestionnaireBuilder = () => {
     setSelectedSectionId(null);
     setSelectedQuestionId(null);
     setSelectedBranchId(null);
+    setEditingDraftId(null);
   };
 
   const handleEditDraft = (draft: SavedDraft) => {
     setQuestionnaire(draft.questionnaire);
     setActivePageId(draft.questionnaire.pages[0]?.id || null);
     setSelectedSectionId(draft.questionnaire.pages[0]?.sections[0]?.id || null);
+    setEditingDraftId(draft.id);
   };
 
   const handleDeleteDraft = (draftId: string) => {
