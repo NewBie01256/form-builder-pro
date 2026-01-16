@@ -159,6 +159,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
               <AnswerLevelRuleGroupEditor
                 group={group}
                 allQuestions={allQuestions}
+                currentQuestion={question}
                 onUpdate={(updated) => handleUpdateAnswerLevelGroup(group.id, updated)}
               />
             </div>

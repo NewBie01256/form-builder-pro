@@ -27,6 +27,7 @@ import {
 interface AnswerLevelRuleGroupEditorProps {
   group: AnswerLevelRuleGroup;
   allQuestions: Question[];
+  currentQuestion: Question;
   onUpdate: (updated: AnswerLevelRuleGroup) => void;
   isRoot?: boolean;
   onDelete?: () => void;
@@ -148,8 +149,11 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate }: InlineAnswerSetEditorPro
   );
 };
 
-const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = true, onDelete }: AnswerLevelRuleGroupEditorProps) => {
+const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUpdate, isRoot = true, onDelete }: AnswerLevelRuleGroupEditorProps) => {
   const [answerSetExpanded, setAnswerSetExpanded] = useState(!!group.inlineAnswerSet);
+
+  // Filter to only show previous questions (order less than current question)
+  const previousQuestions = allQuestions.filter(q => q.order < currentQuestion.order);
 
   const updateGroup = (partial: Partial<AnswerLevelRuleGroup>) => {
     onUpdate({ ...group, ...partial });
@@ -309,6 +313,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
                   <AnswerLevelRuleGroupEditor
                     group={child}
                     allQuestions={allQuestions}
+                    currentQuestion={currentQuestion}
                     onUpdate={(updated) => updateChild(index, updated)}
                     isRoot={false}
                     onDelete={() => deleteChild(index)}
@@ -328,7 +333,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
                         <SelectValue placeholder="Select question" />
                       </SelectTrigger>
                       <SelectContent>
-                        {allQuestions.map(q => (
+                        {previousQuestions.map(q => (
                           <SelectItem key={q.id} value={q.id}>
                             {q.text || 'Untitled Question'}
                           </SelectItem>
