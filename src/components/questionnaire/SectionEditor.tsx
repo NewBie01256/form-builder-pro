@@ -221,16 +221,7 @@ const SectionEditor = ({
         </CardHeader>
         <CollapsibleContent>
           <CardContent className="space-y-4 pt-0">
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Input
-                placeholder="Optional description"
-                value={section.description || ''}
-                onChange={(e) => onUpdate({ ...section, description: e.target.value })}
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2">
               <Button size="sm" onClick={() => handleAddQuestion()}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add Question
@@ -240,50 +231,6 @@ const SectionEditor = ({
                 Add Branch
               </Button>
             </div>
-
-            {/* Questions List */}
-            {section.questions.length > 0 && (
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">Questions</Label>
-                <div className="space-y-1">
-                  {section.questions.map(q => (
-                    <div
-                      key={q.id}
-                      onClick={() => onSelectQuestion(q.id, null)}
-                      className={cn(
-                        "px-3 py-2 rounded-md cursor-pointer transition-colors text-sm",
-                        "hover:bg-accent border border-transparent",
-                        selectedQuestionId === q.id && !selectedBranchId && "bg-accent border-primary/30"
-                      )}
-                    >
-                      {q.text || 'Untitled Question'}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Branches List */}
-            {section.branches.length > 0 && (
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">Conditional Branches</Label>
-                <div className="space-y-1">
-                  {section.branches.map(b => (
-                    <div
-                      key={b.id}
-                      onClick={() => onSelectBranch(b.id)}
-                      className={cn(
-                        "px-3 py-2 rounded-md cursor-pointer transition-colors text-sm",
-                        "hover:bg-accent border border-transparent",
-                        selectedBranchId === b.id && "bg-accent border-primary/30"
-                      )}
-                    >
-                      {b.name || 'Untitled Branch'}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Selected Branch Editor */}
             {selectedBranch && (
