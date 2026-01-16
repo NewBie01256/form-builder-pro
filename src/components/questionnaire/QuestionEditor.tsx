@@ -159,7 +159,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
               onClick={handleAddAnswerLevelBranching}
             >
               <Plus className="h-4 w-4 mr-1" />
-              Add Branching
+              Add Answer Set
             </Button>
           </div>
           
