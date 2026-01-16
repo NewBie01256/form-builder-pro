@@ -181,6 +181,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
       type: 'answerRule',
       id: `ar-${Date.now()}`,
       previousQuestionId: '',
+      previousAnswerSetId: '',
       operator: 'equals',
       previousAnswerId: '',
       selectedAnswerSetId: ''
@@ -199,10 +200,17 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
     { value: 'ends_with', label: 'Ends With' },
   ];
 
-  // Get answers for selected question
-  const getAnswersForQuestion = (questionId: string) => {
+  // Get answer sets for selected question
+  const getAnswerSetsForQuestion = (questionId: string) => {
     const question = allQuestions.find(q => q.id === questionId);
-    return question?.answerSets.flatMap(as => as.answers) || [];
+    return question?.answerSets || [];
+  };
+
+  // Get answers for selected answer set
+  const getAnswersForAnswerSet = (questionId: string, answerSetId: string) => {
+    const question = allQuestions.find(q => q.id === questionId);
+    const answerSet = question?.answerSets.find(as => as.id === answerSetId);
+    return answerSet?.answers || [];
   };
 
   const allAnswers = allQuestions.flatMap(q => q.answerSets.flatMap(as => as.answers));
@@ -238,8 +246,9 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
             </SelectContent>
           </Select>
         </div>
-        <div className="flex-1 grid grid-cols-3 gap-2 px-3 py-2">
+        <div className="flex-1 grid grid-cols-4 gap-2 px-3 py-2">
           <span className="text-xs font-medium text-muted-foreground">Select Question</span>
+          <span className="text-xs font-medium text-muted-foreground">Answer Set</span>
           <span className="text-xs font-medium text-muted-foreground">Operator</span>
           <span className="text-xs font-medium text-muted-foreground">Answer</span>
         </div>
@@ -282,20 +291,38 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
               ) : (
                 <>
                   {/* Rule Row */}
-                  <div className="flex-1 grid grid-cols-3 gap-2 py-2 px-2">
+                  <div className="flex-1 grid grid-cols-4 gap-2 py-2 px-2">
                     <Select
                       value={child.previousQuestionId}
                       onValueChange={(value) => {
-                        updateChild(index, { ...child, previousQuestionId: value });
+                        updateChild(index, { ...child, previousQuestionId: value, previousAnswerSetId: '', previousAnswerId: '' });
                       }}
                     >
                       <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Select a field" />
+                        <SelectValue placeholder="Select question" />
                       </SelectTrigger>
                       <SelectContent>
                         {allQuestions.map(q => (
                           <SelectItem key={q.id} value={q.id}>
                             {q.text || 'Untitled Question'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={child.previousAnswerSetId || ''}
+                      onValueChange={(value) => {
+                        updateChild(index, { ...child, previousAnswerSetId: value, previousAnswerId: '' });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select answer set" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getAnswerSetsForQuestion(child.previousQuestionId).map(as => (
+                          <SelectItem key={as.id} value={as.id}>
+                            {as.name || 'Untitled Answer Set'}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -329,7 +356,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
                         <SelectValue placeholder="Select answer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {getAnswersForQuestion(child.previousQuestionId).map(ans => (
+                        {getAnswersForAnswerSet(child.previousQuestionId, child.previousAnswerSetId || '').map(ans => (
                           <SelectItem key={ans.id} value={ans.id}>
                             {ans.label || 'Untitled Answer'}
                           </SelectItem>
