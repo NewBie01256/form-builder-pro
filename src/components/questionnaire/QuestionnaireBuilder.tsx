@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Archive, Edit } from "lucide-react";
+import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files } from "lucide-react";
 import {
   Question,
   ConditionalBranch,
@@ -386,15 +386,36 @@ const QuestionnaireBuilder = () => {
                                 </Badge>
                               </div>
                               <p className="text-sm text-muted-foreground mt-1 truncate">{record.description}</p>
-                              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Layers className="h-3 w-3" />
-                                  {record.questionCount} questions
+                              <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
+                                <span className="flex items-center gap-1" title="Pages">
+                                  <Files className="h-3 w-3" />
+                                  {record.pageCount}
                                 </span>
+                                <span className="flex items-center gap-1" title="Sections">
+                                  <Layers className="h-3 w-3" />
+                                  {record.sectionCount}
+                                </span>
+                                <span className="flex items-center gap-1" title="Questions">
+                                  <HelpCircle className="h-3 w-3" />
+                                  {record.questionCount}
+                                </span>
+                                <span className="flex items-center gap-1" title="Branches">
+                                  <GitBranch className="h-3 w-3" />
+                                  {record.branchCount}
+                                </span>
+                                <span className="flex items-center gap-1" title="Answer Sets">
+                                  <ListChecks className="h-3 w-3" />
+                                  {record.answerSetCount}
+                                </span>
+                                <span className="flex items-center gap-1" title="Actions">
+                                  <Zap className="h-3 w-3" />
+                                  {record.actionCount}
+                                </span>
+                                <span className="text-muted-foreground/60">|</span>
                                 <span>{record.serviceCatalog}</span>
                                 <span className="flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
-                                  Updated {record.updatedAt}
+                                  {record.updatedAt}
                                 </span>
                               </div>
                             </div>
