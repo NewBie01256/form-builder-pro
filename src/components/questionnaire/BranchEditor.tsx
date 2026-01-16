@@ -17,6 +17,7 @@ interface BranchEditorProps {
   onAddChildBranch: (parentId: string) => void;
   onSelectQuestion: (questionId: string) => void;
   onDeleteQuestion?: (branchId: string, questionId: string) => void;
+  onDeleteBranch?: (branchId: string) => void;
   questionEditor?: ReactNode;
 }
 
@@ -29,15 +30,29 @@ const BranchEditor = ({
   onAddChildBranch,
   onSelectQuestion,
   onDeleteQuestion,
+  onDeleteBranch,
   questionEditor,
 }: BranchEditorProps) => {
   return (
     <Card className="border-dashed-custom">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <GitBranch className="h-5 w-5 text-primary" />
-          Conditional Branch Details
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <GitBranch className="h-5 w-5 text-primary" />
+            Conditional Branch Details
+          </CardTitle>
+          {onDeleteBranch && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-muted-foreground hover:text-destructive"
+              onClick={() => onDeleteBranch(branch.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete Branch
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
