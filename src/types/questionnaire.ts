@@ -22,10 +22,13 @@ export interface QuestionLevelRule {
   targetQuestionId: string;
 }
 
+export type AnswerLevelOperator = 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'not_contains' | 'starts_with' | 'ends_with';
+
 export interface AnswerLevelRule {
   type: 'answerRule';
   id: string;
   previousQuestionId: string;
+  operator: AnswerLevelOperator;
   previousAnswerId: string;
   selectedAnswerSetId: string;
 }
