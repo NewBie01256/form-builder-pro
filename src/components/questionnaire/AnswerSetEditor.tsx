@@ -20,7 +20,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   const [dynamicValues, setDynamicValues] = useState(false);
   
   // Types that don't need the full answer set UI
-  const isSimpleType = ['Text', 'Number', 'Date', 'Rating'].includes(questionType);
+  const isSimpleType = ['Text', 'Number', 'Date', 'Rating', 'Boolean'].includes(questionType);
   // Types that use the choice-based answer set UI
   const isChoiceType = ['Choice', 'MultiSelect'].includes(questionType);
 
@@ -64,6 +64,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       case 'Number': return 'Default Number Value';
       case 'Date': return 'Default Date Value';
       case 'Rating': return 'Default Rating Value';
+      case 'Boolean': return 'Default Boolean Value';
       default: return 'Default Value';
     }
   };
@@ -111,6 +112,17 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
               value={simpleAnswer.value}
               onChange={(e) => updateSimpleAnswer(e.target.value, 'Rating Response')}
             />
+          ) : questionType === 'Boolean' ? (
+            <div className="flex items-center gap-3">
+              <Switch
+                id={`boolean-${answerSet.id}`}
+                checked={simpleAnswer.value === 'true'}
+                onCheckedChange={(checked) => updateSimpleAnswer(checked ? 'true' : 'false', checked ? 'Yes' : 'No')}
+              />
+              <Label htmlFor={`boolean-${answerSet.id}`} className="text-sm font-normal">
+                {simpleAnswer.value === 'true' ? 'Yes (True)' : 'No (False)'}
+              </Label>
+            </div>
           ) : null}
         </div>
       </div>
