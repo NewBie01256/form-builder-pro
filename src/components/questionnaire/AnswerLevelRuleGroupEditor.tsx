@@ -200,10 +200,22 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
     { value: 'ends_with', label: 'Ends With' },
   ];
 
-  // Get answer sets for selected question
+  // Get answer sets for selected question (including inline answer sets from answer-level rule groups)
   const getAnswerSetsForQuestion = (questionId: string) => {
     const question = allQuestions.find(q => q.id === questionId);
-    return question?.answerSets || [];
+    if (!question) return [];
+    
+    // Start with the regular answer sets
+    const allAnswerSets = [...question.answerSets];
+    
+    // Add inline answer sets from answer-level rule groups
+    question.answerLevelRuleGroups?.forEach(ruleGroup => {
+      if (ruleGroup.inlineAnswerSet) {
+        allAnswerSets.push(ruleGroup.inlineAnswerSet);
+      }
+    });
+    
+    return allAnswerSets;
   };
 
   // Get answers for selected answer set
