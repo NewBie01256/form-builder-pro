@@ -6,6 +6,7 @@ import { Plus, GitBranch, HelpCircle, Trash2 } from "lucide-react";
 import { ConditionalBranch, Question } from "@/types/questionnaire";
 import RuleGroupEditor from "./RuleGroupEditor";
 import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
 
 interface BranchEditorProps {
   branch: ConditionalBranch;
@@ -16,6 +17,7 @@ interface BranchEditorProps {
   onAddChildBranch: (parentId: string) => void;
   onSelectQuestion: (questionId: string) => void;
   onDeleteQuestion?: (branchId: string, questionId: string) => void;
+  questionEditor?: ReactNode;
 }
 
 const BranchEditor = ({
@@ -27,6 +29,7 @@ const BranchEditor = ({
   onAddChildBranch,
   onSelectQuestion,
   onDeleteQuestion,
+  questionEditor,
 }: BranchEditorProps) => {
   return (
     <Card className="border-dashed-custom">
@@ -70,36 +73,50 @@ const BranchEditor = ({
         {branch.questions.length > 0 && (
           <div className="space-y-3">
             <Label className="text-base font-semibold">Questions in this Branch</Label>
-            <div className="space-y-2">
-              {branch.questions.map(q => (
-                <div
-                  key={q.id}
-                  className={cn(
-                    "flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors",
-                    "hover:bg-accent hover:border-accent",
-                    selectedQuestionId === q.id 
-                      ? "bg-accent border-primary" 
-                      : "bg-card border-border"
-                  )}
-                  onClick={() => onSelectQuestion(q.id)}
-                >
-                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm flex-1">{q.text || 'Untitled Question'}</span>
-                  {onDeleteQuestion && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteQuestion(branch.id, q.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
+            <div className="flex gap-4">
+              {/* Left panel - Question list (20%) */}
+              <div className="w-[20%] min-w-[180px] space-y-2">
+                {branch.questions.map(q => (
+                  <div
+                    key={q.id}
+                    className={cn(
+                      "flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors",
+                      "hover:bg-accent hover:border-accent",
+                      selectedQuestionId === q.id 
+                        ? "bg-accent border-primary" 
+                        : "bg-card border-border"
+                    )}
+                    onClick={() => onSelectQuestion(q.id)}
+                  >
+                    <HelpCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-sm flex-1 truncate">{q.text || 'Untitled Question'}</span>
+                    {onDeleteQuestion && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteQuestion(branch.id, q.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Right panel - Question details (80%) */}
+              <div className="w-[80%] flex-1">
+                {questionEditor ? (
+                  questionEditor
+                ) : (
+                  <div className="flex items-center justify-center h-32 border border-dashed border-border rounded-lg bg-muted/20">
+                    <p className="text-sm text-muted-foreground">Select a question to view details</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

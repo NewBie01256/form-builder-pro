@@ -253,10 +253,19 @@ const QuestionnaireBuilder = () => {
                       onAddQuestion={handleAddQuestion}
                       onAddChildBranch={handleAddBranchUnderParent}
                       onSelectQuestion={setSelectedQuestionId}
+                      questionEditor={
+                        selectedQuestion && selectedBranch.questions.some(q => q.id === selectedQuestionId) ? (
+                          <QuestionEditor
+                            question={selectedQuestion}
+                            allQuestions={allQuestions}
+                            onUpdate={updateQuestion}
+                          />
+                        ) : undefined
+                      }
                     />
                   )}
 
-                  {selectedQuestion && (
+                  {selectedQuestion && !selectedBranch && (
                     <QuestionEditor
                       question={selectedQuestion}
                       allQuestions={allQuestions}
