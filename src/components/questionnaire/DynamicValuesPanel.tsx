@@ -277,12 +277,15 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label className="text-xs">Order By Field</Label>
-                <Select value={orderByField} onValueChange={setOrderByField}>
+                <Select 
+                  value={orderByField || '__none__'} 
+                  onValueChange={(v) => setOrderByField(v === '__none__' ? '' : v)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select field..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="__none__">None</SelectItem>
                     {availableFields.map(field => (
                       <SelectItem key={field} value={field}>
                         {field}
