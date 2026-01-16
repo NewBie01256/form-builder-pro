@@ -185,6 +185,42 @@ const QuestionnaireBuilder = () => {
     setBranches(prev => updateBranchRecursive(prev));
   };
 
+  const deleteQuestion = (questionId: string) => {
+    // Delete from top-level questions
+    setQuestions(prev => prev.filter(q => q.id !== questionId));
+    setLayoutOrder(prev => prev.filter(item => !(item.type === 'question' && item.id === questionId)));
+    
+    // Delete from branches recursively
+    const deleteFromBranch = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
+      branchList.map(b => ({
+        ...b,
+        questions: b.questions.filter(q => q.id !== questionId),
+        childBranches: deleteFromBranch(b.childBranches)
+      }));
+    setBranches(prev => deleteFromBranch(prev));
+    
+    if (selectedQuestionId === questionId) {
+      setSelectedQuestionId(null);
+    }
+  };
+
+  const deleteBranch = (branchId: string) => {
+    // Delete from top-level branches
+    setBranches(prev => {
+      const deleteRecursive = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
+        branchList
+          .filter(b => b.id !== branchId)
+          .map(b => ({ ...b, childBranches: deleteRecursive(b.childBranches) }));
+      return deleteRecursive(prev);
+    });
+    setLayoutOrder(prev => prev.filter(item => !(item.type === 'branch' && item.id === branchId)));
+    
+    if (selectedBranchId === branchId) {
+      setSelectedBranchId(null);
+      setSelectedQuestionId(null);
+    }
+  };
+
   const allQuestions = [...questions, ...branches.flatMap(b => {
     const collectQuestions = (branch: ConditionalBranch): Question[] => [
       ...branch.questions,
@@ -253,12 +289,15 @@ const QuestionnaireBuilder = () => {
                       onAddQuestion={handleAddQuestion}
                       onAddChildBranch={handleAddBranchUnderParent}
                       onSelectQuestion={setSelectedQuestionId}
+                      onDeleteBranch={deleteBranch}
+                      onDeleteQuestion={deleteQuestion}
                       questionEditor={
                         selectedQuestion && selectedBranch.questions.some(q => q.id === selectedQuestionId) ? (
                           <QuestionEditor
                             question={selectedQuestion}
                             allQuestions={allQuestions}
                             onUpdate={updateQuestion}
+                            onDelete={deleteQuestion}
                           />
                         ) : undefined
                       }
@@ -270,6 +309,7 @@ const QuestionnaireBuilder = () => {
                       question={selectedQuestion}
                       allQuestions={allQuestions}
                       onUpdate={updateQuestion}
+                      onDelete={deleteQuestion}
                     />
                   )}
                 </CardContent>

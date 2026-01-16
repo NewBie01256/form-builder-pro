@@ -27,7 +27,7 @@ interface BranchEditorProps {
   onAddQuestion: (branchId: string) => void;
   onAddChildBranch: (parentId: string) => void;
   onSelectQuestion: (questionId: string) => void;
-  onDeleteQuestion?: (branchId: string, questionId: string) => void;
+  onDeleteQuestion?: (questionId: string) => void;
   onDeleteBranch?: (branchId: string) => void;
   questionEditor?: ReactNode;
 }
@@ -145,7 +145,7 @@ const BranchEditor = ({
                         className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive flex-shrink-0"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onDeleteQuestion(branch.id, q.id);
+                          onDeleteQuestion(q.id);
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
