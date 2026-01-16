@@ -17,8 +17,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, ChevronDown, ChevronUp, Trash2, Library } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, Trash2, Library, Zap } from "lucide-react";
 import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer, AnswerLevelOperator, QuestionType } from "@/types/questionnaire";
+import ActionRecordEditor from "./ActionRecordEditor";
 import {
   Collapsible,
   CollapsibleContent,
@@ -227,6 +228,13 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
                   Active
                 </Label>
               </div>
+              {ans.actionRecord && (
+                <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              )}
+              <ActionRecordEditor
+                actionRecord={ans.actionRecord}
+                onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
+              />
               <Button 
                 variant="ghost" 
                 size="sm" 

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,13 +10,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Zap, Trash2 } from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Zap, Pencil } from "lucide-react";
 import { ActionRecord, ImpactLevel, UrgencyLevel } from "@/types/questionnaire";
-import { useState } from "react";
 
 interface ActionRecordEditorProps {
   actionRecord?: ActionRecord;
@@ -48,144 +52,145 @@ const createEmptyActionRecord = (): ActionRecord => ({
 });
 
 const ActionRecordEditor = ({ actionRecord, onUpdate }: ActionRecordEditorProps) => {
-  const [isOpen, setIsOpen] = useState(!!actionRecord);
+  const [isOpen, setIsOpen] = useState(false);
+  const [localRecord, setLocalRecord] = useState<ActionRecord>(
+    actionRecord || createEmptyActionRecord()
+  );
 
-  const handleAddAction = () => {
-    onUpdate(createEmptyActionRecord());
-    setIsOpen(true);
+  const handleOpen = (open: boolean) => {
+    if (open) {
+      setLocalRecord(actionRecord || createEmptyActionRecord());
+    }
+    setIsOpen(open);
   };
 
-  const handleRemoveAction = () => {
+  const handleSave = () => {
+    onUpdate(localRecord);
+    setIsOpen(false);
+  };
+
+  const handleRemove = () => {
     onUpdate(undefined);
     setIsOpen(false);
   };
 
   const handleFieldChange = (field: keyof ActionRecord, value: string) => {
-    if (!actionRecord) return;
-    onUpdate({ ...actionRecord, [field]: value });
+    setLocalRecord(prev => ({ ...prev, [field]: value }));
   };
 
-  if (!actionRecord) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleAddAction}
-        className="w-full mt-2"
-      >
-        <Zap className="h-4 w-4 mr-1" />
-        Attach Action Record
-      </Button>
-    );
-  }
+  const hasAction = !!actionRecord;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-2">
-      <CollapsibleTrigger asChild>
-        <div className="flex items-center justify-between p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors">
-          <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Action Record</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRemoveAction();
-              }}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-            {isOpen ? (
-              <ChevronUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            )}
-          </div>
-        </div>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <div className="p-3 border border-t-0 border-amber-200 dark:border-amber-800 rounded-b-md space-y-4 bg-amber-50/50 dark:bg-amber-950/20">
+    <Dialog open={isOpen} onOpenChange={handleOpen}>
+      <DialogTrigger asChild>
+        {hasAction ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0 text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-muted-foreground hover:text-amber-600"
+          >
+            <Zap className="h-3.5 w-3.5 mr-1" />
+            Action
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-amber-500" />
+            {hasAction ? 'Edit Action Record' : 'Attach Action Record'}
+          </DialogTitle>
+          <DialogDescription>
+            Configure the action record details for this answer.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
           {/* Operation Category */}
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Operation Category</Label>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <div className="space-y-1">
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Operation Category
+            </Label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Tier 1</Label>
                 <Input
                   placeholder="Tier 1"
-                  value={actionRecord.operationCategoryTier1}
+                  value={localRecord.operationCategoryTier1}
                   onChange={(e) => handleFieldChange('operationCategoryTier1', e.target.value)}
-                  className="h-8 text-sm"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Tier 2</Label>
                 <Input
                   placeholder="Tier 2"
-                  value={actionRecord.operationCategoryTier2}
+                  value={localRecord.operationCategoryTier2}
                   onChange={(e) => handleFieldChange('operationCategoryTier2', e.target.value)}
-                  className="h-8 text-sm"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Tier 3</Label>
                 <Input
                   placeholder="Tier 3"
-                  value={actionRecord.operationCategoryTier3}
+                  value={localRecord.operationCategoryTier3}
                   onChange={(e) => handleFieldChange('operationCategoryTier3', e.target.value)}
-                  className="h-8 text-sm"
                 />
               </div>
             </div>
           </div>
 
           {/* Product Category */}
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Product Category</Label>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <div className="space-y-1">
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Product Category
+            </Label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Tier 1</Label>
                 <Input
                   placeholder="Tier 1"
-                  value={actionRecord.productCategoryTier1}
+                  value={localRecord.productCategoryTier1}
                   onChange={(e) => handleFieldChange('productCategoryTier1', e.target.value)}
-                  className="h-8 text-sm"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Tier 2</Label>
                 <Input
                   placeholder="Tier 2"
-                  value={actionRecord.productCategoryTier2}
+                  value={localRecord.productCategoryTier2}
                   onChange={(e) => handleFieldChange('productCategoryTier2', e.target.value)}
-                  className="h-8 text-sm"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Tier 3</Label>
                 <Input
                   placeholder="Tier 3"
-                  value={actionRecord.productCategoryTier3}
+                  value={localRecord.productCategoryTier3}
                   onChange={(e) => handleFieldChange('productCategoryTier3', e.target.value)}
-                  className="h-8 text-sm"
                 />
               </div>
             </div>
           </div>
 
           {/* Impact & Urgency */}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Impact</Label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Impact
+              </Label>
               <Select
-                value={actionRecord.impact}
+                value={localRecord.impact}
                 onValueChange={(value) => handleFieldChange('impact', value)}
               >
-                <SelectTrigger className="h-8 text-sm">
+                <SelectTrigger>
                   <SelectValue placeholder="Select impact level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -197,13 +202,15 @@ const ActionRecordEditor = ({ actionRecord, onUpdate }: ActionRecordEditorProps)
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Urgency</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Urgency
+              </Label>
               <Select
-                value={actionRecord.urgency}
+                value={localRecord.urgency}
                 onValueChange={(value) => handleFieldChange('urgency', value)}
               >
-                <SelectTrigger className="h-8 text-sm">
+                <SelectTrigger>
                   <SelectValue placeholder="Select urgency level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -217,8 +224,28 @@ const ActionRecordEditor = ({ actionRecord, onUpdate }: ActionRecordEditorProps)
             </div>
           </div>
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+
+        <DialogFooter className="flex-row gap-2 sm:justify-between">
+          {hasAction && (
+            <Button
+              variant="destructive"
+              onClick={handleRemove}
+              className="mr-auto"
+            >
+              Remove Action
+            </Button>
+          )}
+          <div className="flex gap-2 ml-auto">
+            <Button variant="outline" onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>
+              {hasAction ? 'Update' : 'Attach'} Action
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

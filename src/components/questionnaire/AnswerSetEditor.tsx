@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Library, Zap } from "lucide-react";
-import { AnswerSet, Answer, QuestionType, ActionRecord } from "@/types/questionnaire";
+import { AnswerSet, Answer, QuestionType } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 
 interface AnswerSetEditorProps {
@@ -173,34 +173,32 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
 
         <div className="space-y-2">
           {answerSet.answers.map(ans => (
-            <div key={ans.id} className="p-2 bg-background rounded-md border border-border space-y-2">
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder="Label"
-                  value={ans.label}
-                  onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
-                  className="flex-1 h-8"
+            <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
+              <Input
+                placeholder="Label"
+                value={ans.label}
+                onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
+                className="flex-1 h-8"
+              />
+              <Input
+                placeholder="Value"
+                value={ans.value}
+                onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
+                className="flex-1 h-8"
+              />
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`active-${ans.id}`}
+                  checked={ans.active}
+                  onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
                 />
-                <Input
-                  placeholder="Value"
-                  value={ans.value}
-                  onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
-                  className="flex-1 h-8"
-                />
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`active-${ans.id}`}
-                    checked={ans.active}
-                    onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
-                  />
-                  <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal whitespace-nowrap">
-                    Active
-                  </Label>
-                </div>
-                {ans.actionRecord && (
-                  <Zap className="h-4 w-4 text-amber-500 shrink-0" />
-                )}
+                <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal whitespace-nowrap">
+                  Active
+                </Label>
               </div>
+              {ans.actionRecord && (
+                <Zap className="h-4 w-4 text-amber-500 shrink-0" />
+              )}
               <ActionRecordEditor
                 actionRecord={ans.actionRecord}
                 onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
