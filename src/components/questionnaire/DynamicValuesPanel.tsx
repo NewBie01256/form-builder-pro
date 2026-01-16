@@ -9,21 +9,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, FolderPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface DynamicValueFilter {
+  type: 'filter';
   id: string;
   field: string;
   operator: 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'greater_than' | 'less_than' | 'starts_with' | 'ends_with' | 'is_null' | 'is_not_null';
   value: string;
 }
 
+export interface DynamicValueFilterGroup {
+  type: 'group';
+  id: string;
+  matchType: 'AND' | 'OR';
+  children: Array<DynamicValueFilter | DynamicValueFilterGroup>;
+}
+
 export interface DynamicValueConfig {
   tableName: string;
   labelField: string;
   valueField: string;
-  filters: DynamicValueFilter[];
+  filterGroup: DynamicValueFilterGroup;
   orderByField?: string;
   orderDirection?: 'asc' | 'desc';
 }
@@ -57,41 +65,233 @@ const OPERATORS = [
   { value: 'is_not_null', label: 'Is Not Null' },
 ];
 
+const createEmptyFilterGroup = (): DynamicValueFilterGroup => ({
+  type: 'group',
+  id: `group-${Date.now()}`,
+  matchType: 'AND',
+  children: []
+});
+
+const createEmptyFilter = (): DynamicValueFilter => ({
+  type: 'filter',
+  id: `filter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  field: '',
+  operator: 'equals',
+  value: ''
+});
+
+// Recursive component for rendering filter groups
+interface FilterGroupEditorProps {
+  group: DynamicValueFilterGroup;
+  availableFields: string[];
+  onUpdate: (updated: DynamicValueFilterGroup) => void;
+  onDelete?: () => void;
+  depth?: number;
+}
+
+const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, depth = 0 }: FilterGroupEditorProps) => {
+  const handleAddFilter = () => {
+    onUpdate({
+      ...group,
+      children: [...group.children, createEmptyFilter()]
+    });
+  };
+
+  const handleAddGroup = () => {
+    onUpdate({
+      ...group,
+      children: [...group.children, createEmptyFilterGroup()]
+    });
+  };
+
+  const handleUpdateChild = (childId: string, updated: DynamicValueFilter | DynamicValueFilterGroup) => {
+    onUpdate({
+      ...group,
+      children: group.children.map(c => c.id === childId ? updated : c)
+    });
+  };
+
+  const handleRemoveChild = (childId: string) => {
+    onUpdate({
+      ...group,
+      children: group.children.filter(c => c.id !== childId)
+    });
+  };
+
+  const handleMatchTypeChange = (matchType: 'AND' | 'OR') => {
+    onUpdate({ ...group, matchType });
+  };
+
+  return (
+    <div className={cn(
+      "border rounded-lg p-3 space-y-3",
+      depth === 0 ? "border-border bg-muted/20" : "border-dashed border-muted-foreground/30 bg-background"
+    )}>
+      {/* Group Header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Label className="text-xs font-medium text-muted-foreground">Match</Label>
+          <Select value={group.matchType} onValueChange={(v) => handleMatchTypeChange(v as 'AND' | 'OR')}>
+            <SelectTrigger className="h-7 w-20 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="AND">AND</SelectItem>
+              <SelectItem value="OR">OR</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground">
+            {group.matchType === 'AND' ? 'All conditions must match' : 'Any condition can match'}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleAddFilter}>
+            <Plus className="h-3 w-3 mr-1" />
+            Filter
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleAddGroup}>
+            <FolderPlus className="h-3 w-3 mr-1" />
+            Group
+          </Button>
+          {onDelete && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Children */}
+      {group.children.length === 0 ? (
+        <div className="text-center py-4 border border-dashed border-border rounded bg-muted/10">
+          <p className="text-xs text-muted-foreground">
+            No conditions. Click "+ Filter" to add a condition.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {group.children.map((child, index) => (
+            <div key={child.id}>
+              {index > 0 && (
+                <div className="flex items-center justify-center py-1">
+                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">
+                    {group.matchType}
+                  </span>
+                </div>
+              )}
+              {child.type === 'group' ? (
+                <FilterGroupEditor
+                  group={child}
+                  availableFields={availableFields}
+                  onUpdate={(updated) => handleUpdateChild(child.id, updated)}
+                  onDelete={() => handleRemoveChild(child.id)}
+                  depth={depth + 1}
+                />
+              ) : (
+                <FilterRow
+                  filter={child}
+                  availableFields={availableFields}
+                  onUpdate={(updated) => handleUpdateChild(child.id, updated)}
+                  onDelete={() => handleRemoveChild(child.id)}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Single filter row component
+interface FilterRowProps {
+  filter: DynamicValueFilter;
+  availableFields: string[];
+  onUpdate: (updated: DynamicValueFilter) => void;
+  onDelete: () => void;
+}
+
+const FilterRow = ({ filter, availableFields, onUpdate, onDelete }: FilterRowProps) => {
+  return (
+    <div className="flex items-center gap-2 p-2 border border-border rounded bg-background">
+      <Select 
+        value={filter.field || '__empty__'} 
+        onValueChange={(v) => onUpdate({ ...filter, field: v === '__empty__' ? '' : v })}
+      >
+        <SelectTrigger className="h-8 flex-1">
+          <SelectValue placeholder="Select field..." />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__empty__" disabled>Select field...</SelectItem>
+          {availableFields.map(field => (
+            <SelectItem key={field} value={field}>
+              {field}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select 
+        value={filter.operator} 
+        onValueChange={(v) => onUpdate({ ...filter, operator: v as DynamicValueFilter['operator'] })}
+      >
+        <SelectTrigger className="h-8 w-36">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {OPERATORS.map(op => (
+            <SelectItem key={op.value} value={op.value}>
+              {op.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {!['is_null', 'is_not_null'].includes(filter.operator) && (
+        <Input
+          placeholder="Value"
+          value={filter.value}
+          onChange={(e) => onUpdate({ ...filter, value: e.target.value })}
+          className="h-8 flex-1"
+        />
+      )}
+
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+        onClick={onDelete}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+};
+
 const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPanelProps) => {
   const [tableName, setTableName] = useState(config?.tableName || '');
   const [labelField, setLabelField] = useState(config?.labelField || '');
   const [valueField, setValueField] = useState(config?.valueField || '');
-  const [filters, setFilters] = useState<DynamicValueFilter[]>(config?.filters || []);
+  const [filterGroup, setFilterGroup] = useState<DynamicValueFilterGroup>(
+    config?.filterGroup || createEmptyFilterGroup()
+  );
   const [orderByField, setOrderByField] = useState(config?.orderByField || '');
   const [orderDirection, setOrderDirection] = useState<'asc' | 'desc'>(config?.orderDirection || 'asc');
 
   const selectedTable = SAMPLE_TABLES.find(t => t.name === tableName);
   const availableFields = selectedTable?.fields || [];
 
-  const handleAddFilter = () => {
-    const newFilter: DynamicValueFilter = {
-      id: `filter-${Date.now()}`,
-      field: '',
-      operator: 'equals',
-      value: ''
-    };
-    setFilters([...filters, newFilter]);
-  };
-
-  const handleUpdateFilter = (filterId: string, updates: Partial<DynamicValueFilter>) => {
-    setFilters(filters.map(f => f.id === filterId ? { ...f, ...updates } : f));
-  };
-
-  const handleRemoveFilter = (filterId: string) => {
-    setFilters(filters.filter(f => f.id !== filterId));
-  };
-
   const handleSave = () => {
     onSave({
       tableName,
       labelField,
       valueField,
-      filters,
+      filterGroup,
       orderByField: orderByField || undefined,
       orderDirection
     });
@@ -104,7 +304,7 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
     setLabelField('');
     setValueField('');
     setOrderByField('');
-    setFilters([]);
+    setFilterGroup(createEmptyFilterGroup());
   };
 
   if (!isOpen) return null;
@@ -188,84 +388,15 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
           </div>
         )}
 
-        {/* Filters Section */}
+        {/* Filters Section with Grouping */}
         {tableName && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Filters</Label>
-              <Button variant="outline" size="sm" onClick={handleAddFilter}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Filter
-              </Button>
-            </div>
-
-            {filters.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-border rounded-lg bg-muted/10">
-                <p className="text-sm text-muted-foreground">
-                  No filters added. All records will be included.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filters.map((filter, index) => (
-                  <div 
-                    key={filter.id} 
-                    className="flex items-start gap-2 p-3 border border-border rounded-lg bg-background"
-                  >
-                    <div className="flex-1 grid gap-2 sm:grid-cols-3">
-                      <Select 
-                        value={filter.field} 
-                        onValueChange={(v) => handleUpdateFilter(filter.id, { field: v })}
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Field" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableFields.map(field => (
-                            <SelectItem key={field} value={field}>
-                              {field}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <Select 
-                        value={filter.operator} 
-                        onValueChange={(v) => handleUpdateFilter(filter.id, { operator: v as any })}
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Operator" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {OPERATORS.map(op => (
-                            <SelectItem key={op.value} value={op.value}>
-                              {op.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      {!['is_null', 'is_not_null'].includes(filter.operator) && (
-                        <Input
-                          placeholder="Value"
-                          value={filter.value}
-                          onChange={(e) => handleUpdateFilter(filter.id, { value: e.target.value })}
-                          className="h-9"
-                        />
-                      )}
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-9 w-9 text-muted-foreground hover:text-destructive shrink-0"
-                      onClick={() => handleRemoveFilter(filter.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <Label className="text-sm font-semibold">Filter Conditions</Label>
+            <FilterGroupEditor
+              group={filterGroup}
+              availableFields={availableFields}
+              onUpdate={setFilterGroup}
+            />
           </div>
         )}
 
