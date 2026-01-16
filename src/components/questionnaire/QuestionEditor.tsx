@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -9,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { HelpCircle } from "lucide-react";
-import { Question } from "@/types/questionnaire";
+import { HelpCircle, Plus, X } from "lucide-react";
+import { Question, AnswerLevelRuleGroup } from "@/types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";
 import AnswerLevelRuleGroupEditor from "./AnswerLevelRuleGroupEditor";
 
@@ -21,6 +23,25 @@ interface QuestionEditorProps {
 }
 
 const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProps) => {
+  // Check if there's existing answer-level branching content
+  const hasAnswerLevelContent = question.answerLevelRuleGroup.children.length > 0;
+  const [showAnswerLevelBranching, setShowAnswerLevelBranching] = useState(hasAnswerLevelContent);
+
+  const handleAddAnswerLevelBranching = () => {
+    setShowAnswerLevelBranching(true);
+  };
+
+  const handleRemoveAnswerLevelBranching = () => {
+    // Reset the answer level rule group to empty
+    const emptyGroup: AnswerLevelRuleGroup = {
+      type: 'group',
+      id: `ag-${Date.now()}`,
+      matchType: 'AND',
+      children: []
+    };
+    onUpdate(question.id, { answerLevelRuleGroup: emptyGroup });
+    setShowAnswerLevelBranching(false);
+  };
 
   return (
     <Card className="border-dashed-custom">
@@ -98,12 +119,37 @@ const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProp
 
         {/* Answer-Level Conditional Branching */}
         <div className="space-y-4">
-          <Label className="text-base font-semibold">Answer-Level Conditional Branching</Label>
-          <AnswerLevelRuleGroupEditor
-            group={question.answerLevelRuleGroup}
-            allQuestions={allQuestions}
-            onUpdate={(updated) => onUpdate(question.id, { answerLevelRuleGroup: updated })}
-          />
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-semibold">Answer-Level Conditional Branching</Label>
+            {showAnswerLevelBranching && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 text-destructive hover:text-destructive"
+                onClick={handleRemoveAnswerLevelBranching}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Remove
+              </Button>
+            )}
+          </div>
+          
+          {showAnswerLevelBranching ? (
+            <AnswerLevelRuleGroupEditor
+              group={question.answerLevelRuleGroup}
+              allQuestions={allQuestions}
+              onUpdate={(updated) => onUpdate(question.id, { answerLevelRuleGroup: updated })}
+            />
+          ) : (
+            <Button 
+              variant="outline" 
+              className="w-full h-10 border-dashed"
+              onClick={handleAddAnswerLevelBranching}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Answer-Level Conditional Branching
+            </Button>
+          )}
         </div>
 
       </CardContent>
