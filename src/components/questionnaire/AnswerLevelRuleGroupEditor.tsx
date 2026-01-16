@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, MoreHorizontal, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer } from "@/types/questionnaire";
 import {
   Collapsible,
@@ -225,7 +225,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
           <span className="text-xs font-medium text-muted-foreground">Operator</span>
           <span className="text-xs font-medium text-muted-foreground">Value</span>
         </div>
-        <div className="w-16 px-2">
+        <div className="w-10 px-2 flex items-center justify-center">
           {!isRoot && onDelete && (
             <Button 
               variant="ghost" 
@@ -233,7 +233,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
               className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
               onClick={onDelete}
             >
-              <MoreHorizontal className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -326,23 +326,15 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
                   </div>
 
                   {/* Actions */}
-                  <div className="w-16 flex items-center justify-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem 
-                          onClick={() => deleteChild(index)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <div className="w-10 flex items-center justify-center">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => deleteChild(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </>
               )}
