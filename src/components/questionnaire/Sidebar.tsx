@@ -132,6 +132,7 @@ const Sidebar = ({
         })}
       </div>
     );
+  };
 
   return (
     <div className="w-[30%] min-w-[250px] max-w-[400px] border-r border-border h-full flex flex-col bg-card">
