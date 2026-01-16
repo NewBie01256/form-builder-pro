@@ -226,6 +226,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
               <AnswerSetEditor
                 key={as.id}
                 answerSet={as}
+                questionType={question.type}
                 onUpdate={(updated) => {
                   const updatedSets = question.answerSets.map(s => 
                     s.id === as.id ? updated : s
