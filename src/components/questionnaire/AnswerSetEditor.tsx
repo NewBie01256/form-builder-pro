@@ -2,15 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Library } from "lucide-react";
 import { AnswerSet, Answer } from "@/types/questionnaire";
 
 interface AnswerSetEditorProps {
   answerSet: AnswerSet;
   onUpdate: (updated: AnswerSet) => void;
+  onAddFromExisting?: () => void;
 }
 
-const AnswerSetEditor = ({ answerSet, onUpdate }: AnswerSetEditorProps) => {
+const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting }: AnswerSetEditorProps) => {
   const addAnswer = () => {
     const newAnswer: Answer = {
       id: `ans-${Date.now()}`,
@@ -30,6 +31,20 @@ const AnswerSetEditor = ({ answerSet, onUpdate }: AnswerSetEditorProps) => {
 
   return (
     <div className="border border-border rounded-lg p-4 bg-muted/30">
+      <div className="flex items-center justify-between mb-3">
+        <Label className="text-sm font-medium">Answer Set</Label>
+        {onAddFromExisting && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onAddFromExisting}
+          >
+            <Library className="h-4 w-4 mr-1" />
+            Add from Existing
+          </Button>
+        )}
+      </div>
+      
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>Set Name</Label>

@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, Trash2, Library } from "lucide-react";
 import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer, AnswerLevelOperator } from "@/types/questionnaire";
 import {
   Collapsible,
@@ -31,14 +31,16 @@ interface AnswerLevelRuleGroupEditorProps {
   onUpdate: (updated: AnswerLevelRuleGroup) => void;
   isRoot?: boolean;
   onDelete?: () => void;
+  onAddFromExisting?: () => void;
 }
 
 interface InlineAnswerSetEditorProps {
   answerSet: AnswerSet;
   onUpdate: (updated: AnswerSet) => void;
+  onAddFromExisting?: () => void;
 }
 
-const InlineAnswerSetEditor = ({ answerSet, onUpdate }: InlineAnswerSetEditorProps) => {
+const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting }: InlineAnswerSetEditorProps) => {
   const addAnswer = () => {
     const newAnswer: Answer = {
       id: `ans-${Date.now()}`,
@@ -65,7 +67,19 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate }: InlineAnswerSetEditorPro
 
   return (
     <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 mt-3">
-      <Label className="text-sm font-semibold text-primary">Answer Set for this Rule</Label>
+      <div className="flex items-center justify-between mb-3">
+        <Label className="text-sm font-semibold text-primary">Answer Set for this Rule</Label>
+        {onAddFromExisting && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onAddFromExisting}
+          >
+            <Library className="h-4 w-4 mr-1" />
+            Add from Existing
+          </Button>
+        )}
+      </div>
       
       <div className="grid gap-3 sm:grid-cols-2 mt-3">
         <div className="space-y-2">
@@ -149,7 +163,7 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate }: InlineAnswerSetEditorPro
   );
 };
 
-const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUpdate, isRoot = true, onDelete }: AnswerLevelRuleGroupEditorProps) => {
+const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUpdate, isRoot = true, onDelete, onAddFromExisting }: AnswerLevelRuleGroupEditorProps) => {
   const [answerSetExpanded, setAnswerSetExpanded] = useState(!!group.inlineAnswerSet);
 
   // Filter to only show previous questions (order less than current question)
@@ -470,6 +484,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUp
               onUpdate={(updated) => {
                 updateGroup({ inlineAnswerSet: updated });
               }}
+              onAddFromExisting={onAddFromExisting}
             />
           </CollapsibleContent>
         </Collapsible>
