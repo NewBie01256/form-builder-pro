@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Plus, Trash2, Layers, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, Layers, ChevronDown, ChevronUp, GitBranch } from "lucide-react";
 import { Section, Question, ConditionalBranch, AnswerSet } from "@/types/questionnaire";
 import QuestionEditor from "./QuestionEditor";
 import BranchEditor from "./BranchEditor";
@@ -220,7 +220,7 @@ const SectionEditor = ({
           </div>
         </CardHeader>
         <CollapsibleContent>
-          <CardContent className="space-y-4 pt-0">
+          <CardContent className="space-y-3 pt-0">
             <div className="flex gap-2">
               <Button size="sm" onClick={() => handleAddQuestion()}>
                 <Plus className="h-4 w-4 mr-1" />
@@ -231,6 +231,43 @@ const SectionEditor = ({
                 Add Branch
               </Button>
             </div>
+
+            {/* Compact Questions & Branches List */}
+            {(section.questions.length > 0 || section.branches.length > 0) && (
+              <div className="flex flex-wrap gap-1.5">
+                {section.questions.map(q => (
+                  <div
+                    key={q.id}
+                    onClick={() => onSelectQuestion(q.id, null)}
+                    className={cn(
+                      "px-2 py-1 rounded text-xs cursor-pointer transition-colors",
+                      "bg-muted hover:bg-accent border",
+                      selectedQuestionId === q.id && !selectedBranchId 
+                        ? "border-primary bg-primary/10 text-primary" 
+                        : "border-transparent"
+                    )}
+                  >
+                    {q.text || 'Untitled Question'}
+                  </div>
+                ))}
+                {section.branches.map(b => (
+                  <div
+                    key={b.id}
+                    onClick={() => onSelectBranch(b.id)}
+                    className={cn(
+                      "px-2 py-1 rounded text-xs cursor-pointer transition-colors flex items-center gap-1",
+                      "bg-muted hover:bg-accent border",
+                      selectedBranchId === b.id 
+                        ? "border-primary bg-primary/10 text-primary" 
+                        : "border-transparent"
+                    )}
+                  >
+                    <GitBranch className="h-3 w-3" />
+                    {b.name || 'Untitled Branch'}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Selected Branch Editor */}
             {selectedBranch && (
