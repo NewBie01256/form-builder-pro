@@ -5,10 +5,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Library, Zap, Database } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Library, Zap, Database, Table2, ArrowUpDown, Filter, Pencil } from "lucide-react";
 import { AnswerSet, Answer, QuestionType } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
-import DynamicValuesPanel, { DynamicValueConfig } from "./DynamicValuesPanel";
+import DynamicValuesPanel, { DynamicValueConfig, DynamicValueFilterGroup } from "./DynamicValuesPanel";
 
 interface AnswerSetEditorProps {
   answerSet: AnswerSet;
@@ -79,6 +80,14 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       case 'Rating': return 'Enter default rating (optional)';
       default: return 'Enter default value (optional)';
     }
+  };
+
+  // Helper to count total filters in a group (including nested)
+  const countFilters = (group: DynamicValueFilterGroup): number => {
+    return group.children.reduce((count, child) => {
+      if (child.type === 'filter') return count + 1;
+      return count + countFilters(child);
+    }, 0);
   };
 
   // For simple types, show a minimal UI
@@ -210,50 +219,128 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
         </Label>
       </div>
 
+      {/* Answers Section - Show Dynamic Config Summary OR Regular Answers */}
       <div className="mt-4">
-        <div className="flex items-center justify-between mb-2">
-          <Label className="text-sm">Answers</Label>
-          <Button variant="ghost" size="sm" onClick={addAnswer}>
-            <Plus className="h-4 w-4 mr-1" />
-            Add Answer
-          </Button>
-        </div>
-
-        <div className="space-y-2">
-          {answerSet.answers.map(ans => (
-            <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
-              <Input
-                placeholder="Label"
-                value={ans.label}
-                onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
-                className="flex-1 h-8"
-              />
-              <Input
-                placeholder="Value"
-                value={ans.value}
-                onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
-                className="flex-1 h-8"
-              />
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`active-${ans.id}`}
-                  checked={ans.active}
-                  onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
-                />
-                <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal whitespace-nowrap">
-                  Active
-                </Label>
+        {dynamicValues && dynamicConfig?.tableName ? (
+          // Dynamic Values Summary Card
+          <div className="border border-border rounded-lg bg-background">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-medium">Dynamic Values</Label>
               </div>
-              {ans.actionRecord && (
-                <Zap className="h-4 w-4 text-amber-500 shrink-0" />
-              )}
-              <ActionRecordEditor
-                actionRecord={ans.actionRecord}
-                onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
-              />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={() => setShowDynamicPanel(true)}
+              >
+                <Pencil className="h-3 w-3 mr-1" />
+                Edit
+              </Button>
             </div>
-          ))}
-        </div>
+            
+            <div className="p-4 space-y-3">
+              {/* Table Name */}
+              <div className="flex items-center gap-3">
+                <Table2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Table:</span>
+                  <Badge variant="secondary" className="font-mono text-xs">
+                    {dynamicConfig.tableName}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Field Mappings */}
+              <div className="flex items-center gap-3">
+                <div className="h-4 w-4 shrink-0" /> {/* Spacer for alignment */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                  <span className="text-muted-foreground">
+                    Label: <span className="font-medium text-foreground">{dynamicConfig.labelField}</span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    Value: <span className="font-medium text-foreground">{dynamicConfig.valueField}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Filters Summary */}
+              {dynamicConfig.filterGroup.children.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <Filter className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <div className="flex flex-wrap items-center gap-1">
+                    <span className="text-sm text-muted-foreground">Filters:</span>
+                    <Badge variant="outline" className="text-xs">
+                      {countFilters(dynamicConfig.filterGroup)} condition{countFilters(dynamicConfig.filterGroup) !== 1 ? 's' : ''}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      ({dynamicConfig.filterGroup.matchType})
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Ordering */}
+              {dynamicConfig.orderByField && (
+                <div className="flex items-center gap-3">
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-sm text-muted-foreground">
+                    Order by: <span className="font-medium text-foreground">{dynamicConfig.orderByField}</span>
+                    <span className="text-xs ml-1">({dynamicConfig.orderDirection === 'asc' ? 'A → Z' : 'Z → A'})</span>
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          // Regular Static Answers
+          <>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm">Answers</Label>
+              <Button variant="ghost" size="sm" onClick={addAnswer}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Answer
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              {answerSet.answers.map(ans => (
+                <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
+                  <Input
+                    placeholder="Label"
+                    value={ans.label}
+                    onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
+                    className="flex-1 h-8"
+                  />
+                  <Input
+                    placeholder="Value"
+                    value={ans.value}
+                    onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
+                    className="flex-1 h-8"
+                  />
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`active-${ans.id}`}
+                      checked={ans.active}
+                      onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
+                    />
+                    <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal whitespace-nowrap">
+                      Active
+                    </Label>
+                  </div>
+                  {ans.actionRecord && (
+                    <Zap className="h-4 w-4 text-amber-500 shrink-0" />
+                  )}
+                  <ActionRecordEditor
+                    actionRecord={ans.actionRecord}
+                    onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Dynamic Values Panel */}
