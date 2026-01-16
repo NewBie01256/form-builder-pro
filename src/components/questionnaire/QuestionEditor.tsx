@@ -41,9 +41,47 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
     question.answerLevelRuleGroups.length > 0 ? question.answerLevelRuleGroups[0].id : null
   );
   const [showAnswerSetPicker, setShowAnswerSetPicker] = useState(false);
+  const [pickerTargetAnswerSetId, setPickerTargetAnswerSetId] = useState<string | null>(null);
+  const [pickerTargetBranchingId, setPickerTargetBranchingId] = useState<string | null>(null);
 
-  const handleAddFromExisting = (answerSet: AnswerSet) => {
-    onUpdate(question.id, { answerSets: [...question.answerSets, answerSet] });
+  const handleOpenPickerForAnswerSet = (answerSetId: string) => {
+    setPickerTargetAnswerSetId(answerSetId);
+    setPickerTargetBranchingId(null);
+    setShowAnswerSetPicker(true);
+  };
+
+  const handleOpenPickerForBranching = (branchingId: string) => {
+    setPickerTargetAnswerSetId(null);
+    setPickerTargetBranchingId(branchingId);
+    setShowAnswerSetPicker(true);
+  };
+
+  const handleSelectFromExisting = (answerSet: AnswerSet) => {
+    if (pickerTargetAnswerSetId) {
+      // Update existing answer set in the main Answer Sets section
+      const updatedSets = question.answerSets.map(s => 
+        s.id === pickerTargetAnswerSetId 
+          ? { ...answerSet, id: s.id } // Keep original ID, replace content
+          : s
+      );
+      onUpdate(question.id, { answerSets: updatedSets });
+    } else if (pickerTargetBranchingId) {
+      // Update inline answer set in the branching section
+      const updatedGroups = question.answerLevelRuleGroups.map(g => 
+        g.id === pickerTargetBranchingId 
+          ? { 
+              ...g, 
+              inlineAnswerSet: { 
+                ...answerSet, 
+                id: g.inlineAnswerSet?.id || answerSet.id 
+              } 
+            }
+          : g
+      );
+      onUpdate(question.id, { answerLevelRuleGroups: updatedGroups });
+    }
+    setPickerTargetAnswerSetId(null);
+    setPickerTargetBranchingId(null);
   };
 
   const handleAddAnswerLevelBranching = () => {
@@ -181,17 +219,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-base font-semibold">Answer Sets</Label>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowAnswerSetPicker(true)}
-            >
-              <Library className="h-4 w-4 mr-1" />
-              Add from Existing
-            </Button>
-          </div>
+          <Label className="text-base font-semibold">Answer Sets</Label>
           
           <div className="space-y-4">
             {question.answerSets.map(as => (
@@ -204,6 +232,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                   );
                   onUpdate(question.id, { answerSets: updatedSets });
                 }}
+                onAddFromExisting={() => handleOpenPickerForAnswerSet(as.id)}
               />
             ))}
           </div>
@@ -286,6 +315,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                     allQuestions={allQuestions}
                     currentQuestion={question}
                     onUpdate={(updated) => handleUpdateAnswerLevelGroup(selectedBranching.id, updated)}
+                    onAddFromExisting={() => handleOpenPickerForBranching(selectedBranching.id)}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-32 border border-dashed border-border rounded-lg bg-muted/20">
@@ -303,8 +333,14 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
 
         <AnswerSetPickerDialog
           open={showAnswerSetPicker}
-          onOpenChange={setShowAnswerSetPicker}
-          onSelect={handleAddFromExisting}
+          onOpenChange={(open) => {
+            setShowAnswerSetPicker(open);
+            if (!open) {
+              setPickerTargetAnswerSetId(null);
+              setPickerTargetBranchingId(null);
+            }
+          }}
+          onSelect={handleSelectFromExisting}
         />
       </CardContent>
     </Card>
