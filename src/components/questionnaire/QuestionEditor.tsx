@@ -24,10 +24,22 @@ interface QuestionEditorProps {
 
 const QuestionEditor = ({ question, allQuestions, onUpdate }: QuestionEditorProps) => {
   // Check if there's existing answer-level branching content
-  const hasAnswerLevelContent = question.answerLevelRuleGroup.children.length > 0;
-  const [showAnswerLevelBranching, setShowAnswerLevelBranching] = useState(hasAnswerLevelContent);
+  const hasAnswerLevelContent = question.answerLevelRuleGroup.children.length > 0 || !!question.answerLevelRuleGroup.inlineAnswerSet;
+  const [showAnswerLevelBranching, setShowAnswerLevelBranching] = useState<boolean>(hasAnswerLevelContent);
 
   const handleAddAnswerLevelBranching = () => {
+    // Create group with default inline Answer Set
+    const groupWithAnswerSet: AnswerLevelRuleGroup = {
+      ...question.answerLevelRuleGroup,
+      inlineAnswerSet: {
+        id: `as-inline-${Date.now()}`,
+        name: '',
+        tag: '',
+        isDefault: false,
+        answers: []
+      }
+    };
+    onUpdate(question.id, { answerLevelRuleGroup: groupWithAnswerSet });
     setShowAnswerLevelBranching(true);
   };
 
