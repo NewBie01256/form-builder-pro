@@ -53,7 +53,7 @@ export interface Question {
   order: number;
   answerSets: AnswerSet[];
   questionLevelRuleGroup: RuleGroup;
-  answerLevelRuleGroup: AnswerLevelRuleGroup;
+  answerLevelRuleGroups: AnswerLevelRuleGroup[];
 }
 
 export interface ConditionalBranch {

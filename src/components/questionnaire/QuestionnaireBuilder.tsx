@@ -56,12 +56,7 @@ const QuestionnaireBuilder = () => {
         matchType: 'AND',
         children: []
       },
-      answerLevelRuleGroup: {
-        type: 'group',
-        id: `ag-${Date.now()}`,
-        matchType: 'AND',
-        children: []
-      }
+      answerLevelRuleGroups: []
     };
 
     if (branchId) {
