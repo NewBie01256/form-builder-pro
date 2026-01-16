@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files } from "lucide-react";
+import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2 } from "lucide-react";
 import {
   Question,
   ConditionalBranch,
@@ -16,6 +16,17 @@ import PageTabs from "./PageTabs";
 import SectionEditor from "./SectionEditor";
 import { sampleITSMRecords, ITSMRecord } from "@/data/sampleITSMRecords";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+interface SavedDraft {
+  id: string;
+  questionnaire: Questionnaire;
+  savedAt: string;
+  pageCount: number;
+  sectionCount: number;
+  questionCount: number;
+  branchCount: number;
+}
 
 const QuestionnaireBuilder = () => {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
@@ -23,6 +34,7 @@ const QuestionnaireBuilder = () => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
+  const [savedDrafts, setSavedDrafts] = useState<SavedDraft[]>([]);
 
   const handleCreateQuestionnaire = () => {
     const defaultPage: Page = {
@@ -483,6 +495,79 @@ const QuestionnaireBuilder = () => {
     setSelectedSectionId(page1.sections[0].id);
   };
 
+  const countQuestionsInBranch = (branch: ConditionalBranch): number => {
+    let count = branch.questions.length;
+    branch.childBranches.forEach(cb => {
+      count += countQuestionsInBranch(cb);
+    });
+    return count;
+  };
+
+  const countBranchesInBranch = (branch: ConditionalBranch): number => {
+    let count = 1;
+    branch.childBranches.forEach(cb => {
+      count += countBranchesInBranch(cb);
+    });
+    return count;
+  };
+
+  const getQuestionnaireStats = (q: Questionnaire) => {
+    let sectionCount = 0;
+    let questionCount = 0;
+    let branchCount = 0;
+
+    q.pages.forEach(page => {
+      sectionCount += page.sections.length;
+      page.sections.forEach(section => {
+        questionCount += section.questions.length;
+        section.branches.forEach(branch => {
+          branchCount += countBranchesInBranch(branch);
+          questionCount += countQuestionsInBranch(branch);
+        });
+      });
+    });
+
+    return {
+      pageCount: q.pages.length,
+      sectionCount,
+      questionCount,
+      branchCount
+    };
+  };
+
+  const handleSaveAsDraft = () => {
+    if (!questionnaire) return;
+    
+    const stats = getQuestionnaireStats(questionnaire);
+    const newDraft: SavedDraft = {
+      id: `draft-${Date.now()}`,
+      questionnaire: { ...questionnaire, status: 'Draft' },
+      savedAt: new Date().toLocaleString(),
+      ...stats
+    };
+
+    setSavedDrafts(prev => [...prev, newDraft]);
+    toast.success("Questionnaire saved as draft!");
+    
+    // Return to list view
+    setQuestionnaire(null);
+    setActivePageId(null);
+    setSelectedSectionId(null);
+    setSelectedQuestionId(null);
+    setSelectedBranchId(null);
+  };
+
+  const handleEditDraft = (draft: SavedDraft) => {
+    setQuestionnaire(draft.questionnaire);
+    setActivePageId(draft.questionnaire.pages[0]?.id || null);
+    setSelectedSectionId(draft.questionnaire.pages[0]?.sections[0]?.id || null);
+  };
+
+  const handleDeleteDraft = (draftId: string) => {
+    setSavedDrafts(prev => prev.filter(d => d.id !== draftId));
+    toast.success("Draft deleted");
+  };
+
   const activePage = questionnaire?.pages.find(p => p.id === activePageId) || null;
 
   const handleAddPage = () => {
@@ -658,10 +743,16 @@ const QuestionnaireBuilder = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">{activePage.name || 'Untitled Page'}</h2>
-                  <Button onClick={handleAddSection}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Section
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={handleSaveAsDraft}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save as Draft
+                    </Button>
+                    <Button onClick={handleAddSection}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Section
+                    </Button>
+                  </div>
                 </div>
 
                 {activePage.sections.length === 0 && (
@@ -715,6 +806,91 @@ const QuestionnaireBuilder = () => {
                     Create New
                   </Button>
                 </div>
+
+                {/* Saved Drafts */}
+                {savedDrafts.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Save className="h-5 w-5 text-muted-foreground" />
+                      Saved Drafts
+                    </h3>
+                    <div className="grid gap-3">
+                      {savedDrafts.map((draft) => (
+                        <Card 
+                          key={draft.id} 
+                          className="hover:shadow-md transition-shadow cursor-pointer group border-dashed border-primary/30"
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-3 flex-1 min-w-0">
+                                <div className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+                                  <FileText className="h-5 w-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="font-semibold truncate">
+                                      {draft.questionnaire.name || 'Untitled Questionnaire'}
+                                    </h3>
+                                    <Badge variant="secondary" className="text-xs">
+                                      Draft
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mt-1 truncate">
+                                    {draft.questionnaire.description || 'No description'}
+                                  </p>
+                                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
+                                    <span className="flex items-center gap-1" title="Pages">
+                                      <Files className="h-3 w-3" />
+                                      {draft.pageCount}
+                                    </span>
+                                    <span className="flex items-center gap-1" title="Sections">
+                                      <Layers className="h-3 w-3" />
+                                      {draft.sectionCount}
+                                    </span>
+                                    <span className="flex items-center gap-1" title="Questions">
+                                      <HelpCircle className="h-3 w-3" />
+                                      {draft.questionCount}
+                                    </span>
+                                    <span className="flex items-center gap-1" title="Branches">
+                                      <GitBranch className="h-3 w-3" />
+                                      {draft.branchCount}
+                                    </span>
+                                    <span className="text-muted-foreground/60">|</span>
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      Saved {draft.savedAt}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleEditDraft(draft)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => handleDeleteDraft(draft.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ITSM Templates Header */}
+                <h3 className="text-lg font-semibold">Templates</h3>
 
                 {/* ITSM Records List */}
                 <div className="grid gap-3">
