@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus, Library, Zap, Database, Table2, ArrowUpDown, Filter, Pencil } from "lucide-react";
 import { AnswerSet, Answer, QuestionType } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
@@ -307,41 +308,86 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
               </Button>
             </div>
 
-            <div className="space-y-2">
-              {answerSet.answers.map(ans => (
-                <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
-                  <Input
-                    placeholder="Label"
-                    value={ans.label}
-                    onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
-                    className="flex-1 h-8"
-                  />
-                  <Input
-                    placeholder="Value"
-                    value={ans.value}
-                    onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
-                    className="flex-1 h-8"
-                  />
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`active-${ans.id}`}
-                      checked={ans.active}
-                      onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
+            {questionType === 'RadioButton' ? (
+              // Radio Button Display
+              <div className="space-y-2">
+                <RadioGroup className="space-y-2">
+                  {answerSet.answers.map(ans => (
+                    <div key={ans.id} className="flex items-center gap-3 p-3 bg-background rounded-md border border-border">
+                      <RadioGroupItem value={ans.value} id={`radio-preview-${ans.id}`} disabled />
+                      <div className="flex-1 grid grid-cols-2 gap-2">
+                        <Input
+                          placeholder="Label"
+                          value={ans.label}
+                          onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
+                          className="h-8"
+                        />
+                        <Input
+                          placeholder="Value"
+                          value={ans.value}
+                          onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
+                          className="h-8"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`active-${ans.id}`}
+                          checked={ans.active}
+                          onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
+                        />
+                        <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal whitespace-nowrap">
+                          Active
+                        </Label>
+                      </div>
+                      {ans.actionRecord && (
+                        <Zap className="h-4 w-4 text-amber-500 shrink-0" />
+                      )}
+                      <ActionRecordEditor
+                        actionRecord={ans.actionRecord}
+                        onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
+                      />
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            ) : (
+              // Regular List Display for Choice/MultiSelect
+              <div className="space-y-2">
+                {answerSet.answers.map(ans => (
+                  <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
+                    <Input
+                      placeholder="Label"
+                      value={ans.label}
+                      onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
+                      className="flex-1 h-8"
                     />
-                    <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal whitespace-nowrap">
-                      Active
-                    </Label>
+                    <Input
+                      placeholder="Value"
+                      value={ans.value}
+                      onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
+                      className="flex-1 h-8"
+                    />
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`active-${ans.id}`}
+                        checked={ans.active}
+                        onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
+                      />
+                      <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal whitespace-nowrap">
+                        Active
+                      </Label>
+                    </div>
+                    {ans.actionRecord && (
+                      <Zap className="h-4 w-4 text-amber-500 shrink-0" />
+                    )}
+                    <ActionRecordEditor
+                      actionRecord={ans.actionRecord}
+                      onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
+                    />
                   </div>
-                  {ans.actionRecord && (
-                    <Zap className="h-4 w-4 text-amber-500 shrink-0" />
-                  )}
-                  <ActionRecordEditor
-                    actionRecord={ans.actionRecord}
-                    onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
-                  />
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
