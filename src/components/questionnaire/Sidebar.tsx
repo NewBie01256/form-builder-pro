@@ -48,108 +48,90 @@ const Sidebar = ({
 }: SidebarProps) => {
   const [detailsOpen, setDetailsOpen] = useState(true);
 
-  const renderBranchTree = (branch: ConditionalBranch, depth: number = 0, isLast: boolean = true): JSX.Element => {
-    const hasChildren = branch.questions.length > 0 || branch.childBranches.length > 0;
-    const totalChildren = branch.questions.length + branch.childBranches.length;
+  const renderBranchTree = (branch: ConditionalBranch, depth: number = 0, isLast: boolean = true, parentLines: boolean[] = []): JSX.Element => {
+    const allItems = [
+      ...branch.questions.map(q => ({ type: 'question' as const, item: q })),
+      ...branch.childBranches.map(cb => ({ type: 'branch' as const, item: cb }))
+    ];
     
     return (
       <div key={branch.id} className="relative">
-        {/* Vertical line from parent */}
-        {depth > 0 && (
-          <div 
-            className="absolute w-px bg-border"
-            style={{ 
-              left: `${8 + (depth - 1) * 16}px`,
-              top: 0,
-              bottom: isLast ? '50%' : 0
-            }}
-          />
-        )}
-        
-        {/* Horizontal connector line */}
-        {depth > 0 && (
-          <div 
-            className="absolute h-px bg-border"
-            style={{ 
-              left: `${8 + (depth - 1) * 16}px`,
-              top: '50%',
-              width: '12px'
-            }}
-          />
-        )}
-        
-        <div
-          className={cn(
-            "relative flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors",
-            "hover:bg-accent",
-            selectedBranchId === branch.id && !selectedQuestionId && "bg-accent text-accent-foreground"
-          )}
-          style={{ paddingLeft: `${20 + depth * 16}px` }}
-          onClick={() => onSelectBranch(branch.id)}
-        >
-          <GitBranch className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="truncate text-sm font-medium">{branch.name || 'Untitled Branch'}</span>
-        </div>
-        
-        {/* Questions and child branches container */}
-        <div className="relative">
-          {/* Vertical line for children */}
-          {hasChildren && (
-            <div 
-              className="absolute w-px bg-border"
-              style={{ 
-                left: `${8 + depth * 16}px`,
-                top: 0,
-                bottom: '50%'
-              }}
-            />
+        {/* Branch header row */}
+        <div className="flex items-stretch">
+          {/* Tree lines column */}
+          <div className="flex" style={{ width: `${depth * 20}px` }}>
+            {parentLines.map((showLine, i) => (
+              <div key={i} className="w-5 relative">
+                {showLine && <div className="absolute left-2 top-0 bottom-0 w-px bg-border" />}
+              </div>
+            ))}
+          </div>
+          
+          {/* Connector for this item */}
+          {depth > 0 && (
+            <div className="w-5 relative flex items-center">
+              <div className={cn("absolute left-2 w-px bg-border", isLast ? "top-0 h-1/2" : "top-0 bottom-0")} />
+              <div className="absolute left-2 top-1/2 w-3 h-px bg-border" />
+            </div>
           )}
           
-          {branch.questions.map((q, qIndex) => {
-            const isLastChild = qIndex === branch.questions.length - 1 && branch.childBranches.length === 0;
+          {/* Branch item */}
+          <div
+            className={cn(
+              "flex-1 flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors",
+              "hover:bg-accent",
+              selectedBranchId === branch.id && !selectedQuestionId && "bg-accent text-accent-foreground"
+            )}
+            onClick={() => onSelectBranch(branch.id)}
+          >
+            <GitBranch className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="truncate text-sm font-medium">{branch.name || 'Untitled Branch'}</span>
+          </div>
+        </div>
+        
+        {/* Children */}
+        {allItems.map((child, index) => {
+          const isChildLast = index === allItems.length - 1;
+          const newParentLines = [...parentLines, !isLast];
+          
+          if (child.type === 'question') {
             return (
-              <div key={q.id} className="relative">
-                {/* Vertical line continuation */}
-                <div 
-                  className="absolute w-px bg-border"
-                  style={{ 
-                    left: `${8 + depth * 16}px`,
-                    top: 0,
-                    bottom: isLastChild ? '50%' : 0
-                  }}
-                />
-                {/* Horizontal connector */}
-                <div 
-                  className="absolute h-px bg-border"
-                  style={{ 
-                    left: `${8 + depth * 16}px`,
-                    top: '50%',
-                    width: '12px'
-                  }}
-                />
+              <div key={child.item.id} className="flex items-stretch">
+                {/* Tree lines column */}
+                <div className="flex" style={{ width: `${(depth + 1) * 20}px` }}>
+                  {[...parentLines, !isLast].map((showLine, i) => (
+                    <div key={i} className="w-5 relative">
+                      {showLine && <div className="absolute left-2 top-0 bottom-0 w-px bg-border" />}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Connector */}
+                <div className="w-5 relative flex items-center">
+                  <div className={cn("absolute left-2 w-px bg-border", isChildLast ? "top-0 h-1/2" : "top-0 bottom-0")} />
+                  <div className="absolute left-2 top-1/2 w-3 h-px bg-border" />
+                </div>
+                
+                {/* Question item */}
                 <div
                   className={cn(
-                    "relative flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors",
+                    "flex-1 flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors",
                     "hover:bg-accent",
-                    selectedQuestionId === q.id && "bg-accent text-accent-foreground"
+                    selectedQuestionId === child.item.id && "bg-accent text-accent-foreground"
                   )}
-                  style={{ paddingLeft: `${36 + depth * 16}px` }}
-                  onClick={() => onSelectQuestion(q.id, branch.id)}
+                  onClick={() => onSelectQuestion(child.item.id, branch.id)}
                 >
                   <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="truncate text-sm">{q.text || 'Untitled Question'}</span>
+                  <span className="truncate text-sm">{child.item.text || 'Untitled Question'}</span>
                 </div>
               </div>
             );
-          })}
-          
-          {branch.childBranches.map((cb, cbIndex) => 
-            renderBranchTree(cb, depth + 1, cbIndex === branch.childBranches.length - 1)
-          )}
-        </div>
+          } else {
+            return renderBranchTree(child.item, depth + 1, isChildLast, newParentLines);
+          }
+        })}
       </div>
     );
-  };
 
   return (
     <div className="w-[30%] min-w-[250px] max-w-[400px] border-r border-border h-full flex flex-col bg-card">
