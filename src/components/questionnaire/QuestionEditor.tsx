@@ -22,10 +22,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { HelpCircle, Plus, GitBranch, Trash2 } from "lucide-react";
-import { Question, AnswerLevelRuleGroup } from "@/types/questionnaire";
+import { HelpCircle, Plus, GitBranch, Trash2, Library } from "lucide-react";
+import { Question, AnswerLevelRuleGroup, AnswerSet } from "@/types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";
 import AnswerLevelRuleGroupEditor from "./AnswerLevelRuleGroupEditor";
+import AnswerSetPickerDialog from "./AnswerSetPickerDialog";
 import { cn } from "@/lib/utils";
 
 interface QuestionEditorProps {
@@ -39,6 +40,11 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
   const [selectedBranchingId, setSelectedBranchingId] = useState<string | null>(
     question.answerLevelRuleGroups.length > 0 ? question.answerLevelRuleGroups[0].id : null
   );
+  const [showAnswerSetPicker, setShowAnswerSetPicker] = useState(false);
+
+  const handleAddFromExisting = (answerSet: AnswerSet) => {
+    onUpdate(question.id, { answerSets: [...question.answerSets, answerSet] });
+  };
 
   const handleAddAnswerLevelBranching = () => {
     const newGroup: AnswerLevelRuleGroup = {
@@ -174,10 +180,17 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
           </div>
         </div>
 
-        {/* Answer Sets Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label className="text-base font-semibold">Answer Sets</Label>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowAnswerSetPicker(true)}
+            >
+              <Library className="h-4 w-4 mr-1" />
+              Add from Existing
+            </Button>
           </div>
           
           <div className="space-y-4">
@@ -288,6 +301,11 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
           )}
         </div>
 
+        <AnswerSetPickerDialog
+          open={showAnswerSetPicker}
+          onOpenChange={setShowAnswerSetPicker}
+          onSelect={handleAddFromExisting}
+        />
       </CardContent>
     </Card>
   );
