@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -32,15 +33,19 @@ interface AnswerLevelRuleGroupEditorProps {
   isRoot?: boolean;
   onDelete?: () => void;
   onAddFromExisting?: () => void;
+  questionType?: string;
 }
 
 interface InlineAnswerSetEditorProps {
   answerSet: AnswerSet;
   onUpdate: (updated: AnswerSet) => void;
   onAddFromExisting?: () => void;
+  questionType?: string;
 }
 
-const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting }: InlineAnswerSetEditorProps) => {
+const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice' }: InlineAnswerSetEditorProps) => {
+  const isTextType = questionType === 'Text';
+
   const addAnswer = () => {
     const newAnswer: Answer = {
       id: `ans-${Date.now()}`,
@@ -65,11 +70,30 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting }: Inlin
     });
   };
 
+  // For text type, ensure there's always exactly one answer
+  const textAnswer = answerSet.answers[0] || { id: `ans-${Date.now()}`, label: '', value: '', active: true };
+
+  const updateTextAnswer = (value: string) => {
+    if (answerSet.answers.length === 0) {
+      onUpdate({ 
+        ...answerSet, 
+        answers: [{ id: `ans-${Date.now()}`, label: 'Text Response', value, active: true }] 
+      });
+    } else {
+      onUpdate({
+        ...answerSet,
+        answers: [{ ...answerSet.answers[0], value, label: 'Text Response' }]
+      });
+    }
+  };
+
   return (
     <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 mt-3">
       <div className="flex items-center justify-between mb-3">
-        <Label className="text-sm font-semibold text-primary">Answer Set for this Rule</Label>
-        {onAddFromExisting && (
+        <Label className="text-sm font-semibold text-primary">
+          {isTextType ? 'Default Text Answer' : 'Answer Set for this Rule'}
+        </Label>
+        {onAddFromExisting && !isTextType && (
           <Button 
             variant="outline" 
             size="sm"
@@ -80,91 +104,105 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting }: Inlin
           </Button>
         )}
       </div>
-      
-      <div className="grid gap-3 sm:grid-cols-2 mt-3">
+
+      {isTextType ? (
         <div className="space-y-2">
-          <Label className="text-xs">Set Name</Label>
-          <Input
-            placeholder="Answer Set Name"
-            value={answerSet.name}
-            onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
-            className="h-8"
+          <Textarea
+            placeholder="Enter default text response (optional)"
+            value={textAnswer.value}
+            onChange={(e) => updateTextAnswer(e.target.value)}
+            className="min-h-[80px]"
           />
         </div>
-        <div className="space-y-2">
-          <Label className="text-xs">Tag</Label>
-          <Input
-            placeholder="Tag"
-            value={answerSet.tag}
-            onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
-            className="h-8"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center space-x-2 mt-3">
-        <Checkbox
-          id={`default-${answerSet.id}`}
-          checked={answerSet.isDefault}
-          onCheckedChange={(checked) => onUpdate({ ...answerSet, isDefault: !!checked })}
-        />
-        <Label htmlFor={`default-${answerSet.id}`} className="text-xs font-normal">
-          Is Default
-        </Label>
-      </div>
-
-      <div className="mt-4">
-        <div className="flex items-center justify-between mb-2">
-          <Label className="text-xs font-medium">Answers</Label>
-          <Button variant="ghost" size="sm" onClick={addAnswer} className="h-7 text-xs">
-            <Plus className="h-3 w-3 mr-1" />
-            Add Answer
-          </Button>
-        </div>
-
-        <div className="space-y-2">
-          {answerSet.answers.map(ans => (
-            <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
+      ) : (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-xs">Set Name</Label>
               <Input
-                placeholder="Label"
-                value={ans.label}
-                onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
-                className="flex-1 h-7 text-sm"
+                placeholder="Answer Set Name"
+                value={answerSet.name}
+                onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
+                className="h-8"
               />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Tag</Label>
               <Input
-                placeholder="Value"
-                value={ans.value}
-                onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
-                className="flex-1 h-7 text-sm"
+                placeholder="Tag"
+                value={answerSet.tag}
+                onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
+                className="h-8"
               />
-              <div className="flex items-center space-x-1">
-                <Checkbox
-                  id={`active-${ans.id}`}
-                  checked={ans.active}
-                  onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
-                />
-                <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal">
-                  Active
-                </Label>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => removeAnswer(ans.id)}
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-3 w-3" />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 mt-3">
+            <Checkbox
+              id={`default-${answerSet.id}`}
+              checked={answerSet.isDefault}
+              onCheckedChange={(checked) => onUpdate({ ...answerSet, isDefault: !!checked })}
+            />
+            <Label htmlFor={`default-${answerSet.id}`} className="text-xs font-normal">
+              Is Default
+            </Label>
+          </div>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-xs font-medium">Answers</Label>
+              <Button variant="ghost" size="sm" onClick={addAnswer} className="h-7 text-xs">
+                <Plus className="h-3 w-3 mr-1" />
+                Add Answer
               </Button>
             </div>
-          ))}
-        </div>
-      </div>
+
+            <div className="space-y-2">
+              {answerSet.answers.map(ans => (
+                <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
+                  <Input
+                    placeholder="Label"
+                    value={ans.label}
+                    onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
+                    className="flex-1 h-7 text-sm"
+                  />
+                  <Input
+                    placeholder="Value"
+                    value={ans.value}
+                    onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
+                    className="flex-1 h-7 text-sm"
+                  />
+                  <div className="flex items-center space-x-1">
+                    <Checkbox
+                      id={`active-${ans.id}`}
+                      checked={ans.active}
+                      onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
+                    />
+                    <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal">
+                      Active
+                    </Label>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => removeAnswer(ans.id)}
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
-const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUpdate, isRoot = true, onDelete, onAddFromExisting }: AnswerLevelRuleGroupEditorProps) => {
+const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUpdate, isRoot = true, onDelete, onAddFromExisting, questionType = 'Choice' }: AnswerLevelRuleGroupEditorProps) => {
   const [answerSetExpanded, setAnswerSetExpanded] = useState(!!group.inlineAnswerSet);
+  const isTextType = questionType === 'Text';
 
   // Filter to only show previous questions (order less than current question)
   const previousQuestions = allQuestions.filter(q => q.order < currentQuestion.order);
@@ -474,7 +512,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUp
                 ) : (
                   <ChevronDown className="h-3 w-3 mr-1" />
                 )}
-                {answerSetExpanded ? 'Hide' : 'Show'} Answer Set
+                {answerSetExpanded ? 'Hide' : 'Show'} {isTextType ? 'Default Text Answer' : 'Answer Set'}
               </Button>
             </CollapsibleTrigger>
           </div>
@@ -485,6 +523,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUp
                 updateGroup({ inlineAnswerSet: updated });
               }}
               onAddFromExisting={onAddFromExisting}
+              questionType={questionType}
             />
           </CollapsibleContent>
         </Collapsible>
