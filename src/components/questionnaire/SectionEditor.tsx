@@ -190,22 +190,30 @@ const SectionEditor = ({
       <Card className="border-l-4 border-l-primary/50">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CollapsibleTrigger asChild>
-              <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-                <Layers className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">{section.name || 'Untitled Section'}</CardTitle>
-                {isExpanded ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
-              </div>
-            </CollapsibleTrigger>
+            <div className="flex items-center gap-2 flex-1">
+              <Layers className="h-5 w-5 text-primary shrink-0" />
+              <Input
+                value={section.name}
+                onChange={(e) => onUpdate({ ...section, name: e.target.value })}
+                onClick={(e) => e.stopPropagation()}
+                className="h-8 text-base font-semibold border-0 bg-transparent px-1 focus-visible:ring-1 focus-visible:ring-offset-0"
+                placeholder="Section name"
+              />
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0">
+                  {isExpanded ? (
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+            </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={onDelete}
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -213,23 +221,13 @@ const SectionEditor = ({
         </CardHeader>
         <CollapsibleContent>
           <CardContent className="space-y-4 pt-0">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Section Name</Label>
-                <Input
-                  placeholder="Enter section name"
-                  value={section.name}
-                  onChange={(e) => onUpdate({ ...section, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Input
-                  placeholder="Optional description"
-                  value={section.description || ''}
-                  onChange={(e) => onUpdate({ ...section, description: e.target.value })}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Input
+                placeholder="Optional description"
+                value={section.description || ''}
+                onChange={(e) => onUpdate({ ...section, description: e.target.value })}
+              />
             </div>
 
             <div className="flex gap-2 pt-2">
