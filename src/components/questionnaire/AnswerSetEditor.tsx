@@ -5,9 +5,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Library, Zap } from "lucide-react";
+import { Plus, Library, Zap, Database } from "lucide-react";
 import { AnswerSet, Answer, QuestionType } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
+import DynamicValuesPanel, { DynamicValueConfig } from "./DynamicValuesPanel";
 
 interface AnswerSetEditorProps {
   answerSet: AnswerSet;
@@ -18,7 +19,8 @@ interface AnswerSetEditorProps {
 
 const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice' }: AnswerSetEditorProps) => {
   const [dynamicValues, setDynamicValues] = useState(false);
-  
+  const [showDynamicPanel, setShowDynamicPanel] = useState(false);
+  const [dynamicConfig, setDynamicConfig] = useState<DynamicValueConfig | undefined>();
   // Types that don't need the full answer set UI
   const isSimpleType = ['Text', 'Number', 'Date', 'Rating', 'Boolean'].includes(questionType);
   // Types that use the choice-based answer set UI
@@ -152,11 +154,27 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
               <Switch
                 id={`dynamic-${answerSet.id}`}
                 checked={dynamicValues}
-                onCheckedChange={setDynamicValues}
+                onCheckedChange={(checked) => {
+                  setDynamicValues(checked);
+                  if (checked) {
+                    setShowDynamicPanel(true);
+                  }
+                }}
               />
               <Label htmlFor={`dynamic-${answerSet.id}`} className="text-sm font-normal cursor-pointer">
                 Dynamic Values
               </Label>
+              {dynamicValues && dynamicConfig?.tableName && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => setShowDynamicPanel(true)}
+                >
+                  <Database className="h-3 w-3 mr-1" />
+                  {dynamicConfig.tableName}
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -237,6 +255,17 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
           ))}
         </div>
       </div>
+
+      {/* Dynamic Values Panel */}
+      <DynamicValuesPanel
+        isOpen={showDynamicPanel}
+        onClose={() => setShowDynamicPanel(false)}
+        config={dynamicConfig}
+        onSave={(config) => {
+          setDynamicConfig(config);
+          setDynamicValues(true);
+        }}
+      />
     </div>
   );
 };
