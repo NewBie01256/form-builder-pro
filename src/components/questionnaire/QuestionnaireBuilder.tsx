@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, HelpCircle, Layers } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Archive, Edit } from "lucide-react";
 import {
   Question,
   ConditionalBranch,
@@ -13,6 +14,8 @@ import {
 import Sidebar from "./Sidebar";
 import PageTabs from "./PageTabs";
 import SectionEditor from "./SectionEditor";
+import { sampleITSMRecords, ITSMRecord } from "@/data/sampleITSMRecords";
+import { cn } from "@/lib/utils";
 
 const QuestionnaireBuilder = () => {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
@@ -259,19 +262,89 @@ const QuestionnaireBuilder = () => {
             )}
 
             {!questionnaire && (
-              <div className="flex items-center justify-center h-[60vh]">
-                <div className="text-center space-y-4">
-                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                    <HelpCircle className="h-8 w-8 text-primary" />
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">ITSM Records</h2>
+                    <p className="text-muted-foreground">Manage your IT Service Management questionnaires</p>
                   </div>
-                  <h2 className="text-xl font-semibold">Create a Questionnaire</h2>
-                  <p className="text-muted-foreground max-w-md">
-                    Build dynamic questionnaires with pages, sections, conditional branching and flexible answer sets.
-                  </p>
                   <Button size="lg" onClick={handleCreateQuestionnaire}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Get Started
+                    Create New
                   </Button>
+                </div>
+
+                {/* ITSM Records List */}
+                <div className="grid gap-3">
+                  {sampleITSMRecords.map((record) => (
+                    <Card 
+                      key={record.id} 
+                      className="hover:shadow-md transition-shadow cursor-pointer group"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            <div className={cn(
+                              "h-10 w-10 rounded-lg flex items-center justify-center shrink-0",
+                              record.category === 'Incident' && "bg-red-100 text-red-600",
+                              record.category === 'Service Request' && "bg-blue-100 text-blue-600",
+                              record.category === 'Change' && "bg-amber-100 text-amber-600",
+                              record.category === 'Problem' && "bg-purple-100 text-purple-600"
+                            )}>
+                              {record.category === 'Incident' && <AlertCircle className="h-5 w-5" />}
+                              {record.category === 'Service Request' && <FileText className="h-5 w-5" />}
+                              {record.category === 'Change' && <Settings className="h-5 w-5" />}
+                              {record.category === 'Problem' && <HelpCircle className="h-5 w-5" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="font-semibold truncate">{record.name}</h3>
+                                <Badge 
+                                  variant={record.status === 'Active' ? 'default' : record.status === 'Draft' ? 'secondary' : 'outline'}
+                                  className="text-xs"
+                                >
+                                  {record.status}
+                                </Badge>
+                                <Badge 
+                                  variant="outline"
+                                  className={cn(
+                                    "text-xs",
+                                    record.priority === 'Critical' && "border-red-300 text-red-600",
+                                    record.priority === 'High' && "border-orange-300 text-orange-600",
+                                    record.priority === 'Medium' && "border-yellow-300 text-yellow-600",
+                                    record.priority === 'Low' && "border-green-300 text-green-600"
+                                  )}
+                                >
+                                  {record.priority}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1 truncate">{record.description}</p>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Layers className="h-3 w-3" />
+                                  {record.questionCount} questions
+                                </span>
+                                <span>{record.serviceCatalog}</span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  Updated {record.updatedAt}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               </div>
             )}
