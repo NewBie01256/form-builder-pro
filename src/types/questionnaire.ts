@@ -28,6 +28,7 @@ export interface AnswerLevelRule {
   type: 'answerRule';
   id: string;
   previousQuestionId: string;
+  previousAnswerSetId: string;
   operator: AnswerLevelOperator;
   previousAnswerId: string;
   selectedAnswerSetId: string;
