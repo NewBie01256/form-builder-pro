@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, FileText, GitBranch, HelpCircle } from "lucide-react";
+import { Plus, FileText, GitBranch, HelpCircle, RotateCcw } from "lucide-react";
 import { Question, ConditionalBranch, Questionnaire, LayoutItem } from "@/types/questionnaire";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ interface SidebarProps {
   onCreateQuestionnaire: () => void;
   onSelectQuestion: (id: string, branchId: string | null) => void;
   onSelectBranch: (id: string) => void;
+  onReset: () => void;
 }
 
 const Sidebar = ({
@@ -26,6 +27,7 @@ const Sidebar = ({
   onCreateQuestionnaire,
   onSelectQuestion,
   onSelectBranch,
+  onReset,
 }: SidebarProps) => {
   const renderBranchTree = (branch: ConditionalBranch, depth: number = 0): JSX.Element => (
     <div key={branch.id} className="relative">
@@ -62,8 +64,19 @@ const Sidebar = ({
 
   return (
     <div className="w-[30%] min-w-[250px] max-w-[400px] border-r border-border h-full flex flex-col bg-card">
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-border flex items-center justify-between">
         <h2 className="font-semibold text-sm text-foreground">Questionnaire Tree</h2>
+        {questionnaire && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+            onClick={onReset}
+          >
+            <RotateCcw className="h-3 w-3 mr-1" />
+            Reset
+          </Button>
+        )}
       </div>
       
       <ScrollArea className="flex-1">
