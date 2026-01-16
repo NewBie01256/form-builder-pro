@@ -249,9 +249,7 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, onUpdate, isRoot = tr
             
             <div className="flex items-stretch border-b border-border last:border-b-0">
               {/* Left connector area */}
-              <div className="w-8 flex items-center justify-center relative">
-                <Checkbox className="relative z-10 bg-background" />
-              </div>
+              <div className="w-8 flex items-center justify-center relative" />
 
               {child.type === 'group' ? (
                 <div className="flex-1 py-2 pr-2">
