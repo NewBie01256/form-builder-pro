@@ -203,6 +203,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                   <SelectItem value="Number">Number</SelectItem>
                   <SelectItem value="Date">Date</SelectItem>
                   <SelectItem value="Rating">Rating</SelectItem>
+                  <SelectItem value="Boolean">Boolean (Yes/No)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
