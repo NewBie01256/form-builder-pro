@@ -724,31 +724,261 @@ const Documentation = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <p className="text-muted-foreground">
-                    Answer sets define the available options for choice-based questions. Each question can have 
-                    multiple answer sets that can be conditionally displayed.
+                    Answer sets define the available options for choice-based questions (Choice, Radio Button, Multi-Select). 
+                    Each question can have multiple answer sets that can be conditionally displayed based on previous answers.
                   </p>
                   
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-lg border">
-                      <div className="font-medium mb-2">Standard Answer Sets</div>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Manually defined lists of answers with label and value pairs. You can:
-                      </p>
-                      <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                        <li>Add, edit, and remove individual answers</li>
-                        <li>Set a default answer set for each question</li>
-                        <li>Attach action records to specific answers</li>
-                        <li>Use the Answer Set Picker to import from predefined libraries</li>
-                      </ul>
+                  <Separator />
+                  
+                  {/* Types of Answer Sets */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Types of Answer Sets</h4>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <ListChecks className="h-5 w-5 text-primary" />
+                          <span className="font-medium">Standard Answer Sets</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Manually defined lists with label/value pairs. Each question starts with one default answer set.
+                        </p>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>• Editable name and tag for identification</li>
+                          <li>• Multiple answers with label + value</li>
+                          <li>• Can be marked as default</li>
+                          <li>• Supports Action Records on each answer</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <GitBranch className="h-5 w-5 text-primary" />
+                          <span className="font-medium">Inline Answer Sets</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Created within answer-level rule groups for conditional display based on previous answers.
+                        </p>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>• Attached to specific rule conditions</li>
+                          <li>• Replaces default set when conditions match</li>
+                          <li>• Same editing capabilities as standard sets</li>
+                          <li>• Referenced in sidebar tree lookups</li>
+                        </ul>
+                      </div>
                     </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Answer Set Editor Flow */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Answer Set Editor</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      When you select a question, the Answer Set Editor appears below the question details, allowing you to manage all answer options.
+                    </p>
                     
-                    <div className="p-4 rounded-lg border">
-                      <div className="font-medium mb-2">Inline Answer Sets</div>
-                      <p className="text-sm text-muted-foreground">
-                        Created within answer-level rule groups, these allow different answer options 
-                        to appear based on conditions. Useful for showing context-specific choices.
-                      </p>
+                    <div className="p-4 rounded-lg bg-muted/30 border space-y-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <div className="text-sm font-medium mb-2">Answer Set Header</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Name:</strong> Descriptive name (e.g., "Department Options")</li>
+                            <li>• <strong>Tag:</strong> Short identifier (e.g., "DEPT")</li>
+                            <li>• <strong>Default Toggle:</strong> Mark as the primary answer set</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium mb-2">Answer Row</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Label:</strong> What users see (e.g., "Engineering")</li>
+                            <li>• <strong>Value:</strong> What's stored (e.g., "ENG")</li>
+                            <li>• <strong>Zap Icon:</strong> Attach an Action Record</li>
+                            <li>• <strong>Trash Icon:</strong> Remove the answer</li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Adding Answers Flow */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Adding & Managing Answers</h4>
+                    <div className="space-y-4">
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                          1
+                        </div>
+                        <div>
+                          <div className="font-medium">Click "Add Answer"</div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Creates a new empty answer row at the bottom of the list. Each new answer starts with empty label and value fields.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                          2
+                        </div>
+                        <div>
+                          <div className="font-medium">Fill in Label and Value</div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            The label is displayed to users; the value is stored in the response data. They can be the same or different depending on your needs.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                          3
+                        </div>
+                        <div>
+                          <div className="font-medium">Optionally Attach Action Record</div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Click the <Zap className="h-3 w-3 inline" /> icon next to any answer to configure ITSM categorization 
+                            (operation/product categories, impact, urgency) that triggers when this answer is selected.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Answer Set Library */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Answer Set Library</h4>
+                    <div className="p-4 rounded-lg border">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Plus className="h-5 w-5 text-primary" />
+                        <span className="font-medium">"Add from Existing" Feature</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Quickly populate your answer set from a library of common, reusable answer templates.
+                      </p>
+                      
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="p-3 rounded bg-muted/50 text-center">
+                          <div className="text-sm font-medium">Yes / No</div>
+                          <p className="text-xs text-muted-foreground">Simple binary choice</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50 text-center">
+                          <div className="text-sm font-medium">NPS Scale</div>
+                          <p className="text-xs text-muted-foreground">0-10 rating options</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50 text-center">
+                          <div className="text-sm font-medium">Priority Levels</div>
+                          <p className="text-xs text-muted-foreground">Low, Medium, High, Critical</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50 text-center">
+                          <div className="text-sm font-medium">Satisfaction</div>
+                          <p className="text-xs text-muted-foreground">Very Unsatisfied to Very Satisfied</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50 text-center">
+                          <div className="text-sm font-medium">Agreement Scale</div>
+                          <p className="text-xs text-muted-foreground">Strongly Disagree to Strongly Agree</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50 text-center">
+                          <div className="text-sm font-medium">Frequency</div>
+                          <p className="text-xs text-muted-foreground">Never, Sometimes, Often, Always</p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 p-3 rounded-lg bg-muted/30 border-dashed border">
+                        <p className="text-xs text-muted-foreground">
+                          <strong>Note:</strong> The library picker includes a search bar. Selecting a template replaces the current answer set's content while preserving its ID. 
+                          This feature is hidden for simple types (Text, Number, Date, Rating, Boolean).
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Simple Types Behavior */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Simple Type Behavior</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      For non-choice question types, the Answer Set Editor adapts to show only relevant fields:
+                    </p>
+                    
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Type className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Text Questions</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Shows a Textarea for entering a "Default Text Answer" instead of multiple choice options.
+                        </p>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Hash className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Number Questions</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Shows a number input for default value along with min/max/step configuration.
+                        </p>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Date Questions</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Shows a date picker for default value with optional min/max date constraints.
+                        </p>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Star className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Rating Questions</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Shows scale configuration (min/max) with optional endpoint labels.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Multiple Answer Sets */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Multiple Answer Sets per Question</h4>
+                    <div className="p-4 rounded-lg border">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        A single question can have multiple answer sets. Use this when different scenarios require different answer options:
+                      </p>
+                      
+                      <div className="flex items-center gap-2 text-sm mb-4">
+                        <Badge variant="outline">Default Set</Badge>
+                        <span className="text-muted-foreground">+</span>
+                        <Badge variant="outline">Answer-Level Rule Set 1</Badge>
+                        <span className="text-muted-foreground">+</span>
+                        <Badge variant="outline">Answer-Level Rule Set 2</Badge>
+                      </div>
+                      
+                      <div className="p-3 rounded bg-muted/50 text-sm">
+                        <strong>Example:</strong> A "What type of hardware?" question might show "Laptop, Desktop, Printer" 
+                        by default, but show "iPhone, Android, Tablet" when the user previously selected "Mobile Device" 
+                        as their department.
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50 border">
+                    <div className="text-sm font-medium mb-2">💡 Answer Set Initialization</div>
+                    <p className="text-sm text-muted-foreground">
+                      Every new answer set (standard or inline) is automatically initialized with one empty answer 
+                      containing empty label and value fields, marked as active. This ensures you always have a starting point for configuration.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
