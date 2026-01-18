@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2 } from "lucide-react";
+import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen } from "lucide-react";
 import {
   Question,
   ConditionalBranch,
@@ -849,10 +850,18 @@ const QuestionnaireBuilder = () => {
                     <h2 className="text-2xl font-bold">ITSM Records</h2>
                     <p className="text-muted-foreground">Manage your IT Service Management questionnaires</p>
                   </div>
-                  <Button size="lg" onClick={handleCreateQuestionnaire}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create New
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Link to="/docs">
+                      <Button variant="outline" size="lg">
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Documentation
+                      </Button>
+                    </Link>
+                    <Button size="lg" onClick={handleCreateQuestionnaire}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create New
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Saved Drafts */}
