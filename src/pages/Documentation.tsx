@@ -997,44 +997,344 @@ const Documentation = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <p className="text-muted-foreground">
-                    Instead of static answer lists, you can populate answer sets dynamically from external data sources.
+                    Instead of manually defining static answer options, Dynamic Values allow you to populate answer sets 
+                    from external data sources in real-time. This is ideal for data that changes frequently or is managed centrally.
                   </p>
                   
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="p-4 rounded-lg border text-center">
-                      <Database className="h-8 w-8 text-primary mx-auto mb-2" />
-                      <div className="font-medium">Data Source</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Select the table to fetch data from
-                      </p>
+                  <Separator />
+                  
+                  {/* Supported Question Types */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Supported Question Types</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Dynamic Values are available only for choice-based question types:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="gap-1">
+                        <ListChecks className="h-3 w-3" />
+                        Choice (Dropdown)
+                      </Badge>
+                      <Badge variant="secondary" className="gap-1">
+                        <CircleDot className="h-3 w-3" />
+                        Radio Button
+                      </Badge>
+                      <Badge variant="secondary" className="gap-1">
+                        <CheckSquare className="h-3 w-3" />
+                        Multi-Select
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-3">
+                      Simple types (Text, Number, Date, Rating, Boolean) do not support Dynamic Values as they don't have selectable options.
+                    </p>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Enabling Dynamic Values */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Enabling Dynamic Values</h4>
+                    <div className="space-y-4">
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                          1
+                        </div>
+                        <div>
+                          <div className="font-medium">Locate the Dynamic Values Toggle</div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            In the Answer Set Editor, find the "Dynamic Values" switch toggle. This appears only for Choice, Radio Button, and Multi-Select questions.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                          2
+                        </div>
+                        <div>
+                          <div className="font-medium">Enable the Toggle</div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Click the toggle to enable Dynamic Values. This opens a 40%-width configuration panel on the right side of the editor.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                          3
+                        </div>
+                        <div>
+                          <div className="font-medium">Configure Data Source</div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Set up the table, field mappings, filters, and sorting in the configuration panel. 
+                            Changes are saved automatically when you close the panel.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="p-4 rounded-lg border text-center">
-                      <Filter className="h-8 w-8 text-primary mx-auto mb-2" />
-                      <div className="font-medium">Filters</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Apply conditions to narrow results
-                      </p>
-                    </div>
-                    
-                    <div className="p-4 rounded-lg border text-center">
-                      <ArrowUpDown className="h-8 w-8 text-primary mx-auto mb-2" />
-                      <div className="font-medium">Sorting</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Order results by any field
+                    <div className="mt-4 p-3 rounded-lg bg-muted/30 border">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>Note:</strong> When Dynamic Values is enabled, the "Add from Existing" library button is hidden, 
+                        as answers are populated from the data source instead of static templates.
                       </p>
                     </div>
                   </div>
                   
+                  <Separator />
+                  
+                  {/* Configuration Panel */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Configuration Panel</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      The Dynamic Values panel slides in from the right and contains all settings for your data source:
+                    </p>
+                    
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Database className="h-5 w-5 text-primary" />
+                          <span className="font-medium">Data Source</span>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="p-3 rounded bg-muted/50">
+                            <div className="text-xs font-medium text-muted-foreground mb-1">Table Name</div>
+                            <p className="text-sm">Select the database table to query</p>
+                          </div>
+                          <div className="p-3 rounded bg-muted/50">
+                            <div className="text-xs font-medium text-muted-foreground mb-1">Label Field</div>
+                            <p className="text-sm">Column displayed to users (e.g., "name", "title")</p>
+                          </div>
+                          <div className="p-3 rounded bg-muted/50">
+                            <div className="text-xs font-medium text-muted-foreground mb-1">Value Field</div>
+                            <p className="text-sm">Column stored as the answer value (e.g., "id", "code")</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-3">
+                          <ArrowUpDown className="h-5 w-5 text-primary" />
+                          <span className="font-medium">Sorting</span>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="p-3 rounded bg-muted/50">
+                            <div className="text-xs font-medium text-muted-foreground mb-1">Order By Field</div>
+                            <p className="text-sm">Column to sort results by</p>
+                          </div>
+                          <div className="p-3 rounded bg-muted/50">
+                            <div className="text-xs font-medium text-muted-foreground mb-1">Order Direction</div>
+                            <p className="text-sm">Ascending (A→Z, 1→9) or Descending (Z→A, 9→1)</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Filter Groups */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Filter className="h-5 w-5 text-primary" />
+                      Filter Groups
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Filter groups allow you to define complex conditions to narrow down which records appear as answer options.
+                      Use nested AND/OR logic for sophisticated filtering.
+                    </p>
+                    
+                    <div className="p-4 rounded-lg bg-muted/30 border mb-4">
+                      <div className="font-mono text-sm space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">AND</Badge>
+                          <span>All conditions in this group must match</span>
+                        </div>
+                        <div className="ml-4 border-l-2 border-muted-foreground/30 pl-3 space-y-1">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <span>status</span>
+                            <Badge variant="secondary" className="text-xs">equals</Badge>
+                            <span>"active"</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">OR</Badge>
+                            <span className="text-xs text-muted-foreground">Any condition matches</span>
+                          </div>
+                          <div className="ml-4 border-l-2 border-muted-foreground/20 pl-3 space-y-1">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <span>department</span>
+                              <Badge variant="secondary" className="text-xs">equals</Badge>
+                              <span>"IT"</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <span>department</span>
+                              <Badge variant="secondary" className="text-xs">equals</Badge>
+                              <span>"HR"</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-sm mb-2">Filter Structure</div>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>• <strong>Field:</strong> Database column to check</li>
+                          <li>• <strong>Operator:</strong> Comparison type</li>
+                          <li>• <strong>Value:</strong> Value to compare against</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-sm mb-2">Group Actions</div>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>• <strong>Add Filter:</strong> New condition in group</li>
+                          <li>• <strong>Add Group:</strong> Nested AND/OR group</li>
+                          <li>• <strong>Toggle AND/OR:</strong> Switch group logic</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Available Operators */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Available Filter Operators</h4>
+                    <div className="grid gap-2 sm:grid-cols-4">
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">equals</div>
+                        <p className="text-xs text-muted-foreground">Exact match</p>
+                      </div>
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">not_equals</div>
+                        <p className="text-xs text-muted-foreground">Not matching</p>
+                      </div>
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">greater_than</div>
+                        <p className="text-xs text-muted-foreground">Numeric/date comparison</p>
+                      </div>
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">less_than</div>
+                        <p className="text-xs text-muted-foreground">Numeric/date comparison</p>
+                      </div>
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">contains</div>
+                        <p className="text-xs text-muted-foreground">Partial text match</p>
+                      </div>
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">not_contains</div>
+                        <p className="text-xs text-muted-foreground">Excludes text</p>
+                      </div>
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">starts_with</div>
+                        <p className="text-xs text-muted-foreground">Prefix match</p>
+                      </div>
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">ends_with</div>
+                        <p className="text-xs text-muted-foreground">Suffix match</p>
+                      </div>
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">is_null</div>
+                        <p className="text-xs text-muted-foreground">Field is empty</p>
+                      </div>
+                      <div className="p-2 rounded border text-center text-sm">
+                        <div className="font-medium">is_not_null</div>
+                        <p className="text-xs text-muted-foreground">Field has value</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Summary Card */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Configuration Summary</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Once configured, the Answer Set Editor displays a summary card instead of manual answer inputs:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-start gap-3">
+                        <Database className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">Dynamic Values Configured</span>
+                            <Pencil className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <div className="mt-2 grid gap-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">Table:</span>
+                              <Badge variant="outline" className="text-xs">employees</Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">Label → Value:</span>
+                              <span className="font-mono text-xs">full_name → employee_id</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">Filters:</span>
+                              <Badge variant="secondary" className="text-xs">2 active</Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">Sort:</span>
+                              <span className="font-mono text-xs">full_name ASC</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground mt-3">
+                      Click the edit icon on the summary card to reopen the configuration panel and modify settings.
+                    </p>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Data Persistence */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Data Persistence</h4>
+                    <div className="p-4 rounded-lg bg-muted/50 border">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Dynamic Values configuration is fully persisted with your questionnaire:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          <span>Table name, field mappings, and sort order are saved</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          <span>Complete filter group structure with nested logic is preserved</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          <span>Configuration survives draft saves and template creation</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          <span>Reopening the panel loads existing configuration for editing</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
                   <div className="p-4 rounded-lg bg-muted/50 border">
-                    <div className="text-sm font-medium mb-2">Configuration Options</div>
-                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                      <li><strong>Table Name:</strong> The data source table</li>
-                      <li><strong>Label Field:</strong> Column to display as the answer label</li>
-                      <li><strong>Value Field:</strong> Column to store as the answer value</li>
-                      <li><strong>Filter Groups:</strong> AND/OR conditions to filter data</li>
-                      <li><strong>Sort Order:</strong> Ascending or descending by chosen field</li>
-                    </ul>
+                    <div className="text-sm font-medium mb-2">💡 Use Cases for Dynamic Values</div>
+                    <div className="grid gap-3 sm:grid-cols-2 text-sm text-muted-foreground">
+                      <div>
+                        <strong>Employee Directories:</strong> Pull names from HR database
+                      </div>
+                      <div>
+                        <strong>Product Catalogs:</strong> Show current inventory items
+                      </div>
+                      <div>
+                        <strong>Location Lists:</strong> Active office locations
+                      </div>
+                      <div>
+                        <strong>Department Lists:</strong> Currently active departments
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
