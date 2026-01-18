@@ -120,6 +120,8 @@ export interface Question {
   text: string;
   type: QuestionType;
   required: boolean;
+  readOnly?: boolean;
+  hidden?: boolean;
   order: number;
   answerSets: AnswerSet[];
   questionLevelRuleGroup: RuleGroup;

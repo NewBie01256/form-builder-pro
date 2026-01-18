@@ -209,7 +209,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
               </Select>
             </div>
 
-            <div className="flex items-end">
+            <div className="flex items-end gap-6">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="required"
@@ -218,6 +218,26 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                 />
                 <Label htmlFor="required" className="font-normal">
                   Required
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="readOnly"
+                  checked={question.readOnly ?? false}
+                  onCheckedChange={(checked) => onUpdate(question.id, { readOnly: !!checked })}
+                />
+                <Label htmlFor="readOnly" className="font-normal">
+                  Read-only
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="hidden"
+                  checked={question.hidden ?? false}
+                  onCheckedChange={(checked) => onUpdate(question.id, { hidden: !!checked })}
+                />
+                <Label htmlFor="hidden" className="font-normal">
+                  Hidden
                 </Label>
               </div>
             </div>
