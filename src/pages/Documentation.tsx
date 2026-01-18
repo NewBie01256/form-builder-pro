@@ -27,6 +27,14 @@ import {
   CircleDot,
   ToggleLeft,
   CheckSquare,
+  Plus,
+  MousePointer,
+  ArrowRight,
+  FolderTree,
+  PanelLeft,
+  Pencil,
+  ChevronRight,
+  LayoutGrid,
 } from "lucide-react";
 
 const Documentation = () => {
@@ -57,8 +65,20 @@ const Documentation = () => {
                 <a href="#overview" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Overview
                 </a>
+                <a href="#getting-started" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Getting Started
+                </a>
+                <a href="#workflow" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Workflow & Navigation
+                </a>
+                <a href="#sidebar-tree" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Sidebar Tree View
+                </a>
                 <a href="#structure" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Questionnaire Structure
+                </a>
+                <a href="#adding-content" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Adding Questions & Branches
                 </a>
                 <a href="#question-types" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Question Types
@@ -136,6 +156,267 @@ const Documentation = () => {
               </Card>
             </section>
 
+            {/* Getting Started */}
+            <section id="getting-started">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <ArrowRight className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Getting Started</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    Follow these steps to create your first questionnaire from scratch:
+                  </p>
+                  
+                  <div className="space-y-4">
+                    <div className="flex gap-4 p-4 rounded-lg border">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                        1
+                      </div>
+                      <div>
+                        <div className="font-semibold">Click "Create New" on the Home Screen</div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          This opens a blank questionnaire with one default page. Alternatively, select an existing template to start with pre-built content.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-4 p-4 rounded-lg border">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                        2
+                      </div>
+                      <div>
+                        <div className="font-semibold">Fill in Questionnaire Details</div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Expand the "Questionnaire Details" section in the sidebar to set the name, description, service catalog, and status.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-4 p-4 rounded-lg border">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                        3
+                      </div>
+                      <div>
+                        <div className="font-semibold">Add Sections to Your Page</div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Click "Add Section" in the main workspace to create content containers. Sections help organize questions by topic.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-4 p-4 rounded-lg border">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                        4
+                      </div>
+                      <div>
+                        <div className="font-semibold">Add Questions to Sections</div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Click "Add Question" within a section card. Configure the question text, type, and answer options in the editor that appears.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-4 p-4 rounded-lg border">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
+                        5
+                      </div>
+                      <div>
+                        <div className="font-semibold">Save Your Work</div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Click "Save as Draft" to store your questionnaire locally. You can return and edit it anytime from the Saved Drafts section.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Workflow & Navigation */}
+            <section id="workflow">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <LayoutGrid className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Workflow & Navigation</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    The builder uses a 30/70 split layout with the sidebar on the left and the main workspace on the right.
+                  </p>
+                  
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="p-4 rounded-lg border">
+                      <div className="flex items-center gap-2 mb-3">
+                        <PanelLeft className="h-5 w-5 text-primary" />
+                        <span className="font-medium">Left Sidebar (30%)</span>
+                      </div>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li>• Collapsible Questionnaire Details form</li>
+                        <li>• Interactive tree view of all pages, sections, questions, and branches</li>
+                        <li>• Click any item to select and edit it</li>
+                        <li>• Reset button to return to home screen</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg border">
+                      <div className="flex items-center gap-2 mb-3">
+                        <LayoutGrid className="h-5 w-5 text-primary" />
+                        <span className="font-medium">Main Workspace (70%)</span>
+                      </div>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li>• Page tabs at the top for navigation</li>
+                        <li>• Section cards with inline hierarchy preview</li>
+                        <li>• Full Question/Branch editors when selected</li>
+                        <li>• Add Section button for creating new containers</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Page Navigation</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Use the page tabs in the header area to switch between pages. Each tab shows the page name with options to:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">Click to select page</Badge>
+                      <Badge variant="secondary">Double-click to rename</Badge>
+                      <Badge variant="secondary">X button to delete</Badge>
+                      <Badge variant="secondary">+ button to add new page</Badge>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Selection Flow</h4>
+                    <div className="flex items-center gap-2 flex-wrap text-sm">
+                      <Badge variant="outline">Click Page Tab</Badge>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <Badge variant="outline">Click Section in Tree</Badge>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <Badge variant="outline">Click Question/Branch</Badge>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <Badge variant="outline">Editor Opens</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-3">
+                      Selected items are highlighted in both the sidebar tree and section preview. The corresponding editor appears in the main workspace.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Sidebar Tree View */}
+            <section id="sidebar-tree">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <FolderTree className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Sidebar Tree View</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    The sidebar displays your entire questionnaire as an interactive hierarchical tree with visual connector lines.
+                  </p>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50 border font-mono text-sm">
+                    <div className="text-foreground">📄 Page 1: Initial Assessment</div>
+                    <div className="ml-4 border-l-2 border-muted-foreground/30 pl-3 mt-1 space-y-1">
+                      <div className="text-muted-foreground">📁 Section: Contact Information</div>
+                      <div className="ml-4 border-l-2 border-muted-foreground/20 pl-3 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <HelpCircle className="h-3 w-3" />
+                          <span>What is your department?</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <HelpCircle className="h-3 w-3" />
+                          <span>Preferred contact method?</span>
+                          <Zap className="h-3 w-3 text-yellow-500" />
+                        </div>
+                      </div>
+                      <div className="text-muted-foreground">📁 Section: Issue Details</div>
+                      <div className="ml-4 border-l-2 border-muted-foreground/20 pl-3 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <HelpCircle className="h-3 w-3" />
+                          <span>What type of issue?</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <GitBranch className="h-3 w-3" />
+                          <span>Hardware Issues Branch</span>
+                        </div>
+                        <div className="ml-4 border-l-2 border-muted-foreground/10 pl-3">
+                          <div className="flex items-center gap-2">
+                            <HelpCircle className="h-3 w-3" />
+                            <span>What hardware is affected?</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="p-4 rounded-lg border">
+                      <div className="font-medium mb-2">Tree Icons</div>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li className="flex items-center gap-2">
+                          <HelpCircle className="h-4 w-4" />
+                          <span>Question item</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <GitBranch className="h-4 w-4" />
+                          <span>Conditional branch</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-yellow-500" />
+                          <span>Has Action Record attached</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg border">
+                      <div className="font-medium mb-2">Interactions</div>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li className="flex items-center gap-2">
+                          <MousePointer className="h-4 w-4" />
+                          <span>Click to select and open editor</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          <span>Selected items are highlighted</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <ChevronRight className="h-4 w-4" />
+                          <span>Nested items show parent lines</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50 border">
+                    <div className="text-sm font-medium mb-2">💡 Visual Connector Lines</div>
+                    <p className="text-sm text-muted-foreground">
+                      CSS-based tree lines connect parent and child items, making the hierarchy easy to understand. 
+                      Deeper nesting levels show progressively lighter connector lines to maintain visual clarity.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
             {/* Structure */}
             <section id="structure">
               <Card>
@@ -192,6 +473,137 @@ const Documentation = () => {
                     <p className="text-sm text-muted-foreground">
                       The sidebar displays the complete questionnaire hierarchy as an interactive tree. 
                       Click any item to select it for editing. Visual connector lines show the parent-child relationships.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Adding Questions & Branches */}
+            <section id="adding-content">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Plus className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Adding Questions & Branches</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    Learn how to add and manage questions and conditional branches within your questionnaire sections.
+                  </p>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <HelpCircle className="h-5 w-5 text-primary" />
+                      Adding Questions
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Method 1: From Section Card</div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Each section card in the main workspace has an "Add Question" button. Click it to add a new question to that section.
+                        </p>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Badge variant="outline">Section Card</Badge>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant="outline">Click "Add Question"</Badge>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant="outline">Question Editor Opens</Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Method 2: From Within a Branch</div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          When viewing a branch editor, use the "Add Question" button in the branch's left panel to add questions specific to that conditional path.
+                        </p>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Badge variant="outline">Select Branch</Badge>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant="outline">Branch Editor Opens</Badge>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant="outline">Click "Add Question" in Left Panel</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <GitBranch className="h-5 w-5 text-primary" />
+                      Adding Conditional Branches
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Section-Level Branches</div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Click "Add Branch" in a section card to create a new conditional path. The branch will appear in both the section preview and the sidebar tree.
+                        </p>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Badge variant="outline">Section Card</Badge>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant="outline">Click "Add Branch"</Badge>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant="outline">Configure Branch Rules</Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Nested Branches (Sub-Branches)</div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          When editing a branch, use "Add Nested Branch" to create child branches within the current branch, enabling multi-level decision trees.
+                        </p>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Badge variant="outline">Parent Branch Editor</Badge>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant="outline">Click "Add Nested Branch"</Badge>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant="outline">Child Branch Created</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <Pencil className="h-5 w-5 text-primary" />
+                      Editing & Deleting
+                    </h4>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Edit Items</div>
+                        <p className="text-sm text-muted-foreground">
+                          Click any question or branch in the sidebar tree or section preview to select it. 
+                          The full editor will appear in the main workspace with all configurable options.
+                        </p>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Delete Items</div>
+                        <p className="text-sm text-muted-foreground">
+                          Each question and branch has a delete button (trash icon) in its editor header. 
+                          Deleting a branch also removes all its nested questions and sub-branches.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50 border">
+                    <div className="text-sm font-medium mb-2">📍 Section Preview</div>
+                    <p className="text-sm text-muted-foreground">
+                      Each section card shows a compact horizontal preview of its contents. Questions display with a 
+                      <HelpCircle className="h-3 w-3 inline mx-1" /> icon, and branches show with a 
+                      <GitBranch className="h-3 w-3 inline mx-1" /> icon in dashed-border containers. 
+                      Nested items are indented with vertical connector lines.
                     </p>
                   </div>
                 </CardContent>
