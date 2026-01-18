@@ -35,6 +35,7 @@ import {
   Pencil,
   ChevronRight,
   LayoutGrid,
+  Trash2,
 } from "lucide-react";
 
 const Documentation = () => {
@@ -1348,38 +1349,473 @@ const Documentation = () => {
                     <div className="p-2 rounded-lg bg-primary/10">
                       <GitBranch className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle>Conditional Branching</CardTitle>
+                    <div>
+                      <CardTitle>Conditional Branching</CardTitle>
+                      <CardDescription>
+                        Create dynamic questionnaire paths that adapt based on user responses
+                      </CardDescription>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <p className="text-muted-foreground">
-                    Create dynamic questionnaire paths that adapt based on user responses. 
-                    Branches can contain their own questions and nested sub-branches.
+                    Conditional Branching enables you to create dynamic, adaptive questionnaires where 
+                    different questions appear based on previous answers. This creates personalized 
+                    experiences and collects relevant data efficiently.
                   </p>
                   
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-lg border">
-                      <div className="font-medium mb-2">Section-Level Branches</div>
-                      <p className="text-sm text-muted-foreground">
-                        Added directly to sections, these branches appear when their conditions are met.
-                        Each branch has its own rule group that determines visibility.
+                  <Separator />
+                  
+                  {/* Two Levels of Branching */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Two Levels of Branching</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      The questionnaire builder supports two distinct levels of conditional logic:
+                    </p>
+                    
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-center gap-2 mb-3">
+                          <GitBranch className="h-5 w-5 text-primary" />
+                          <span className="font-medium">Question-Level Branching</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Determines whether an entire branch (and all its questions) should be shown or hidden.
+                        </p>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>• Configured in the <strong>Branch Editor</strong></li>
+                          <li>• Uses "Branch Rules (Question-Level)"</li>
+                          <li>• Controls visibility of entire question groups</li>
+                          <li>• Based on answers from preceding questions</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-center gap-2 mb-3">
+                          <ListChecks className="h-5 w-5 text-primary" />
+                          <span className="font-medium">Answer-Level Branching</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Controls which answer set is displayed for a specific question based on previous responses.
+                        </p>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>• Configured in the <strong>Question Editor</strong></li>
+                          <li>• Uses "Answer-Level Conditional Branching" section</li>
+                          <li>• Dynamically swaps answer options</li>
+                          <li>• Same question, different choices</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Branch Hierarchy */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Branch Hierarchy Structure</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Branches exist within sections and can be nested infinitely to create complex decision trees:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg bg-muted/50 border font-mono text-sm">
+                      <div className="text-foreground">📁 Section: Issue Classification</div>
+                      <div className="ml-4 border-l-2 border-primary/50 pl-3 mt-2 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <HelpCircle className="h-3 w-3" />
+                          <span>What type of issue?</span>
+                          <Badge variant="outline" className="text-xs">Root Question</Badge>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <GitBranch className="h-3 w-3 text-primary" />
+                          <span>Hardware Issues Branch</span>
+                          <Badge variant="secondary" className="text-xs">Level 1</Badge>
+                        </div>
+                        <div className="ml-4 border-l-2 border-primary/30 pl-3 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <HelpCircle className="h-3 w-3" />
+                            <span>Which hardware component?</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <GitBranch className="h-3 w-3 text-primary" />
+                            <span>Monitor Issues</span>
+                            <Badge variant="secondary" className="text-xs">Level 2</Badge>
+                          </div>
+                          <div className="ml-4 border-l-2 border-primary/20 pl-3">
+                            <div className="flex items-center gap-2">
+                              <HelpCircle className="h-3 w-3" />
+                              <span>What's wrong with the monitor?</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <GitBranch className="h-3 w-3 text-primary" />
+                          <span>Software Issues Branch</span>
+                          <Badge variant="secondary" className="text-xs">Level 1</Badge>
+                        </div>
+                        <div className="ml-4 border-l-2 border-primary/30 pl-3">
+                          <div className="flex items-center gap-2">
+                            <HelpCircle className="h-3 w-3" />
+                            <span>Which application?</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Creating a Branch */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Creating a Conditional Branch</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Follow these steps to add a new conditional branch to your questionnaire:
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          1
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Navigate to Section</div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Expand the section where you want to add the branch. Ensure you have at least one "trigger" question that will determine when the branch appears.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          2
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Click "Add Conditional Branch"</div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Found in the section header actions. For nested branches, use the "Add Conditional Branch" button inside an existing branch editor.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          3
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Name Your Branch</div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Enter a descriptive name like "Hardware Issues Path" or "High Priority Flow" in the Branch Name field.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          4
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Configure Branch Rules</div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Define when this branch should appear using the Rule Group Editor. Select source questions, answer sets, operators, and target answers.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          5
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Add Questions to Branch</div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Click "Add Question under this Branch" to populate the branch with questions that only appear when conditions are met.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Branch Editor Layout */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Branch Editor Layout</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      When you select a branch, the Branch Editor opens with a 20/80 split layout:
+                    </p>
+                    
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="font-medium">Left Panel (20%)</span>
+                          <Badge variant="outline" className="text-xs">Question List</Badge>
+                        </div>
+                        <ul className="text-xs text-muted-foreground space-y-2">
+                          <li className="flex items-start gap-2">
+                            <HelpCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                            <span>Clickable list of all questions in this branch</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <MousePointer className="h-3 w-3 mt-0.5 shrink-0" />
+                            <span>Click to select and edit a question</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <Trash2 className="h-3 w-3 mt-0.5 shrink-0 text-destructive" />
+                            <span>Trash icon to delete individual questions</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
+                            <span>Selected question is highlighted</span>
+                          </li>
+                        </ul>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="font-medium">Right Panel (80%)</span>
+                          <Badge variant="outline" className="text-xs">Question Editor</Badge>
+                        </div>
+                        <ul className="text-xs text-muted-foreground space-y-2">
+                          <li className="flex items-start gap-2">
+                            <Settings className="h-3 w-3 mt-0.5 shrink-0" />
+                            <span>Full Question Editor for selected question</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <Type className="h-3 w-3 mt-0.5 shrink-0" />
+                            <span>Question text, type, and configuration</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <ListChecks className="h-3 w-3 mt-0.5 shrink-0" />
+                            <span>Answer sets with all options</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <GitBranch className="h-3 w-3 mt-0.5 shrink-0" />
+                            <span>Answer-level conditional branching</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Branch Rules Configuration */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Branch Rules Configuration</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Branch rules determine when the branch and its questions become visible. The Rule Group Editor provides AND/OR logic:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg bg-muted/50 border mb-4">
+                      <div className="font-mono text-sm space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">AND</Badge>
+                          <span className="text-xs text-muted-foreground">All conditions must be true</span>
+                        </div>
+                        <div className="ml-4 border-l-2 border-muted-foreground/30 pl-3 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2 text-sm">
+                            <Badge variant="secondary" className="text-xs">Source Question</Badge>
+                            <span>"Issue Type"</span>
+                            <Badge variant="outline" className="text-xs">Answer Set</Badge>
+                            <span>"Categories"</span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 text-sm">
+                            <Badge variant="secondary" className="text-xs">Operator</Badge>
+                            <span>equals</span>
+                            <Badge variant="outline" className="text-xs">Answer</Badge>
+                            <span>"Hardware"</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-sm mb-2">Rule Fields</div>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>• <strong>Source Question:</strong> Preceding question to check</li>
+                          <li>• <strong>Answer Set:</strong> Which answer set to evaluate</li>
+                          <li>• <strong>Operator:</strong> Comparison type (equals, not_equals, etc.)</li>
+                          <li>• <strong>Answer:</strong> Specific answer value to match</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-sm mb-2">Important Constraints</div>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>• Only <strong>preceding questions</strong> appear in dropdown</li>
+                          <li>• Includes inline answer sets from other branches</li>
+                          <li>• Changing source question resets dependent fields</li>
+                          <li>• Nested groups enable complex AND/OR logic</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Answer-Level Branching Detail */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Answer-Level Conditional Branching</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Within the Question Editor, you can configure answer-level branching to show different answer options based on previous responses:
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          1
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Click "Add Answer Set" Button</div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Located in the "Answer-Level Conditional Branching" section of the Question Editor. This creates a new branching group.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          2
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Select from Left Panel</div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            The 20/80 layout shows answer set names on the left. Click one to edit. Uses the inline answer set name or "Untitled Answer Set" as fallback.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          3
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Configure Rules in Right Panel</div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            The AnswerLevelRuleGroupEditor appears with cascading dropdowns: Source Question → Answer Set → Operator → Answer.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 p-4 rounded-lg border">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          4
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Define Inline Answer Set</div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Each branching group has its own inline answer set with answers, labels, values, and optional action records.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg bg-muted/30 border mt-4">
+                      <div className="text-sm font-medium mb-2">💡 Example Use Case</div>
+                      <p className="text-xs text-muted-foreground">
+                        A question "Select your priority level" might show different options based on the user's role:
+                      </p>
+                      <ul className="text-xs text-muted-foreground mt-2 space-y-1 ml-4">
+                        <li>• <strong>If Role = "Manager":</strong> Show Critical, High, Medium, Low</li>
+                        <li>• <strong>If Role = "Staff":</strong> Show High, Medium, Low only</li>
+                        <li>• <strong>Default:</strong> Show standard priority options</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Visual Indicators */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Visual Indicators in Sidebar</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      The sidebar tree uses visual cues to help you understand your branch structure:
+                    </p>
+                    
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="p-3 rounded-lg border flex items-center gap-3">
+                        <GitBranch className="h-5 w-5 text-primary shrink-0" />
+                        <div>
+                          <div className="font-medium text-sm">GitBranch Icon</div>
+                          <p className="text-xs text-muted-foreground">Indicates a conditional branch</p>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border flex items-center gap-3">
+                        <HelpCircle className="h-5 w-5 text-muted-foreground shrink-0" />
+                        <div>
+                          <div className="font-medium text-sm">HelpCircle Icon</div>
+                          <p className="text-xs text-muted-foreground">Indicates a question</p>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border flex items-center gap-3">
+                        <Zap className="h-5 w-5 text-yellow-500 shrink-0" />
+                        <div>
+                          <div className="font-medium text-sm">Zap Icon</div>
+                          <p className="text-xs text-muted-foreground">Question has Action Records attached</p>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border flex items-center gap-3">
+                        <div className="h-5 w-0.5 bg-muted-foreground/30 shrink-0" />
+                        <div>
+                          <div className="font-medium text-sm">Vertical Lines</div>
+                          <p className="text-xs text-muted-foreground">Connector lines show nesting depth</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Deleting Branches */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Deleting Branches</h4>
+                    <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        <strong className="text-destructive">⚠️ Caution:</strong> Deleting a branch removes:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                        <li>• All questions within the branch</li>
+                        <li>• All nested child branches</li>
+                        <li>• All associated rules and answer sets</li>
+                        <li>• All action records attached to those questions</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-3">
+                        A confirmation dialog will appear before deletion. This action cannot be undone.
                       </p>
                     </div>
                     
-                    <div className="p-4 rounded-lg border">
-                      <div className="font-medium mb-2">Nested Branches</div>
-                      <p className="text-sm text-muted-foreground">
-                        Branches can contain other branches, allowing for complex multi-level decision trees.
-                        The sidebar tree displays all nesting levels clearly.
-                      </p>
+                    <div className="mt-4 p-4 rounded-lg border">
+                      <div className="font-medium text-sm mb-2">How to Delete a Branch</div>
+                      <ol className="text-xs text-muted-foreground space-y-1 list-decimal ml-4">
+                        <li>Select the branch in the sidebar or section preview</li>
+                        <li>In the Branch Editor header, click "Delete Branch"</li>
+                        <li>Review the confirmation dialog</li>
+                        <li>Click "Delete" to confirm or "Cancel" to abort</li>
+                      </ol>
                     </div>
-                    
-                    <div className="p-4 rounded-lg border">
-                      <div className="font-medium mb-2">Branch Editor Layout</div>
-                      <p className="text-sm text-muted-foreground">
-                        The branch editor uses a 20/80 split layout. The left panel shows the list of 
-                        questions within the branch, while the right panel displays the full question editor.
-                      </p>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50 border">
+                    <div className="text-sm font-medium mb-2">💡 Best Practices</div>
+                    <div className="grid gap-3 sm:grid-cols-2 text-xs text-muted-foreground">
+                      <div>
+                        <strong>Name branches clearly:</strong> Use descriptive names like "Hardware Path" instead of "Branch 1"
+                      </div>
+                      <div>
+                        <strong>Test your logic:</strong> Verify that branch conditions don't conflict or overlap unexpectedly
+                      </div>
+                      <div>
+                        <strong>Limit nesting depth:</strong> More than 3-4 levels can become hard to manage
+                      </div>
+                      <div>
+                        <strong>Use answer-level for variants:</strong> Same question structure, different answer options
+                      </div>
                     </div>
                   </div>
                 </CardContent>
