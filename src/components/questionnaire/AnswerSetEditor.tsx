@@ -18,6 +18,7 @@ interface AnswerSetEditorProps {
   onAddFromExisting?: () => void;
   questionType?: QuestionType;
   textValidationType?: TextValidationType;
+  onTextValidationChange?: (validationType: TextValidationType) => void;
 }
 
 // Validation patterns
@@ -30,7 +31,7 @@ const TEXT_VALIDATION_PATTERNS: Record<TextValidationType, { pattern: RegExp; ex
   url: { pattern: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/, example: 'http://domain.com' },
 };
 
-const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice', textValidationType = 'none' }: AnswerSetEditorProps) => {
+const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice', textValidationType = 'none', onTextValidationChange }: AnswerSetEditorProps) => {
   const [showDynamicPanel, setShowDynamicPanel] = useState(false);
   
   // Use answerSet's stored values instead of local state
@@ -124,9 +125,26 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
     return (
       <div className="border border-border rounded-lg p-4 bg-muted/30">
         <div className="space-y-2">
-          <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
           {questionType === 'Text' ? (
             <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-muted-foreground whitespace-nowrap">Regular Expression</Label>
+                  <select
+                    value={textValidationType}
+                    onChange={(e) => onTextValidationChange?.(e.target.value as TextValidationType)}
+                    className="h-8 px-3 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="none">None</option>
+                    <option value="cost_center">Cost Center (00000-0000)</option>
+                    <option value="email">Email (someone@domain.com)</option>
+                    <option value="ip_address">IP Address (127.0.0.1)</option>
+                    <option value="phone">Phone (0-000-000-0000)</option>
+                    <option value="url">URL (http://domain.com)</option>
+                  </select>
+                </div>
+              </div>
               <Textarea
                 placeholder={textValidationType !== 'none' 
                   ? `Format: ${TEXT_VALIDATION_PATTERNS[textValidationType].example}` 
@@ -140,36 +158,48 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
               )}
             </div>
           ) : questionType === 'Number' ? (
-            <Input
-              type="number"
-              placeholder={getSimpleTypePlaceholder()}
-              value={simpleAnswer.value}
-              onChange={(e) => updateSimpleAnswer(e.target.value, 'Number Response')}
-            />
-          ) : questionType === 'Date' ? (
-            <Input
-              type="date"
-              value={simpleAnswer.value}
-              onChange={(e) => updateSimpleAnswer(e.target.value, 'Date Response')}
-            />
-          ) : questionType === 'Rating' ? (
-            <Input
-              type="number"
-              placeholder={getSimpleTypePlaceholder()}
-              value={simpleAnswer.value}
-              onChange={(e) => updateSimpleAnswer(e.target.value, 'Rating Response')}
-            />
-          ) : questionType === 'Boolean' ? (
-            <div className="flex items-center gap-3">
-              <Switch
-                id={`boolean-${answerSet.id}`}
-                checked={simpleAnswer.value === 'true'}
-                onCheckedChange={(checked) => updateSimpleAnswer(checked ? 'true' : 'false', checked ? 'Yes' : 'No')}
+            <>
+              <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+              <Input
+                type="number"
+                placeholder={getSimpleTypePlaceholder()}
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Number Response')}
               />
-              <Label htmlFor={`boolean-${answerSet.id}`} className="text-sm font-normal">
-                {simpleAnswer.value === 'true' ? 'Yes (True)' : 'No (False)'}
-              </Label>
-            </div>
+            </>
+          ) : questionType === 'Date' ? (
+            <>
+              <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+              <Input
+                type="date"
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Date Response')}
+              />
+            </>
+          ) : questionType === 'Rating' ? (
+            <>
+              <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+              <Input
+                type="number"
+                placeholder={getSimpleTypePlaceholder()}
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Rating Response')}
+              />
+            </>
+          ) : questionType === 'Boolean' ? (
+            <>
+              <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+              <div className="flex items-center gap-3">
+                <Switch
+                  id={`boolean-${answerSet.id}`}
+                  checked={simpleAnswer.value === 'true'}
+                  onCheckedChange={(checked) => updateSimpleAnswer(checked ? 'true' : 'false', checked ? 'Yes' : 'No')}
+                />
+                <Label htmlFor={`boolean-${answerSet.id}`} className="text-sm font-normal">
+                  {simpleAnswer.value === 'true' ? 'Yes (True)' : 'No (False)'}
+                </Label>
+              </div>
+            </>
           ) : null}
         </div>
       </div>
