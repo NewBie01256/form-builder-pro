@@ -71,6 +71,9 @@ export interface AnswerSet {
   ratingMinLabel?: string;
   ratingMaxLabel?: string;
   ratingDisplayStyle?: 'numbers' | 'stars' | 'smileys' | 'hearts' | 'thumbs';
+  // Document configuration
+  allowedFileTypes?: string[];
+  maxFileSize?: number; // in MB
 }
 
 export interface QuestionLevelRule {
@@ -109,7 +112,7 @@ export interface AnswerLevelRuleGroup {
   inlineAnswerSet?: AnswerSet;
 }
 
-export type QuestionType = 'Choice' | 'Text' | 'TextArea' | 'Number' | 'Decimal' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean' | 'RadioButton';
+export type QuestionType = 'Choice' | 'Text' | 'TextArea' | 'Number' | 'Decimal' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean' | 'RadioButton' | 'Document';
 
 export type TextAreaFormat = 'plain' | 'rich';
 

@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, ChevronDown, ChevronUp, Trash2, Library, Zap } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, Trash2, Library, Zap, FileUp } from "lucide-react";
 import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer, AnswerLevelOperator, QuestionType } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 import {
@@ -47,7 +47,7 @@ interface InlineAnswerSetEditorProps {
 
 const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice' }: InlineAnswerSetEditorProps) => {
   // Types that don't need the full answer set UI
-  const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean'].includes(questionType);
+  const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean', 'Document'].includes(questionType);
   // Types that use the choice-based answer set UI
   const isChoiceType = ['Choice', 'MultiSelect', 'RadioButton'].includes(questionType);
 
@@ -113,6 +113,7 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
       case 'Date': return 'Default Date Value';
       case 'Rating': return 'Default Rating Value';
       case 'Boolean': return 'Default Boolean Value';
+      case 'Document': return 'Document Upload Configuration';
       default: return 'Default Value';
     }
   };
@@ -392,6 +393,55 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
               <Label htmlFor={`inline-boolean-${answerSet.id}`} className="text-sm font-normal">
                 {simpleAnswer.value === 'true' ? 'Yes (True)' : 'No (False)'}
               </Label>
+            </div>
+          ) : questionType === 'Document' ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <FileUp className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-xs text-muted-foreground">Document Upload Configuration</Label>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Allowed File Types</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: 'pdf', label: 'PDF' },
+                    { value: 'doc', label: 'Word' },
+                    { value: 'xls', label: 'Excel' },
+                    { value: 'ppt', label: 'PowerPoint' },
+                    { value: 'txt', label: 'Text' },
+                    { value: 'image', label: 'Images' },
+                  ].map((fileType) => (
+                    <div key={fileType.value} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`inline-file-type-${answerSet.id}-${fileType.value}`}
+                        checked={(answerSet.allowedFileTypes ?? ['pdf', 'doc', 'xls', 'ppt', 'txt', 'image']).includes(fileType.value)}
+                        onCheckedChange={(checked) => {
+                          const current = answerSet.allowedFileTypes ?? ['pdf', 'doc', 'xls', 'ppt', 'txt', 'image'];
+                          const updated = checked 
+                            ? [...current, fileType.value]
+                            : current.filter(t => t !== fileType.value);
+                          onUpdate({ ...answerSet, allowedFileTypes: updated });
+                        }}
+                      />
+                      <Label htmlFor={`inline-file-type-${answerSet.id}-${fileType.value}`} className="text-xs cursor-pointer">
+                        {fileType.label}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Max File Size (MB)</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="10"
+                  value={answerSet.maxFileSize ?? 10}
+                  onChange={(e) => onUpdate({ ...answerSet, maxFileSize: Number(e.target.value) || 10 })}
+                  className="h-7 w-24 text-xs"
+                />
+              </div>
             </div>
           ) : null}
         </div>

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Library, Zap, Database, Table2, ArrowUpDown, Filter, Pencil } from "lucide-react";
+import { Plus, Library, Zap, Database, Table2, ArrowUpDown, Filter, Pencil, FileUp } from "lucide-react";
 import { AnswerSet, Answer, QuestionType, TextValidationType, TextAreaFormat } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 import DynamicValuesPanel, { DynamicValueConfig, DynamicValueFilterGroup } from "./DynamicValuesPanel";
@@ -42,7 +42,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   const dynamicConfig = answerSet.dynamicConfig;
   
   // Types that don't need the full answer set UI
-  const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean'].includes(questionType);
+  const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean', 'Document'].includes(questionType);
   // Types that use the choice-based answer set UI
   const isChoiceType = ['Choice', 'MultiSelect', 'RadioButton'].includes(questionType);
 
@@ -101,6 +101,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       case 'Date': return 'Default Date Value';
       case 'Rating': return 'Default Rating Value';
       case 'Boolean': return 'Default Boolean Value';
+      case 'Document': return 'Document Upload Configuration';
       default: return 'Default Value';
     }
   };
@@ -458,6 +459,57 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                 </Label>
               </div>
             </>
+          ) : questionType === 'Document' ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <FileUp className="h-5 w-5 text-muted-foreground" />
+                <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+              </div>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Allowed File Types</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'pdf', label: 'PDF (.pdf)' },
+                      { value: 'doc', label: 'Word (.doc, .docx)' },
+                      { value: 'xls', label: 'Excel (.xls, .xlsx)' },
+                      { value: 'ppt', label: 'PowerPoint (.ppt, .pptx)' },
+                      { value: 'txt', label: 'Text (.txt)' },
+                      { value: 'image', label: 'Images (.jpg, .png, .gif)' },
+                    ].map((fileType) => (
+                      <div key={fileType.value} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`file-type-${answerSet.id}-${fileType.value}`}
+                          checked={(answerSet.allowedFileTypes ?? ['pdf', 'doc', 'xls', 'ppt', 'txt', 'image']).includes(fileType.value)}
+                          onCheckedChange={(checked) => {
+                            const current = answerSet.allowedFileTypes ?? ['pdf', 'doc', 'xls', 'ppt', 'txt', 'image'];
+                            const updated = checked 
+                              ? [...current, fileType.value]
+                              : current.filter(t => t !== fileType.value);
+                            onUpdate({ ...answerSet, allowedFileTypes: updated });
+                          }}
+                        />
+                        <Label htmlFor={`file-type-${answerSet.id}-${fileType.value}`} className="text-xs cursor-pointer">
+                          {fileType.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Max File Size (MB)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="100"
+                    placeholder="10"
+                    value={answerSet.maxFileSize ?? 10}
+                    onChange={(e) => onUpdate({ ...answerSet, maxFileSize: Number(e.target.value) || 10 })}
+                    className="h-8 w-32 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
           ) : null}
         </div>
       </div>
