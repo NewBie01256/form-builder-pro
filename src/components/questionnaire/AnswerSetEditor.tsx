@@ -545,37 +545,49 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Upload Document</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="file"
-                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          // Create a local URL for preview (in real app, this would upload to storage)
-                          const url = URL.createObjectURL(file);
-                          onUpdate({ 
-                            ...answerSet, 
-                            downloadableFileUrl: url,
-                            downloadableFileName: answerSet.downloadableFileName || file.name,
-                            downloadableFileType: file.type
-                          });
-                        }
-                      }}
-                      className="h-8 text-sm file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                    />
-                  </div>
-                  {answerSet.downloadableFileUrl && (
-                    <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-                      <FileUp className="h-4 w-4 text-primary" />
-                      <span className="text-xs text-muted-foreground truncate flex-1">
-                        {answerSet.downloadableFileName || 'Uploaded document'}
-                      </span>
+                  <Label className="text-xs text-muted-foreground">Attach Document</Label>
+                  {!answerSet.downloadableFileUrl ? (
+                    <div className="border-2 border-dashed border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
+                      <label className="flex flex-col items-center gap-2 cursor-pointer">
+                        <FileUp className="h-8 w-8 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Click to upload a document</span>
+                        <span className="text-xs text-muted-foreground">PDF, Word, Excel, PowerPoint, Text, or Images</span>
+                        <Input
+                          type="file"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const url = URL.createObjectURL(file);
+                              onUpdate({ 
+                                ...answerSet, 
+                                downloadableFileUrl: url,
+                                downloadableFileName: answerSet.downloadableFileName || file.name,
+                                downloadableFileType: file.type
+                              });
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <FileUp className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {answerSet.downloadableFileName || 'Uploaded document'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {answerSet.downloadableFileType || 'Document attached'}
+                        </p>
+                      </div>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-6 px-2 text-xs"
+                        className="h-8 px-3 text-xs"
                         onClick={() => onUpdate({ 
                           ...answerSet, 
                           downloadableFileUrl: undefined,

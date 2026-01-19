@@ -477,34 +477,48 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Upload Document</Label>
-                <Input
-                  type="file"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const url = URL.createObjectURL(file);
-                      onUpdate({ 
-                        ...answerSet, 
-                        downloadableFileUrl: url,
-                        downloadableFileName: answerSet.downloadableFileName || file.name,
-                        downloadableFileType: file.type
-                      });
-                    }
-                  }}
-                  className="h-7 text-xs file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                />
-                {answerSet.downloadableFileUrl && (
-                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-                    <FileUp className="h-3 w-3 text-primary" />
-                    <span className="text-xs text-muted-foreground truncate flex-1">
-                      {answerSet.downloadableFileName || 'Uploaded document'}
-                    </span>
+                <Label className="text-xs text-muted-foreground">Attach Document</Label>
+                {!answerSet.downloadableFileUrl ? (
+                  <div className="border-2 border-dashed border-border rounded-lg p-3 hover:border-primary/50 transition-colors">
+                    <label className="flex flex-col items-center gap-1 cursor-pointer">
+                      <FileUp className="h-6 w-6 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Click to upload</span>
+                      <Input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const url = URL.createObjectURL(file);
+                            onUpdate({ 
+                              ...answerSet, 
+                              downloadableFileUrl: url,
+                              downloadableFileName: answerSet.downloadableFileName || file.name,
+                              downloadableFileType: file.type
+                            });
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-2 bg-primary/5 border border-primary/20 rounded-lg">
+                    <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center">
+                      <FileUp className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">
+                        {answerSet.downloadableFileName || 'Uploaded document'}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {answerSet.downloadableFileType || 'Document attached'}
+                      </p>
+                    </div>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="h-5 px-1 text-xs"
+                      className="h-6 px-2 text-xs"
                       onClick={() => onUpdate({ 
                         ...answerSet, 
                         downloadableFileUrl: undefined,
