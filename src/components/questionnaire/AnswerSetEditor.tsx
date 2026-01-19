@@ -42,7 +42,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   const dynamicConfig = answerSet.dynamicConfig;
   
   // Types that don't need the full answer set UI
-  const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean', 'Document'].includes(questionType);
+  const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean', 'Document', 'DownloadableDocument'].includes(questionType);
   // Types that use the choice-based answer set UI
   const isChoiceType = ['Choice', 'MultiSelect', 'RadioButton'].includes(questionType);
 
@@ -102,6 +102,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       case 'Rating': return 'Default Rating Value';
       case 'Boolean': return 'Default Boolean Value';
       case 'Document': return 'File Attachment Configuration';
+      case 'DownloadableDocument': return 'Downloadable Document Configuration';
       default: return 'Default Value';
     }
   };
@@ -521,6 +522,71 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                       className="h-8 text-sm"
                     />
                   </div>
+                </div>
+              </div>
+            </div>
+          ) : questionType === 'DownloadableDocument' ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <FileUp className="h-5 w-5 text-muted-foreground" />
+                <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Upload a document that will be available for download by users completing this questionnaire.
+              </p>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Document Name</Label>
+                  <Input
+                    placeholder="Enter document display name"
+                    value={answerSet.downloadableFileName ?? ''}
+                    onChange={(e) => onUpdate({ ...answerSet, downloadableFileName: e.target.value })}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Upload Document</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // Create a local URL for preview (in real app, this would upload to storage)
+                          const url = URL.createObjectURL(file);
+                          onUpdate({ 
+                            ...answerSet, 
+                            downloadableFileUrl: url,
+                            downloadableFileName: answerSet.downloadableFileName || file.name,
+                            downloadableFileType: file.type
+                          });
+                        }
+                      }}
+                      className="h-8 text-sm file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                    />
+                  </div>
+                  {answerSet.downloadableFileUrl && (
+                    <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                      <FileUp className="h-4 w-4 text-primary" />
+                      <span className="text-xs text-muted-foreground truncate flex-1">
+                        {answerSet.downloadableFileName || 'Uploaded document'}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => onUpdate({ 
+                          ...answerSet, 
+                          downloadableFileUrl: undefined,
+                          downloadableFileName: undefined,
+                          downloadableFileType: undefined
+                        })}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -75,6 +75,10 @@ export interface AnswerSet {
   allowedFileTypes?: string[];
   maxFileSize?: number; // in MB
   maxFiles?: number; // max number of files allowed
+  // Downloadable Document configuration
+  downloadableFileName?: string;
+  downloadableFileUrl?: string;
+  downloadableFileType?: string;
 }
 
 export interface QuestionLevelRule {
@@ -113,7 +117,7 @@ export interface AnswerLevelRuleGroup {
   inlineAnswerSet?: AnswerSet;
 }
 
-export type QuestionType = 'Choice' | 'Text' | 'TextArea' | 'Number' | 'Decimal' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean' | 'RadioButton' | 'Document';
+export type QuestionType = 'Choice' | 'Text' | 'TextArea' | 'Number' | 'Decimal' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean' | 'RadioButton' | 'Document' | 'DownloadableDocument';
 
 export type TextAreaFormat = 'plain' | 'rich';
 
