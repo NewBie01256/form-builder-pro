@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus, Library, Zap, Database, Table2, ArrowUpDown, Filter, Pencil } from "lucide-react";
-import { AnswerSet, Answer, QuestionType } from "@/types/questionnaire";
+import { AnswerSet, Answer, QuestionType, TextValidationType } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 import DynamicValuesPanel, { DynamicValueConfig, DynamicValueFilterGroup } from "./DynamicValuesPanel";
 
@@ -17,9 +17,20 @@ interface AnswerSetEditorProps {
   onUpdate: (updated: AnswerSet) => void;
   onAddFromExisting?: () => void;
   questionType?: QuestionType;
+  textValidationType?: TextValidationType;
 }
 
-const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice' }: AnswerSetEditorProps) => {
+// Validation patterns
+const TEXT_VALIDATION_PATTERNS: Record<TextValidationType, { pattern: RegExp; example: string }> = {
+  none: { pattern: /.*/, example: '' },
+  cost_center: { pattern: /^\d{5}-\d{4}$/, example: '00000-0000' },
+  email: { pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, example: 'someone@domain.com' },
+  ip_address: { pattern: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/, example: '127.0.0.1' },
+  phone: { pattern: /^\d{1}-\d{3}-\d{3}-\d{4}$/, example: '0-000-000-0000' },
+  url: { pattern: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/, example: 'http://domain.com' },
+};
+
+const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice', textValidationType = 'none' }: AnswerSetEditorProps) => {
   const [showDynamicPanel, setShowDynamicPanel] = useState(false);
   
   // Use answerSet's stored values instead of local state
@@ -94,6 +105,20 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
     }, 0);
   };
 
+  // Text validation helper
+  const getTextValidationError = (): string | null => {
+    if (questionType !== 'Text' || textValidationType === 'none' || !simpleAnswer.value) {
+      return null;
+    }
+    const validation = TEXT_VALIDATION_PATTERNS[textValidationType];
+    if (!validation.pattern.test(simpleAnswer.value)) {
+      return `Invalid format. Expected: ${validation.example}`;
+    }
+    return null;
+  };
+
+  const textValidationError = getTextValidationError();
+
   // For simple types, show a minimal UI
   if (isSimpleType) {
     return (
@@ -101,12 +126,19 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
         <div className="space-y-2">
           <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
           {questionType === 'Text' ? (
-            <Textarea
-              placeholder={getSimpleTypePlaceholder()}
-              value={simpleAnswer.value}
-              onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Response')}
-              className="min-h-[80px]"
-            />
+            <div className="space-y-2">
+              <Textarea
+                placeholder={textValidationType !== 'none' 
+                  ? `Format: ${TEXT_VALIDATION_PATTERNS[textValidationType].example}` 
+                  : getSimpleTypePlaceholder()}
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Response')}
+                className={`min-h-[80px] ${textValidationError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+              />
+              {textValidationError && (
+                <p className="text-xs text-destructive">{textValidationError}</p>
+              )}
+            </div>
           ) : questionType === 'Number' ? (
             <Input
               type="number"

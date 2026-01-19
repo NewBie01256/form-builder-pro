@@ -101,6 +101,13 @@ export interface NumberConfig {
   defaultValue?: number;
 }
 
+export type TextValidationType = 'none' | 'cost_center' | 'email' | 'ip_address' | 'phone' | 'url';
+
+export interface TextConfig {
+  validationType?: TextValidationType;
+  defaultValue?: string;
+}
+
 export interface DateConfig {
   minDate?: string;
   maxDate?: string;
@@ -126,6 +133,7 @@ export interface Question {
   answerSets: AnswerSet[];
   questionLevelRuleGroup: RuleGroup;
   answerLevelRuleGroups: AnswerLevelRuleGroup[];
+  textConfig?: TextConfig;
   numberConfig?: NumberConfig;
   dateConfig?: DateConfig;
   ratingConfig?: RatingConfig;
