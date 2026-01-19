@@ -20,6 +20,7 @@ interface AnswerSetEditorProps {
   textValidationType?: TextValidationType;
   onTextValidationChange?: (validationType: TextValidationType) => void;
   textAreaFormat?: TextAreaFormat;
+  onTextAreaFormatChange?: (format: TextAreaFormat) => void;
 }
 
 // Validation patterns
@@ -32,7 +33,7 @@ const TEXT_VALIDATION_PATTERNS: Record<TextValidationType, { pattern: RegExp; ex
   url: { pattern: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/, example: 'http://domain.com' },
 };
 
-const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice', textValidationType = 'none', onTextValidationChange, textAreaFormat = 'plain' }: AnswerSetEditorProps) => {
+const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice', textValidationType = 'none', onTextValidationChange, textAreaFormat = 'plain', onTextAreaFormatChange }: AnswerSetEditorProps) => {
   const [showDynamicPanel, setShowDynamicPanel] = useState(false);
   
   // Use answerSet's stored values instead of local state
@@ -165,23 +166,29 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
             </div>
           ) : questionType === 'TextArea' ? (
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
-                <Badge variant="outline" className="text-xs">
-                  {textAreaFormat === 'rich' ? 'Rich Text' : 'Plain Text'}
-                </Badge>
-              </div>
+              <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
               <Textarea
                 placeholder={getSimpleTypePlaceholder()}
                 value={simpleAnswer.value}
                 onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Area Response')}
                 className="min-h-[120px]"
               />
-              {textAreaFormat === 'rich' && (
-                <p className="text-xs text-muted-foreground">
-                  Rich text formatting will be available to respondents (bold, italic, lists, etc.)
-                </p>
-              )}
+              <div className="flex items-center gap-2">
+                <Label className="text-xs text-muted-foreground">Format</Label>
+                <select
+                  value={textAreaFormat || 'plain'}
+                  onChange={(e) => {
+                    const value = e.target.value as TextAreaFormat;
+                    if (onTextAreaFormatChange) {
+                      onTextAreaFormatChange(value);
+                    }
+                  }}
+                  className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+                >
+                  <option value="plain">Plain Text</option>
+                  <option value="rich">Rich Text</option>
+                </select>
+              </div>
             </div>
           ) : questionType === 'Number' ? (
             <>
