@@ -212,7 +212,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
               </div>
             </div>
           ) : questionType === 'Number' ? (
-            <>
+            <div className="space-y-3">
               <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
               <Input
                 type="number"
@@ -220,7 +220,41 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                 value={simpleAnswer.value}
                 onChange={(e) => updateSimpleAnswer(e.target.value, 'Number Response')}
               />
-            </>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id={`number-restriction-${answerSet.id}`}
+                  checked={answerSet.numberRestriction ?? false}
+                  onCheckedChange={(checked) => onUpdate({ ...answerSet, numberRestriction: checked })}
+                />
+                <Label htmlFor={`number-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                  Restriction
+                </Label>
+              </div>
+              {answerSet.numberRestriction && (
+                <div className="grid grid-cols-2 gap-3 pl-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Min Value</Label>
+                    <Input
+                      type="number"
+                      placeholder="No min"
+                      value={answerSet.minValue ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, minValue: e.target.value ? Number(e.target.value) : undefined })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Max Value</Label>
+                    <Input
+                      type="number"
+                      placeholder="No max"
+                      value={answerSet.maxValue ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, maxValue: e.target.value ? Number(e.target.value) : undefined })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           ) : questionType === 'Date' ? (
             <div className="space-y-3">
               <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
