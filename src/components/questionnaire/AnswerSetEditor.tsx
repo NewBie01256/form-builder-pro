@@ -57,10 +57,22 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   };
 
   const updateAnswer = (answerId: string, updated: Partial<Answer>) => {
-    onUpdate({
-      ...answerSet,
-      answers: answerSet.answers.map(a => a.id === answerId ? { ...a, ...updated } : a)
-    });
+    // For Choice type, only one answer can be active at a time
+    if (updated.active === true && questionType === 'Choice') {
+      onUpdate({
+        ...answerSet,
+        answers: answerSet.answers.map(a => 
+          a.id === answerId 
+            ? { ...a, ...updated } 
+            : { ...a, active: false }
+        )
+      });
+    } else {
+      onUpdate({
+        ...answerSet,
+        answers: answerSet.answers.map(a => a.id === answerId ? { ...a, ...updated } : a)
+      });
+    }
   };
 
   // For simple types, ensure there's always exactly one answer
