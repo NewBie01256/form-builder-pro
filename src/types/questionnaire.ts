@@ -63,6 +63,8 @@ export interface AnswerSet {
   numberRestriction?: boolean;
   minValue?: number;
   maxValue?: number;
+  // TextArea format
+  textAreaFormat?: 'plain' | 'rich';
 }
 
 export interface QuestionLevelRule {
