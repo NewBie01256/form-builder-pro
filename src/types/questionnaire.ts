@@ -70,6 +70,7 @@ export interface AnswerSet {
   ratingMaxValue?: number;
   ratingMinLabel?: string;
   ratingMaxLabel?: string;
+  ratingDisplayStyle?: 'numbers' | 'stars' | 'smileys' | 'hearts' | 'thumbs';
 }
 
 export interface QuestionLevelRule {
