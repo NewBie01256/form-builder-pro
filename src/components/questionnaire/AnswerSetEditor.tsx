@@ -224,11 +224,32 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
           ) : questionType === 'Date' ? (
             <div className="space-y-3">
               <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
-              <Input
-                type={answerSet.includeTime ? 'datetime-local' : 'date'}
-                value={simpleAnswer.value}
-                onChange={(e) => updateSimpleAnswer(e.target.value, 'Date Response')}
-              />
+              <div className={`grid gap-3 ${answerSet.includeTime ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <Input
+                  type="date"
+                  value={simpleAnswer.value?.split('T')[0] || simpleAnswer.value || ''}
+                  onChange={(e) => {
+                    const dateValue = e.target.value;
+                    const timeValue = simpleAnswer.value?.split('T')[1] || '';
+                    const newValue = answerSet.includeTime && timeValue 
+                      ? `${dateValue}T${timeValue}` 
+                      : dateValue;
+                    updateSimpleAnswer(newValue, 'Date Response');
+                  }}
+                />
+                {answerSet.includeTime && (
+                  <Input
+                    type="time"
+                    value={simpleAnswer.value?.split('T')[1] || ''}
+                    onChange={(e) => {
+                      const timeValue = e.target.value;
+                      const dateValue = simpleAnswer.value?.split('T')[0] || simpleAnswer.value || '';
+                      const newValue = dateValue ? `${dateValue}T${timeValue}` : timeValue;
+                      updateSimpleAnswer(newValue, 'Date Response');
+                    }}
+                  />
+                )}
+              </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Switch
