@@ -225,19 +225,31 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
             <div className="space-y-3">
               <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
               <Input
-                type="date"
+                type={answerSet.includeTime ? 'datetime-local' : 'date'}
                 value={simpleAnswer.value}
                 onChange={(e) => updateSimpleAnswer(e.target.value, 'Date Response')}
               />
-              <div className="flex items-center gap-2">
-                <Switch
-                  id={`date-restriction-${answerSet.id}`}
-                  checked={answerSet.dateRestriction ?? false}
-                  onCheckedChange={(checked) => onUpdate({ ...answerSet, dateRestriction: checked })}
-                />
-                <Label htmlFor={`date-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
-                  Date Restriction
-                </Label>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id={`date-restriction-${answerSet.id}`}
+                    checked={answerSet.dateRestriction ?? false}
+                    onCheckedChange={(checked) => onUpdate({ ...answerSet, dateRestriction: checked })}
+                  />
+                  <Label htmlFor={`date-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                    Date Restriction
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id={`include-time-${answerSet.id}`}
+                    checked={answerSet.includeTime ?? false}
+                    onCheckedChange={(checked) => onUpdate({ ...answerSet, includeTime: checked })}
+                  />
+                  <Label htmlFor={`include-time-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                    Time
+                  </Label>
+                </div>
               </div>
               {answerSet.dateRestriction && (
                 <div className="grid grid-cols-2 gap-3 pl-1">
