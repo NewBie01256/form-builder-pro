@@ -120,47 +120,52 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
 
   const textValidationError = getTextValidationError();
 
-  // For simple types, show a minimal UI
+  // For Text type, show minimal UI without box
+  if (questionType === 'Text') {
+    return (
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+        <Textarea
+          placeholder={textValidationType !== 'none' 
+            ? `Format: ${TEXT_VALIDATION_PATTERNS[textValidationType].example}` 
+            : getSimpleTypePlaceholder()}
+          value={simpleAnswer.value}
+          onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Response')}
+          className={`min-h-[80px] ${textValidationError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+        />
+        {textValidationError && (
+          <p className="text-xs text-destructive">{textValidationError}</p>
+        )}
+        <div className="flex items-center gap-2">
+          <Label className="text-xs text-muted-foreground">Regular Expression</Label>
+          <select
+            value={textValidationType || 'none'}
+            onChange={(e) => {
+              const value = e.target.value as TextValidationType;
+              if (onTextValidationChange) {
+                onTextValidationChange(value);
+              }
+            }}
+            className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+          >
+            <option value="none">None</option>
+            <option value="cost_center">Cost Center (00000-0000)</option>
+            <option value="email">Email (someone@domain.com)</option>
+            <option value="ip_address">IP Address (127.0.0.1)</option>
+            <option value="phone">Phone (0-000-000-0000)</option>
+            <option value="url">URL (http://domain.com)</option>
+          </select>
+        </div>
+      </div>
+    );
+  }
+
+  // For other simple types, show a minimal UI with box
   if (isSimpleType) {
     return (
       <div className="border border-border rounded-lg p-4 bg-muted/30">
         <div className="space-y-2">
-          {questionType === 'Text' ? (
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
-              <Textarea
-                placeholder={textValidationType !== 'none' 
-                  ? `Format: ${TEXT_VALIDATION_PATTERNS[textValidationType].example}` 
-                  : getSimpleTypePlaceholder()}
-                value={simpleAnswer.value}
-                onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Response')}
-                className={`min-h-[80px] ${textValidationError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
-              />
-              {textValidationError && (
-                <p className="text-xs text-destructive">{textValidationError}</p>
-              )}
-              <div className="flex items-center gap-2">
-                <Label className="text-xs text-muted-foreground">Regular Expression</Label>
-                <select
-                  value={textValidationType || 'none'}
-                  onChange={(e) => {
-                    const value = e.target.value as TextValidationType;
-                    if (onTextValidationChange) {
-                      onTextValidationChange(value);
-                    }
-                  }}
-                  className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
-                >
-                  <option value="none">None</option>
-                  <option value="cost_center">Cost Center (00000-0000)</option>
-                  <option value="email">Email (someone@domain.com)</option>
-                  <option value="ip_address">IP Address (127.0.0.1)</option>
-                  <option value="phone">Phone (0-000-000-0000)</option>
-                  <option value="url">URL (http://domain.com)</option>
-                </select>
-              </div>
-            </div>
-          ) : questionType === 'Number' ? (
+          {questionType === 'Number' ? (
             <>
               <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
               <Input
