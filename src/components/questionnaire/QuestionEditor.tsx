@@ -208,6 +208,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                   <SelectItem value="Rating">Rating</SelectItem>
                   <SelectItem value="Boolean">Boolean (Yes/No)</SelectItem>
                   <SelectItem value="Document">File Attachment</SelectItem>
+                  <SelectItem value="DownloadableDocument">Downloadable Document</SelectItem>
                 </SelectContent>
               </Select>
             </div>
