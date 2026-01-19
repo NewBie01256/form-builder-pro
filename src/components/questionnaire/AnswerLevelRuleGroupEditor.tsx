@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -46,9 +47,9 @@ interface InlineAnswerSetEditorProps {
 
 const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice' }: InlineAnswerSetEditorProps) => {
   // Types that don't need the full answer set UI
-  const isSimpleType = ['Text', 'Number', 'Date', 'Rating'].includes(questionType);
+  const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean'].includes(questionType);
   // Types that use the choice-based answer set UI
-  const isChoiceType = ['Choice', 'MultiSelect'].includes(questionType);
+  const isChoiceType = ['Choice', 'MultiSelect', 'RadioButton'].includes(questionType);
 
   const addAnswer = () => {
     const newAnswer: Answer = {
@@ -61,10 +62,22 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
   };
 
   const updateAnswer = (answerId: string, updated: Partial<Answer>) => {
-    onUpdate({
-      ...answerSet,
-      answers: answerSet.answers.map(a => a.id === answerId ? { ...a, ...updated } : a)
-    });
+    // For Choice type, only one answer can be active at a time
+    if (updated.active === true && questionType === 'Choice') {
+      onUpdate({
+        ...answerSet,
+        answers: answerSet.answers.map(a => 
+          a.id === answerId 
+            ? { ...a, ...updated } 
+            : { ...a, active: false }
+        )
+      });
+    } else {
+      onUpdate({
+        ...answerSet,
+        answers: answerSet.answers.map(a => a.id === answerId ? { ...a, ...updated } : a)
+      });
+    }
   };
 
   const removeAnswer = (answerId: string) => {
@@ -94,9 +107,12 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
   const getSimpleTypeLabel = () => {
     switch (questionType) {
       case 'Text': return 'Default Text Answer';
+      case 'TextArea': return 'Default Text Area Content';
       case 'Number': return 'Default Number Value';
+      case 'Decimal': return 'Default Decimal Value';
       case 'Date': return 'Default Date Value';
       case 'Rating': return 'Default Rating Value';
+      case 'Boolean': return 'Default Boolean Value';
       default: return 'Default Value';
     }
   };
@@ -105,7 +121,7 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
   if (isSimpleType) {
     return (
       <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 mt-3">
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label className="text-sm font-semibold text-primary">{getSimpleTypeLabel()}</Label>
           {questionType === 'Text' ? (
             <Textarea
@@ -114,21 +130,179 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
               onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Response')}
               className="min-h-[80px]"
             />
+          ) : questionType === 'TextArea' ? (
+            <Textarea
+              placeholder="Enter default text area content (optional)"
+              value={simpleAnswer.value}
+              onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Area Response')}
+              className="min-h-[120px]"
+            />
           ) : questionType === 'Number' ? (
-            <Input
-              type="number"
-              placeholder="Enter default number (optional)"
-              value={simpleAnswer.value}
-              onChange={(e) => updateSimpleAnswer(e.target.value, 'Number Response')}
-              className="h-8"
-            />
+            <div className="space-y-3">
+              <Input
+                type="number"
+                placeholder="Enter default number (optional)"
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Number Response')}
+                className="h-8"
+              />
+              <div className="flex items-center gap-2">
+                <Switch
+                  id={`inline-number-restriction-${answerSet.id}`}
+                  checked={answerSet.numberRestriction ?? false}
+                  onCheckedChange={(checked) => onUpdate({ ...answerSet, numberRestriction: checked })}
+                />
+                <Label htmlFor={`inline-number-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                  Restriction
+                </Label>
+              </div>
+              {answerSet.numberRestriction && (
+                <div className="grid grid-cols-2 gap-3 pl-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Min Value</Label>
+                    <Input
+                      type="number"
+                      placeholder="No min"
+                      value={answerSet.minValue ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, minValue: e.target.value ? Number(e.target.value) : undefined })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Max Value</Label>
+                    <Input
+                      type="number"
+                      placeholder="No max"
+                      value={answerSet.maxValue ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, maxValue: e.target.value ? Number(e.target.value) : undefined })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : questionType === 'Decimal' ? (
+            <div className="space-y-3">
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="Enter default decimal (optional)"
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Decimal Response')}
+                className="h-8"
+              />
+              <div className="flex items-center gap-2">
+                <Switch
+                  id={`inline-decimal-restriction-${answerSet.id}`}
+                  checked={answerSet.numberRestriction ?? false}
+                  onCheckedChange={(checked) => onUpdate({ ...answerSet, numberRestriction: checked })}
+                />
+                <Label htmlFor={`inline-decimal-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                  Restriction
+                </Label>
+              </div>
+              {answerSet.numberRestriction && (
+                <div className="grid grid-cols-2 gap-3 pl-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Min Value</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="No min"
+                      value={answerSet.minValue ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, minValue: e.target.value ? Number(e.target.value) : undefined })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Max Value</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="No max"
+                      value={answerSet.maxValue ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, maxValue: e.target.value ? Number(e.target.value) : undefined })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           ) : questionType === 'Date' ? (
-            <Input
-              type="date"
-              value={simpleAnswer.value}
-              onChange={(e) => updateSimpleAnswer(e.target.value, 'Date Response')}
-              className="h-8"
-            />
+            <div className="space-y-3">
+              <div className={`grid gap-3 ${answerSet.includeTime ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <Input
+                  type="date"
+                  value={simpleAnswer.value?.split('T')[0] || simpleAnswer.value || ''}
+                  onChange={(e) => {
+                    const dateValue = e.target.value;
+                    const timeValue = simpleAnswer.value?.split('T')[1] || '';
+                    const newValue = answerSet.includeTime && timeValue 
+                      ? `${dateValue}T${timeValue}` 
+                      : dateValue;
+                    updateSimpleAnswer(newValue, 'Date Response');
+                  }}
+                  className="h-8"
+                />
+                {answerSet.includeTime && (
+                  <Input
+                    type="time"
+                    value={simpleAnswer.value?.split('T')[1] || ''}
+                    onChange={(e) => {
+                      const timeValue = e.target.value;
+                      const dateValue = simpleAnswer.value?.split('T')[0] || simpleAnswer.value || '';
+                      const newValue = dateValue ? `${dateValue}T${timeValue}` : timeValue;
+                      updateSimpleAnswer(newValue, 'Date Response');
+                    }}
+                    className="h-8"
+                  />
+                )}
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id={`inline-date-restriction-${answerSet.id}`}
+                    checked={answerSet.dateRestriction ?? false}
+                    onCheckedChange={(checked) => onUpdate({ ...answerSet, dateRestriction: checked })}
+                  />
+                  <Label htmlFor={`inline-date-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                    Date Restriction
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id={`inline-include-time-${answerSet.id}`}
+                    checked={answerSet.includeTime ?? false}
+                    onCheckedChange={(checked) => onUpdate({ ...answerSet, includeTime: checked })}
+                  />
+                  <Label htmlFor={`inline-include-time-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                    Time
+                  </Label>
+                </div>
+              </div>
+              {answerSet.dateRestriction && (
+                <div className="grid grid-cols-2 gap-3 pl-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Min Date</Label>
+                    <Input
+                      type="date"
+                      value={answerSet.minDate ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, minDate: e.target.value })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Max Date</Label>
+                    <Input
+                      type="date"
+                      value={answerSet.maxDate ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, maxDate: e.target.value })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           ) : questionType === 'Rating' ? (
             <Input
               type="number"
@@ -137,6 +311,17 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
               onChange={(e) => updateSimpleAnswer(e.target.value, 'Rating Response')}
               className="h-8"
             />
+          ) : questionType === 'Boolean' ? (
+            <div className="flex items-center gap-3">
+              <Switch
+                id={`inline-boolean-${answerSet.id}`}
+                checked={simpleAnswer.value === 'true'}
+                onCheckedChange={(checked) => updateSimpleAnswer(checked ? 'true' : 'false', checked ? 'Yes' : 'No')}
+              />
+              <Label htmlFor={`inline-boolean-${answerSet.id}`} className="text-sm font-normal">
+                {simpleAnswer.value === 'true' ? 'Yes (True)' : 'No (False)'}
+              </Label>
+            </div>
           ) : null}
         </div>
       </div>
