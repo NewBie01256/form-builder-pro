@@ -622,90 +622,533 @@ const Documentation = () => {
                     <CardTitle>Question Types</CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-6">
-                    The builder supports multiple question types, each with specific configurations:
+                <CardContent className="space-y-8">
+                  <p className="text-muted-foreground">
+                    The builder supports 13 question types, organized into three categories: Choice-based types, Input types, and Special types. Each type has specific configurations and behaviors.
                   </p>
                   
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="p-4 rounded-lg border space-y-2">
-                      <div className="flex items-center gap-2">
-                        <ListChecks className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Choice (Dropdown)</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Single selection from a dropdown list. Ideal for long lists of options.
-                      </p>
-                    </div>
+                  <Separator />
+                  
+                  {/* Choice-Based Types */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <ListChecks className="h-5 w-5 text-primary" />
+                      Choice-Based Types
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      These types allow users to select from predefined options. They support Answer Sets, Dynamic Values, and Action Records.
+                    </p>
                     
-                    <div className="p-4 rounded-lg border space-y-2">
-                      <div className="flex items-center gap-2">
-                        <CircleDot className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Radio Button</span>
+                    <div className="space-y-4">
+                      {/* Choice-options */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <ListChecks className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Choice-options</span>
+                          <Badge variant="secondary" className="text-xs">Single Select</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Displays options as selectable chips or buttons. Users can select only one option at a time.
+                        </p>
+                        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Use Case:</strong> When you want all options visible at once for quick selection
+                          </div>
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Best For:</strong> 2-6 options that fit horizontally
+                          </div>
+                        </div>
+                        <div className="mt-3 p-2 rounded bg-primary/5 border border-primary/20 text-xs">
+                          <strong>Features:</strong> Dynamic Values, Answer Sets, Action Records, Single active selection enforcement
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Single selection with visible radio buttons. Best for 2-5 options.
-                      </p>
+                      
+                      {/* Dropdown */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <ChevronRight className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Dropdown</span>
+                          <Badge variant="secondary" className="text-xs">Single Select</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Traditional dropdown select menu. Users click to reveal options and select one.
+                        </p>
+                        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Use Case:</strong> When space is limited or you have many options
+                          </div>
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Best For:</strong> 5+ options, standardized data entry
+                          </div>
+                        </div>
+                        <div className="mt-3 p-2 rounded bg-primary/5 border border-primary/20 text-xs">
+                          <strong>Features:</strong> Dynamic Values, Answer Sets, Action Records, Single active selection enforcement
+                        </div>
+                      </div>
+                      
+                      {/* Radio Button */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CircleDot className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Radio Button</span>
+                          <Badge variant="secondary" className="text-xs">Single Select</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Displays options as a vertical or horizontal list of radio buttons. All options are visible, and only one can be selected.
+                        </p>
+                        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Use Case:</strong> When users need to see all options before deciding
+                          </div>
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Best For:</strong> 2-5 mutually exclusive options
+                          </div>
+                        </div>
+                        <div className="mt-3 p-2 rounded bg-primary/5 border border-primary/20 text-xs">
+                          <strong>Features:</strong> Dynamic Values, Answer Sets, Action Records
+                        </div>
+                      </div>
+                      
+                      {/* Multi-Select */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckSquare className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Multi-Select</span>
+                          <Badge variant="outline" className="text-xs">Multiple Select</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Displays options as checkboxes, allowing users to select multiple answers simultaneously.
+                        </p>
+                        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Use Case:</strong> When multiple answers apply (e.g., "Select all that apply")
+                          </div>
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Best For:</strong> Features, preferences, multiple selections
+                          </div>
+                        </div>
+                        <div className="mt-3 p-2 rounded bg-primary/5 border border-primary/20 text-xs">
+                          <strong>Features:</strong> Dynamic Values, Answer Sets, Action Records, Multiple active selections allowed
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Input Types */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Type className="h-5 w-5 text-primary" />
+                      Input Types
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      These types accept free-form user input. They show simplified configuration without Answer Set lists.
+                    </p>
                     
-                    <div className="p-4 rounded-lg border space-y-2">
-                      <div className="flex items-center gap-2">
-                        <CheckSquare className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Multi-Select</span>
+                    <div className="space-y-4">
+                      {/* Text */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Type className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Text</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Single-line text input field for short responses. Supports regex-based validation patterns.
+                        </p>
+                        <div className="p-3 rounded bg-muted/30 mb-3">
+                          <div className="text-xs font-medium mb-2">Configuration Options:</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Default Text Answer:</strong> Pre-filled value (optional)</li>
+                            <li>• <strong>Regular Expression:</strong> Validation pattern dropdown</li>
+                          </ul>
+                        </div>
+                        <div className="p-3 rounded bg-primary/5 border border-primary/20">
+                          <div className="text-xs font-medium mb-2">Available Validation Patterns:</div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                            <div className="p-1.5 rounded bg-background">None (free text)</div>
+                            <div className="p-1.5 rounded bg-background">Cost Center (00000-0000)</div>
+                            <div className="p-1.5 rounded bg-background">Email (someone@domain.com)</div>
+                            <div className="p-1.5 rounded bg-background">IP Address (127.0.0.1)</div>
+                            <div className="p-1.5 rounded bg-background">Phone (0-000-000-0000)</div>
+                            <div className="p-1.5 rounded bg-background">URL (http://domain.com)</div>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Allows selecting multiple answers from a list of checkboxes.
-                      </p>
+                      
+                      {/* TextArea */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Type className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Text Area</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Multi-line text input for longer responses. Supports both plain text and rich text formatting.
+                        </p>
+                        <div className="p-3 rounded bg-muted/30 mb-3">
+                          <div className="text-xs font-medium mb-2">Configuration Options:</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Default Content:</strong> Pre-filled text (optional)</li>
+                            <li>• <strong>Format:</strong> Plain Text or Rich Text</li>
+                          </ul>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Plain Text:</strong> Standard textarea, no formatting
+                          </div>
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Rich Text:</strong> TipTap editor with bold, italic, lists, headings
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Number */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Hash className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Number</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Numeric input field for whole numbers. Supports min/max value restrictions.
+                        </p>
+                        <div className="p-3 rounded bg-muted/30 mb-3">
+                          <div className="text-xs font-medium mb-2">Configuration Options:</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Default Number Value:</strong> Pre-filled number (optional)</li>
+                            <li>• <strong>Restriction Toggle:</strong> Enable min/max validation</li>
+                            <li>• <strong>Min Value:</strong> Minimum allowed number</li>
+                            <li>• <strong>Max Value:</strong> Maximum allowed number</li>
+                          </ul>
+                        </div>
+                      </div>
+                      
+                      {/* Decimal */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Hash className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Decimal</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Numeric input field for decimal numbers with two-decimal precision (e.g., currency, percentages).
+                        </p>
+                        <div className="p-3 rounded bg-muted/30 mb-3">
+                          <div className="text-xs font-medium mb-2">Configuration Options:</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Default Decimal Value:</strong> Pre-filled value (optional)</li>
+                            <li>• <strong>Restriction Toggle:</strong> Enable min/max validation</li>
+                            <li>• <strong>Min Value:</strong> Minimum allowed value</li>
+                            <li>• <strong>Max Value:</strong> Maximum allowed value</li>
+                            <li>• <strong>Step:</strong> Fixed at 0.01 for two-decimal precision</li>
+                          </ul>
+                        </div>
+                      </div>
+                      
+                      {/* Date */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Date</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Date picker input with optional time selection and date range restrictions.
+                        </p>
+                        <div className="p-3 rounded bg-muted/30 mb-3">
+                          <div className="text-xs font-medium mb-2">Configuration Options:</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Default Date:</strong> Pre-selected date (optional)</li>
+                            <li>• <strong>Date Restriction Toggle:</strong> Enable min/max date validation</li>
+                            <li>• <strong>Time Toggle:</strong> Add time picker alongside date</li>
+                            <li>• <strong>Min Date:</strong> Earliest selectable date</li>
+                            <li>• <strong>Max Date:</strong> Latest selectable date</li>
+                          </ul>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Date Only:</strong> Single date input field
+                          </div>
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Date + Time:</strong> Split into date and time inputs
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Rating */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Star className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Rating</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Scale-based rating input with configurable range and multiple display styles.
+                        </p>
+                        <div className="p-3 rounded bg-muted/30 mb-3">
+                          <div className="text-xs font-medium mb-2">Configuration Options:</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Default Rating Value:</strong> Pre-selected rating (optional)</li>
+                            <li>• <strong>Display Style:</strong> Visual representation style</li>
+                            <li>• <strong>Min Value:</strong> Lowest rating number (default: 1)</li>
+                            <li>• <strong>Max Value:</strong> Highest rating number (default: 5)</li>
+                            <li>• <strong>Min Label:</strong> Text for lowest rating (e.g., "Poor")</li>
+                            <li>• <strong>Max Label:</strong> Text for highest rating (e.g., "Excellent")</li>
+                          </ul>
+                        </div>
+                        <div className="p-3 rounded bg-primary/5 border border-primary/20">
+                          <div className="text-xs font-medium mb-2">Available Display Styles:</div>
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs text-center">
+                            <div className="p-2 rounded bg-background">Numbers (1, 2, 3...)</div>
+                            <div className="p-2 rounded bg-background">Stars (★)</div>
+                            <div className="p-2 rounded bg-background">Smileys (😊)</div>
+                            <div className="p-2 rounded bg-background">Hearts (❤️)</div>
+                            <div className="p-2 rounded bg-background">Thumbs (👍)</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Boolean */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <ToggleLeft className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Boolean (Yes/No)</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Simple toggle switch for yes/no or true/false responses.
+                        </p>
+                        <div className="p-3 rounded bg-muted/30 mb-3">
+                          <div className="text-xs font-medium mb-2">Configuration Options:</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Default Boolean Value:</strong> Pre-set to Yes (True) or No (False)</li>
+                          </ul>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Use Case:</strong> Consent forms, confirmations, binary choices
+                          </div>
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Display:</strong> Switch component with Yes/No labels
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Special Types */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Settings className="h-5 w-5 text-primary" />
+                      Special Types
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      These types handle file attachments and document distribution.
+                    </p>
                     
-                    <div className="p-4 rounded-lg border space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Type className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Text</span>
+                    <div className="space-y-4">
+                      {/* File Attachment */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Layers className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">File Attachment</span>
+                          <Badge variant="secondary" className="text-xs">Upload</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Allows respondents to upload files as part of their response. Supports multiple file types and configurable restrictions.
+                        </p>
+                        <div className="p-3 rounded bg-muted/30 mb-3">
+                          <div className="text-xs font-medium mb-2">Configuration Options:</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Allowed File Types:</strong> Checkboxes for PDF, Word, Excel, PowerPoint, Text, Images</li>
+                            <li>• <strong>Max File Size (MB):</strong> Maximum size per file (default: 10 MB, range: 1-100)</li>
+                            <li>• <strong>Number of Files:</strong> Maximum uploads allowed (default: 3, range: 1-20)</li>
+                          </ul>
+                        </div>
+                        <div className="p-3 rounded bg-primary/5 border border-primary/20">
+                          <div className="text-xs font-medium mb-2">Supported File Types:</div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                            <div className="p-1.5 rounded bg-background">PDF (.pdf)</div>
+                            <div className="p-1.5 rounded bg-background">Word (.doc, .docx)</div>
+                            <div className="p-1.5 rounded bg-background">Excel (.xls, .xlsx)</div>
+                            <div className="p-1.5 rounded bg-background">PowerPoint (.ppt, .pptx)</div>
+                            <div className="p-1.5 rounded bg-background">Text (.txt)</div>
+                            <div className="p-1.5 rounded bg-background">Images (.jpg, .png, .gif)</div>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Free-form text input. Supports single-line and multi-line responses.
-                      </p>
+                      
+                      {/* Downloadable Document */}
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Layers className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">Downloadable Document</span>
+                          <Badge variant="outline" className="text-xs">Download</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Provides a document for respondents to download. Use for distributing terms, agreements, instructions, or reference materials.
+                        </p>
+                        <div className="p-3 rounded bg-muted/30 mb-3">
+                          <div className="text-xs font-medium mb-2">Configuration Options:</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>Document Name:</strong> Display name shown to respondents</li>
+                            <li>• <strong>Attach Document:</strong> File upload control with drag-and-drop area</li>
+                          </ul>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Use Case:</strong> Terms of service, instruction manuals, reference PDFs
+                          </div>
+                          <div className="p-2 rounded bg-muted/50">
+                            <strong>Display:</strong> Shows attached file with name, type, and remove option
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="p-4 rounded-lg border space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Hash className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Number</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Numeric input with optional min/max values and step configuration.
-                      </p>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Question Type Quick Reference */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Quick Reference Table</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs border rounded-lg">
+                        <thead>
+                          <tr className="bg-muted/50">
+                            <th className="p-2 text-left border-b">Type</th>
+                            <th className="p-2 text-left border-b">Category</th>
+                            <th className="p-2 text-center border-b">Answer Sets</th>
+                            <th className="p-2 text-center border-b">Dynamic Values</th>
+                            <th className="p-2 text-center border-b">Action Records</th>
+                            <th className="p-2 text-left border-b">Best For</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Choice-options</td>
+                            <td className="p-2">Choice</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2">Visible options, quick selection</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Dropdown</td>
+                            <td className="p-2">Choice</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2">Long lists, compact UI</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Radio Button</td>
+                            <td className="p-2">Choice</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2">2-5 mutually exclusive options</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Multi-Select</td>
+                            <td className="p-2">Choice</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2 text-center text-green-600">✓</td>
+                            <td className="p-2">Multiple selections allowed</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Text</td>
+                            <td className="p-2">Input</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2">Short text, validated formats</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Text Area</td>
+                            <td className="p-2">Input</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2">Long text, rich formatting</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Number</td>
+                            <td className="p-2">Input</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2">Whole numbers, counts</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Decimal</td>
+                            <td className="p-2">Input</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2">Currency, percentages</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Date</td>
+                            <td className="p-2">Input</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2">Dates, optional time</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Rating</td>
+                            <td className="p-2">Input</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2">Satisfaction, NPS, scales</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">Boolean</td>
+                            <td className="p-2">Input</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2">Yes/No, consent</td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-medium">File Attachment</td>
+                            <td className="p-2">Special</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2">Document uploads</td>
+                          </tr>
+                          <tr>
+                            <td className="p-2 font-medium">Downloadable Document</td>
+                            <td className="p-2">Special</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2 text-center text-muted-foreground">—</td>
+                            <td className="p-2">Distribute files</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
-                    
-                    <div className="p-4 rounded-lg border space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Date</span>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50 border">
+                    <div className="text-sm font-medium mb-2">💡 Question Properties</div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      All question types support these common properties:
+                    </p>
+                    <div className="grid gap-2 sm:grid-cols-3 text-xs">
+                      <div className="flex items-center gap-2 p-2 rounded bg-background">
+                        <CheckCircle className="h-3 w-3 text-primary" />
+                        <span><strong>Required:</strong> Must be answered</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Date picker with optional min/max date constraints.
-                      </p>
-                    </div>
-                    
-                    <div className="p-4 rounded-lg border space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Star className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Rating</span>
+                      <div className="flex items-center gap-2 p-2 rounded bg-background">
+                        <Lock className="h-3 w-3 text-primary" />
+                        <span><strong>Read-only:</strong> Visible but not editable</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Scale-based rating with configurable min/max values and labels.
-                      </p>
-                    </div>
-                    
-                    <div className="p-4 rounded-lg border space-y-2">
-                      <div className="flex items-center gap-2">
-                        <ToggleLeft className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Boolean (Yes/No)</span>
+                      <div className="flex items-center gap-2 p-2 rounded bg-background">
+                        <EyeOff className="h-3 w-3 text-primary" />
+                        <span><strong>Hidden:</strong> Not visible to respondents</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Simple yes/no or true/false toggle question.
-                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -1023,7 +1466,11 @@ const Documentation = () => {
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="secondary" className="gap-1">
                         <ListChecks className="h-3 w-3" />
-                        Choice (Dropdown)
+                        Choice-options
+                      </Badge>
+                      <Badge variant="secondary" className="gap-1">
+                        <ChevronRight className="h-3 w-3" />
+                        Dropdown
                       </Badge>
                       <Badge variant="secondary" className="gap-1">
                         <CircleDot className="h-3 w-3" />
