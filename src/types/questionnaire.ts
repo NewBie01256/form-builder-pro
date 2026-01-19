@@ -59,6 +59,10 @@ export interface AnswerSet {
   minDate?: string;
   maxDate?: string;
   includeTime?: boolean;
+  // Number restriction fields
+  numberRestriction?: boolean;
+  minValue?: number;
+  maxValue?: number;
 }
 
 export interface QuestionLevelRule {
