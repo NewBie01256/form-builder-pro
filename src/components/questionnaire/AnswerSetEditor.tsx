@@ -101,7 +101,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       case 'Date': return 'Default Date Value';
       case 'Rating': return 'Default Rating Value';
       case 'Boolean': return 'Default Boolean Value';
-      case 'Document': return 'Document Upload Configuration';
+      case 'Document': return 'File Attachment Configuration';
       default: return 'Default Value';
     }
   };
@@ -496,17 +496,31 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                     ))}
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Max File Size (MB)</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="100"
-                    placeholder="10"
-                    value={answerSet.maxFileSize ?? 10}
-                    onChange={(e) => onUpdate({ ...answerSet, maxFileSize: Number(e.target.value) || 10 })}
-                    className="h-8 w-32 text-sm"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Max File Size (MB)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      placeholder="10"
+                      value={answerSet.maxFileSize ?? 10}
+                      onChange={(e) => onUpdate({ ...answerSet, maxFileSize: Number(e.target.value) || 10 })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Number of Files</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="20"
+                      placeholder="3"
+                      value={answerSet.maxFiles ?? 3}
+                      onChange={(e) => onUpdate({ ...answerSet, maxFiles: Number(e.target.value) || 3 })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

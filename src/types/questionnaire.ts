@@ -71,9 +71,10 @@ export interface AnswerSet {
   ratingMinLabel?: string;
   ratingMaxLabel?: string;
   ratingDisplayStyle?: 'numbers' | 'stars' | 'smileys' | 'hearts' | 'thumbs';
-  // Document configuration
+  // Document/File attachment configuration
   allowedFileTypes?: string[];
   maxFileSize?: number; // in MB
+  maxFiles?: number; // max number of files allowed
 }
 
 export interface QuestionLevelRule {
