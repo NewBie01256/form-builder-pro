@@ -101,7 +101,7 @@ export interface AnswerLevelRuleGroup {
   inlineAnswerSet?: AnswerSet;
 }
 
-export type QuestionType = 'Choice' | 'Text' | 'TextArea' | 'Number' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean' | 'RadioButton';
+export type QuestionType = 'Choice' | 'Text' | 'TextArea' | 'Number' | 'Decimal' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean' | 'RadioButton';
 
 export type TextAreaFormat = 'plain' | 'rich';
 
