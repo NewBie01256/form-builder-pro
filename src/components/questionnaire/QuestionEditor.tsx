@@ -23,7 +23,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { HelpCircle, Plus, GitBranch, Trash2, Library } from "lucide-react";
-import { Question, AnswerLevelRuleGroup, AnswerSet, TextValidationType } from "@/types/questionnaire";
+import { Question, AnswerLevelRuleGroup, AnswerSet, TextValidationType, TextAreaFormat } from "@/types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";
 import AnswerLevelRuleGroupEditor from "./AnswerLevelRuleGroupEditor";
 import AnswerSetPickerDialog from "./AnswerSetPickerDialog";
@@ -201,6 +201,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                   <SelectItem value="RadioButton">Radio Button</SelectItem>
                   <SelectItem value="MultiSelect">Multi-Select</SelectItem>
                   <SelectItem value="Text">Text</SelectItem>
+                  <SelectItem value="TextArea">Text Area</SelectItem>
                   <SelectItem value="Number">Number</SelectItem>
                   <SelectItem value="Date">Date</SelectItem>
                   <SelectItem value="Rating">Rating</SelectItem>
@@ -442,6 +443,38 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
               </div>
             </div>
           )}
+
+          {/* TextArea Configuration */}
+          {question.type === 'TextArea' && (
+            <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-4">
+              <Label className="text-sm font-semibold">Text Area Configuration</Label>
+              <div className="space-y-2">
+                <Label className="text-xs">Format</Label>
+                <Select
+                  value={question.textAreaConfig?.format ?? 'plain'}
+                  onValueChange={(value: TextAreaFormat) => onUpdate(question.id, { 
+                    textAreaConfig: { 
+                      ...question.textAreaConfig,
+                      format: value
+                    } 
+                  })}
+                >
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="plain">Plain Text</SelectItem>
+                    <SelectItem value="rich">Rich Text</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {question.textAreaConfig?.format === 'rich' 
+                    ? 'Rich text allows formatting like bold, italic, lists, and links.' 
+                    : 'Plain text is simple, unformatted text.'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -460,6 +493,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                     validationType 
                   } 
                 })}
+                textAreaFormat={question.textAreaConfig?.format}
                 onUpdate={(updated) => {
                   const updatedSets = question.answerSets.map(s => 
                     s.id === as.id ? updated : s

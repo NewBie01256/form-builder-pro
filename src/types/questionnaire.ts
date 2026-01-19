@@ -92,7 +92,14 @@ export interface AnswerLevelRuleGroup {
   inlineAnswerSet?: AnswerSet;
 }
 
-export type QuestionType = 'Choice' | 'Text' | 'Number' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean' | 'RadioButton';
+export type QuestionType = 'Choice' | 'Text' | 'TextArea' | 'Number' | 'Date' | 'MultiSelect' | 'Rating' | 'Boolean' | 'RadioButton';
+
+export type TextAreaFormat = 'plain' | 'rich';
+
+export interface TextAreaConfig {
+  format: TextAreaFormat;
+  defaultValue?: string;
+}
 
 export interface NumberConfig {
   min?: number;
@@ -137,6 +144,7 @@ export interface Question {
   numberConfig?: NumberConfig;
   dateConfig?: DateConfig;
   ratingConfig?: RatingConfig;
+  textAreaConfig?: TextAreaConfig;
 }
 
 export interface ConditionalBranch {
