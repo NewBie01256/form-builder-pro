@@ -1172,6 +1172,58 @@ const Documentation = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Key Definitions */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Key Definitions</h4>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border-2 border-primary/30 bg-primary/5">
+                        <div className="flex items-center gap-2 mb-2">
+                          <ListChecks className="h-5 w-5 text-primary" />
+                          <span className="font-semibold text-lg">Answer Set</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          An <strong>Answer Set</strong> is a <strong>container</strong> that holds one or more Answers. 
+                          It groups related response options together and includes metadata like name, tag, and configuration settings. 
+                          Each question has at least one Answer Set, and can have multiple for conditional branching scenarios.
+                        </p>
+                        <div className="mt-3 p-2 rounded bg-background border text-xs">
+                          <strong>Contains:</strong> Answers[], name, tag, isDefault flag, type-specific configs
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border-2 border-primary/30 bg-primary/5">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="h-5 w-5 text-primary" />
+                          <span className="font-semibold text-lg">Answer</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          An <strong>Answer</strong> is a single response option within an Answer Set. 
+                          For choice-based questions, each Answer represents one selectable option with a display label and stored value. 
+                          Answers can be marked as active/inactive and optionally have Action Records attached.
+                        </p>
+                        <div className="mt-3 p-2 rounded bg-background border text-xs">
+                          <strong>Contains:</strong> id, label, value, active status, optional actionRecord
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 p-4 rounded-lg bg-muted/30 border">
+                      <div className="text-sm font-medium mb-2">📦 Relationship Hierarchy</div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Badge variant="outline">Question</Badge>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        <Badge variant="secondary">Answer Set(s)</Badge>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        <Badge variant="default">Answer(s)</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        A Question contains one or more Answer Sets. Each Answer Set contains one or more Answers.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
                   <p className="text-muted-foreground">
                     Answer Sets are the foundation for defining response options in your questionnaire. They control what 
                     users can select, input, or configure for each question. The Answer Set Editor adapts its interface 
