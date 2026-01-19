@@ -44,7 +44,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   // Types that don't need the full answer set UI
   const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean', 'Document', 'DownloadableDocument'].includes(questionType);
   // Types that use the choice-based answer set UI
-  const isChoiceType = ['Choice', 'MultiSelect', 'RadioButton'].includes(questionType);
+  const isChoiceType = ['Choice', 'Dropdown', 'MultiSelect', 'RadioButton'].includes(questionType);
 
   const addAnswer = () => {
     const newAnswer: Answer = {
@@ -57,8 +57,8 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   };
 
   const updateAnswer = (answerId: string, updated: Partial<Answer>) => {
-    // For Choice type, only one answer can be active at a time
-    if (updated.active === true && questionType === 'Choice') {
+    // For Choice and Dropdown types, only one answer can be active at a time
+    if (updated.active === true && (questionType === 'Choice' || questionType === 'Dropdown')) {
       onUpdate({
         ...answerSet,
         answers: answerSet.answers.map(a => 

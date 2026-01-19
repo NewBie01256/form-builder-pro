@@ -197,7 +197,8 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Choice">Choice (Dropdown)</SelectItem>
+                  <SelectItem value="Choice">Choice-options</SelectItem>
+                  <SelectItem value="Dropdown">Dropdown</SelectItem>
                   <SelectItem value="RadioButton">Radio Button</SelectItem>
                   <SelectItem value="MultiSelect">Multi-Select</SelectItem>
                   <SelectItem value="Text">Text</SelectItem>
