@@ -222,14 +222,46 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
               />
             </>
           ) : questionType === 'Date' ? (
-            <>
+            <div className="space-y-3">
               <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
               <Input
                 type="date"
                 value={simpleAnswer.value}
                 onChange={(e) => updateSimpleAnswer(e.target.value, 'Date Response')}
               />
-            </>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id={`date-restriction-${answerSet.id}`}
+                  checked={answerSet.dateRestriction ?? false}
+                  onCheckedChange={(checked) => onUpdate({ ...answerSet, dateRestriction: checked })}
+                />
+                <Label htmlFor={`date-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                  Date Restriction
+                </Label>
+              </div>
+              {answerSet.dateRestriction && (
+                <div className="grid grid-cols-2 gap-3 pl-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Min Date</Label>
+                    <Input
+                      type="date"
+                      value={answerSet.minDate ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, minDate: e.target.value })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Max Date</Label>
+                    <Input
+                      type="date"
+                      value={answerSet.maxDate ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, maxDate: e.target.value })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           ) : questionType === 'Rating' ? (
             <>
               <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>

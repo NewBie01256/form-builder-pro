@@ -54,6 +54,10 @@ export interface AnswerSet {
   answers: Answer[];
   dynamicValues?: boolean;
   dynamicConfig?: DynamicValueConfig;
+  // Date restriction fields
+  dateRestriction?: boolean;
+  minDate?: string;
+  maxDate?: string;
 }
 
 export interface QuestionLevelRule {
