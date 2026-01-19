@@ -36,6 +36,7 @@ import {
   ChevronRight,
   LayoutGrid,
   Trash2,
+  Info,
 } from "lucide-react";
 
 const Documentation = () => {
@@ -1219,6 +1220,80 @@ const Documentation = () => {
                       <p className="text-xs text-muted-foreground mt-2">
                         A Question contains one or more Answer Sets. Each Answer Set contains one or more Answers.
                       </p>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Answer Structure Details */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Answer Structure</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Each <strong>Answer</strong> within an Answer Set contains the following properties:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg border mb-4">
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-1">id</div>
+                          <p className="text-xs text-muted-foreground">Unique identifier for the answer (auto-generated UUID)</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-1">label</div>
+                          <p className="text-xs text-muted-foreground">Display text shown to the user (e.g., "Yes", "High Priority")</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-1">value</div>
+                          <p className="text-xs text-muted-foreground">Stored data value when selected (e.g., "yes", "1")</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-1">active</div>
+                          <p className="text-xs text-muted-foreground">Boolean flag indicating if this answer is currently enabled/selected</p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 p-3 rounded bg-primary/5 border border-primary/20">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Zap className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">Optional: Action Record</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Each answer can optionally have an <strong>actionRecord</strong> attached containing ITSM categorization:
+                          Operation Category (Tier 1/2/3), Product Category (Tier 1/2/3), Impact, and Urgency levels.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Default Answer for Simple Types */}
+                    <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info className="h-5 w-5 text-amber-600" />
+                        <span className="font-medium text-amber-700 dark:text-amber-400">Default Answer for Simple Types</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        For <strong>simple types</strong> (Text, TextArea, Number, Decimal, Date, Rating, Boolean), the Answer Set 
+                        contains exactly <strong>one Answer</strong> called the <strong>Default Answer</strong>. The "Default Value" 
+                        input in the editor directly maps to <code className="px-1 py-0.5 rounded bg-muted text-xs">answers[0].value</code>.
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="p-3 rounded bg-background border">
+                          <div className="font-medium text-sm mb-1">How it works</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• Answer Set is initialized with one empty answer</li>
+                            <li>• The first answer (<code className="px-1 rounded bg-muted">answers[0]</code>) stores the default value</li>
+                            <li>• Configuration fields are stored at the Answer Set level</li>
+                          </ul>
+                        </div>
+                        <div className="p-3 rounded bg-background border">
+                          <div className="font-medium text-sm mb-1">Example: Number Type</div>
+                          <pre className="text-xs text-muted-foreground overflow-x-auto">{`{
+  answers: [{ value: "50" }],
+  numberRestriction: true,
+  minValue: 0,
+  maxValue: 100
+}`}</pre>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
