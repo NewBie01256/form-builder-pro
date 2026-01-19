@@ -142,9 +142,14 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
               <div className="flex items-center gap-2">
                 <Label className="text-xs text-muted-foreground">Regular Expression</Label>
                 <select
-                  value={textValidationType}
-                  onChange={(e) => onTextValidationChange?.(e.target.value as TextValidationType)}
-                  className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  value={textValidationType || 'none'}
+                  onChange={(e) => {
+                    const value = e.target.value as TextValidationType;
+                    if (onTextValidationChange) {
+                      onTextValidationChange(value);
+                    }
+                  }}
+                  className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
                 >
                   <option value="none">None</option>
                   <option value="cost_center">Cost Center (00000-0000)</option>
