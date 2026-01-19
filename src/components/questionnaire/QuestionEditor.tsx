@@ -243,37 +243,6 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
             </div>
           </div>
 
-          {/* Text Configuration */}
-          {question.type === 'Text' && (
-            <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-4">
-              <Label className="text-sm font-semibold">Text Configuration</Label>
-              <div className="space-y-2">
-                <Label className="text-xs">Validation Pattern</Label>
-                <Select
-                  value={question.textConfig?.validationType ?? 'none'}
-                  onValueChange={(value) => onUpdate(question.id, { 
-                    textConfig: { 
-                      ...question.textConfig, 
-                      validationType: value as TextValidationType 
-                    } 
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select validation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="cost_center">Cost Center (00000-0000)</SelectItem>
-                    <SelectItem value="email">Email Address (someone@domain.com)</SelectItem>
-                    <SelectItem value="ip_address">IP Address (127.0.0.1)</SelectItem>
-                    <SelectItem value="phone">Phone Number (0-000-000-0000)</SelectItem>
-                    <SelectItem value="url">URL (http://domain.com)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-
           {/* Number Configuration */}
           {question.type === 'Number' && (
             <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-4">
@@ -485,6 +454,12 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                 answerSet={as}
                 questionType={question.type}
                 textValidationType={question.textConfig?.validationType}
+                onTextValidationChange={(validationType) => onUpdate(question.id, { 
+                  textConfig: { 
+                    ...question.textConfig, 
+                    validationType 
+                  } 
+                })}
                 onUpdate={(updated) => {
                   const updatedSets = question.answerSets.map(s => 
                     s.id === as.id ? updated : s
