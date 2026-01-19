@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus, Library, Zap, Database, Table2, ArrowUpDown, Filter, Pencil } from "lucide-react";
-import { AnswerSet, Answer, QuestionType, TextValidationType } from "@/types/questionnaire";
+import { AnswerSet, Answer, QuestionType, TextValidationType, TextAreaFormat } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 import DynamicValuesPanel, { DynamicValueConfig, DynamicValueFilterGroup } from "./DynamicValuesPanel";
 
@@ -19,6 +19,7 @@ interface AnswerSetEditorProps {
   questionType?: QuestionType;
   textValidationType?: TextValidationType;
   onTextValidationChange?: (validationType: TextValidationType) => void;
+  textAreaFormat?: TextAreaFormat;
 }
 
 // Validation patterns
@@ -31,7 +32,7 @@ const TEXT_VALIDATION_PATTERNS: Record<TextValidationType, { pattern: RegExp; ex
   url: { pattern: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/, example: 'http://domain.com' },
 };
 
-const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice', textValidationType = 'none', onTextValidationChange }: AnswerSetEditorProps) => {
+const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice', textValidationType = 'none', onTextValidationChange, textAreaFormat = 'plain' }: AnswerSetEditorProps) => {
   const [showDynamicPanel, setShowDynamicPanel] = useState(false);
   
   // Use answerSet's stored values instead of local state
@@ -39,7 +40,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   const dynamicConfig = answerSet.dynamicConfig;
   
   // Types that don't need the full answer set UI
-  const isSimpleType = ['Text', 'Number', 'Date', 'Rating', 'Boolean'].includes(questionType);
+  const isSimpleType = ['Text', 'TextArea', 'Number', 'Date', 'Rating', 'Boolean'].includes(questionType);
   // Types that use the choice-based answer set UI
   const isChoiceType = ['Choice', 'MultiSelect', 'RadioButton'].includes(questionType);
 
@@ -80,6 +81,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   const getSimpleTypeLabel = () => {
     switch (questionType) {
       case 'Text': return 'Default Text Answer';
+      case 'TextArea': return textAreaFormat === 'rich' ? 'Default Rich Text Content' : 'Default Text Area Content';
       case 'Number': return 'Default Number Value';
       case 'Date': return 'Default Date Value';
       case 'Rating': return 'Default Rating Value';
@@ -91,6 +93,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   const getSimpleTypePlaceholder = () => {
     switch (questionType) {
       case 'Text': return 'Enter default text response (optional)';
+      case 'TextArea': return textAreaFormat === 'rich' ? 'Enter default rich text content (optional)' : 'Enter default text area content (optional)';
       case 'Number': return 'Enter default number (optional)';
       case 'Date': return 'Select default date (optional)';
       case 'Rating': return 'Enter default rating (optional)';
@@ -159,6 +162,26 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                   <option value="url">URL (http://domain.com)</option>
                 </select>
               </div>
+            </div>
+          ) : questionType === 'TextArea' ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+                <Badge variant="outline" className="text-xs">
+                  {textAreaFormat === 'rich' ? 'Rich Text' : 'Plain Text'}
+                </Badge>
+              </div>
+              <Textarea
+                placeholder={getSimpleTypePlaceholder()}
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Area Response')}
+                className="min-h-[120px]"
+              />
+              {textAreaFormat === 'rich' && (
+                <p className="text-xs text-muted-foreground">
+                  Rich text formatting will be available to respondents (bold, italic, lists, etc.)
+                </p>
+              )}
             </div>
           ) : questionType === 'Number' ? (
             <>
