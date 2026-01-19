@@ -42,7 +42,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   const dynamicConfig = answerSet.dynamicConfig;
   
   // Types that don't need the full answer set UI
-  const isSimpleType = ['Text', 'TextArea', 'Number', 'Date', 'Rating', 'Boolean'].includes(questionType);
+  const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean'].includes(questionType);
   // Types that use the choice-based answer set UI
   const isChoiceType = ['Choice', 'MultiSelect', 'RadioButton'].includes(questionType);
 
@@ -97,6 +97,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       case 'Text': return 'Default Text Answer';
       case 'TextArea': return textAreaFormat === 'rich' ? 'Default Rich Text Content' : 'Default Text Area Content';
       case 'Number': return 'Default Number Value';
+      case 'Decimal': return 'Default Decimal Value';
       case 'Date': return 'Default Date Value';
       case 'Rating': return 'Default Rating Value';
       case 'Boolean': return 'Default Boolean Value';
@@ -109,6 +110,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       case 'Text': return 'Enter default text response (optional)';
       case 'TextArea': return textAreaFormat === 'rich' ? 'Enter default rich text content (optional)' : 'Enter default text area content (optional)';
       case 'Number': return 'Enter default number (optional)';
+      case 'Decimal': return 'Enter default decimal (optional)';
       case 'Date': return 'Select default date (optional)';
       case 'Rating': return 'Enter default rating (optional)';
       default: return 'Enter default value (optional)';
@@ -246,6 +248,53 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                     <Label className="text-xs text-muted-foreground">Max Value</Label>
                     <Input
                       type="number"
+                      placeholder="No max"
+                      value={answerSet.maxValue ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, maxValue: e.target.value ? Number(e.target.value) : undefined })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : questionType === 'Decimal' ? (
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder={getSimpleTypePlaceholder()}
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Decimal Response')}
+              />
+              <div className="flex items-center gap-2">
+                <Switch
+                  id={`decimal-restriction-${answerSet.id}`}
+                  checked={answerSet.numberRestriction ?? false}
+                  onCheckedChange={(checked) => onUpdate({ ...answerSet, numberRestriction: checked })}
+                />
+                <Label htmlFor={`decimal-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                  Restriction
+                </Label>
+              </div>
+              {answerSet.numberRestriction && (
+                <div className="grid grid-cols-2 gap-3 pl-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Min Value</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="No min"
+                      value={answerSet.minValue ?? ''}
+                      onChange={(e) => onUpdate({ ...answerSet, minValue: e.target.value ? Number(e.target.value) : undefined })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Max Value</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
                       placeholder="No max"
                       value={answerSet.maxValue ?? ''}
                       onChange={(e) => onUpdate({ ...answerSet, maxValue: e.target.value ? Number(e.target.value) : undefined })}
