@@ -327,6 +327,20 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
                 onChange={(e) => updateSimpleAnswer(e.target.value, 'Rating Response')}
                 className="h-8"
               />
+              <div className="flex items-center gap-2 mb-2">
+                <Label className="text-xs text-muted-foreground">Display Style</Label>
+                <select
+                  value={answerSet.ratingDisplayStyle ?? 'numbers'}
+                  onChange={(e) => onUpdate({ ...answerSet, ratingDisplayStyle: e.target.value as 'numbers' | 'stars' | 'smileys' | 'hearts' | 'thumbs' })}
+                  className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+                >
+                  <option value="numbers">Numbers (1, 2, 3...)</option>
+                  <option value="stars">Stars (★)</option>
+                  <option value="smileys">Smileys (😊)</option>
+                  <option value="hearts">Hearts (❤️)</option>
+                  <option value="thumbs">Thumbs (👍)</option>
+                </select>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Min Value</Label>
