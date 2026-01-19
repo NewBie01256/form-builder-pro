@@ -309,54 +309,6 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
             </div>
           )}
 
-          {/* Date Configuration */}
-          {question.type === 'Date' && (
-            <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-4">
-              <Label className="text-sm font-semibold">Date Configuration</Label>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-2">
-                  <Label className="text-xs">Min Date</Label>
-                  <Input
-                    type="date"
-                    value={question.dateConfig?.minDate ?? ''}
-                    onChange={(e) => onUpdate(question.id, { 
-                      dateConfig: { 
-                        ...question.dateConfig, 
-                        minDate: e.target.value || undefined 
-                      } 
-                    })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Max Date</Label>
-                  <Input
-                    type="date"
-                    value={question.dateConfig?.maxDate ?? ''}
-                    onChange={(e) => onUpdate(question.id, { 
-                      dateConfig: { 
-                        ...question.dateConfig, 
-                        maxDate: e.target.value || undefined 
-                      } 
-                    })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Default Date</Label>
-                  <Input
-                    type="date"
-                    value={question.dateConfig?.defaultValue ?? ''}
-                    onChange={(e) => onUpdate(question.id, { 
-                      dateConfig: { 
-                        ...question.dateConfig, 
-                        defaultValue: e.target.value || undefined 
-                      } 
-                    })}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Rating Configuration */}
           {question.type === 'Rating' && (
             <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-4">
