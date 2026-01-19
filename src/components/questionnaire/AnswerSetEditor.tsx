@@ -11,6 +11,7 @@ import { Plus, Library, Zap, Database, Table2, ArrowUpDown, Filter, Pencil } fro
 import { AnswerSet, Answer, QuestionType, TextValidationType, TextAreaFormat } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 import DynamicValuesPanel, { DynamicValueConfig, DynamicValueFilterGroup } from "./DynamicValuesPanel";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 
 interface AnswerSetEditorProps {
   answerSet: AnswerSet;
@@ -167,12 +168,20 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
           ) : questionType === 'TextArea' ? (
             <div className="space-y-3">
               <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
-              <Textarea
-                placeholder={getSimpleTypePlaceholder()}
-                value={simpleAnswer.value}
-                onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Area Response')}
-                className="min-h-[120px]"
-              />
+              {textAreaFormat === 'rich' ? (
+                <RichTextEditor
+                  value={simpleAnswer.value}
+                  onChange={(value) => updateSimpleAnswer(value, 'Text Area Response')}
+                  placeholder={getSimpleTypePlaceholder()}
+                />
+              ) : (
+                <Textarea
+                  placeholder={getSimpleTypePlaceholder()}
+                  value={simpleAnswer.value}
+                  onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Area Response')}
+                  className="min-h-[120px]"
+                />
+              )}
               <div className="flex items-center gap-2">
                 <Label className="text-xs text-muted-foreground">Format</Label>
                 <select
