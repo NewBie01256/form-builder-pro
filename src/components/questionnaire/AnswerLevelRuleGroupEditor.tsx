@@ -131,12 +131,25 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
               className="min-h-[80px]"
             />
           ) : questionType === 'TextArea' ? (
-            <Textarea
-              placeholder="Enter default text area content (optional)"
-              value={simpleAnswer.value}
-              onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Area Response')}
-              className="min-h-[120px]"
-            />
+            <div className="space-y-3">
+              <Textarea
+                placeholder="Enter default text area content (optional)"
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Area Response')}
+                className="min-h-[120px]"
+              />
+              <div className="flex items-center gap-2">
+                <Label className="text-xs text-muted-foreground">Format</Label>
+                <select
+                  value={answerSet.textAreaFormat || 'plain'}
+                  onChange={(e) => onUpdate({ ...answerSet, textAreaFormat: e.target.value as 'plain' | 'rich' })}
+                  className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+                >
+                  <option value="plain">Plain Text</option>
+                  <option value="rich">Rich Text</option>
+                </select>
+              </div>
+            </div>
           ) : questionType === 'Number' ? (
             <div className="space-y-3">
               <Input
