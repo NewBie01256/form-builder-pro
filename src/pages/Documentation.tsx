@@ -137,7 +137,7 @@ const Documentation = () => {
                     <div className="p-4 rounded-lg border bg-muted/30">
                       <div className="font-medium mb-1">Visual Builder</div>
                       <p className="text-sm text-muted-foreground">
-                        Drag-and-drop interface for building questionnaires
+                        Hierarchical tree navigation with click-to-select editing
                       </p>
                     </div>
                     <div className="p-4 rounded-lg border bg-muted/30">
@@ -943,6 +943,16 @@ const Documentation = () => {
                         </div>
                         <p className="text-xs text-muted-foreground">
                           Shows scale configuration (min/max) with optional endpoint labels.
+                        </p>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <ToggleLeft className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Boolean Questions</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Shows a Switch toggle for setting the default value (true/false).
                         </p>
                       </div>
                     </div>
