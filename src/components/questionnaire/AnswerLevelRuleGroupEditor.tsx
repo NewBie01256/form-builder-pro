@@ -317,13 +317,57 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
               )}
             </div>
           ) : questionType === 'Rating' ? (
-            <Input
-              type="number"
-              placeholder="Enter default rating (optional)"
-              value={simpleAnswer.value}
-              onChange={(e) => updateSimpleAnswer(e.target.value, 'Rating Response')}
-              className="h-8"
-            />
+            <div className="space-y-3">
+              <Input
+                type="number"
+                placeholder="Enter default rating (optional)"
+                min={answerSet.ratingMinValue ?? 1}
+                max={answerSet.ratingMaxValue ?? 5}
+                value={simpleAnswer.value}
+                onChange={(e) => updateSimpleAnswer(e.target.value, 'Rating Response')}
+                className="h-8"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Min Value</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={answerSet.ratingMinValue ?? 1}
+                    onChange={(e) => onUpdate({ ...answerSet, ratingMinValue: Number(e.target.value) || 1 })}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Max Value</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={answerSet.ratingMaxValue ?? 5}
+                    onChange={(e) => onUpdate({ ...answerSet, ratingMaxValue: Number(e.target.value) || 5 })}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Min Label (optional)</Label>
+                  <Input
+                    placeholder="e.g., Poor"
+                    value={answerSet.ratingMinLabel ?? ''}
+                    onChange={(e) => onUpdate({ ...answerSet, ratingMinLabel: e.target.value || undefined })}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Max Label (optional)</Label>
+                  <Input
+                    placeholder="e.g., Excellent"
+                    value={answerSet.ratingMaxLabel ?? ''}
+                    onChange={(e) => onUpdate({ ...answerSet, ratingMaxLabel: e.target.value || undefined })}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
           ) : questionType === 'Boolean' ? (
             <div className="flex items-center gap-3">
               <Switch

@@ -65,6 +65,11 @@ export interface AnswerSet {
   maxValue?: number;
   // TextArea format
   textAreaFormat?: 'plain' | 'rich';
+  // Rating configuration
+  ratingMinValue?: number;
+  ratingMaxValue?: number;
+  ratingMinLabel?: string;
+  ratingMaxLabel?: string;
 }
 
 export interface QuestionLevelRule {
