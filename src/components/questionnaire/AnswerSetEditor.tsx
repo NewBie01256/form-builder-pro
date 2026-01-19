@@ -126,25 +126,8 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       <div className="border border-border rounded-lg p-4 bg-muted/30">
         <div className="space-y-2">
           {questionType === 'Text' ? (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-4">
-                <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
-                <div className="flex items-center gap-2">
-                  <Label className="text-sm text-muted-foreground whitespace-nowrap">Regular Expression</Label>
-                  <select
-                    value={textValidationType}
-                    onChange={(e) => onTextValidationChange?.(e.target.value as TextValidationType)}
-                    className="h-8 px-3 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="none">None</option>
-                    <option value="cost_center">Cost Center (00000-0000)</option>
-                    <option value="email">Email (someone@domain.com)</option>
-                    <option value="ip_address">IP Address (127.0.0.1)</option>
-                    <option value="phone">Phone (0-000-000-0000)</option>
-                    <option value="url">URL (http://domain.com)</option>
-                  </select>
-                </div>
-              </div>
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">{getSimpleTypeLabel()}</Label>
               <Textarea
                 placeholder={textValidationType !== 'none' 
                   ? `Format: ${TEXT_VALIDATION_PATTERNS[textValidationType].example}` 
@@ -156,6 +139,21 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
               {textValidationError && (
                 <p className="text-xs text-destructive">{textValidationError}</p>
               )}
+              <div className="flex items-center gap-2">
+                <Label className="text-xs text-muted-foreground">Regular Expression</Label>
+                <select
+                  value={textValidationType}
+                  onChange={(e) => onTextValidationChange?.(e.target.value as TextValidationType)}
+                  className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="none">None</option>
+                  <option value="cost_center">Cost Center (00000-0000)</option>
+                  <option value="email">Email (someone@domain.com)</option>
+                  <option value="ip_address">IP Address (127.0.0.1)</option>
+                  <option value="phone">Phone (0-000-000-0000)</option>
+                  <option value="url">URL (http://domain.com)</option>
+                </select>
+              </div>
             </div>
           ) : questionType === 'Number' ? (
             <>
