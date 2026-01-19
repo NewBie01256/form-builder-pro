@@ -1163,13 +1163,20 @@ const Documentation = () => {
                     <div className="p-2 rounded-lg bg-primary/10">
                       <ListChecks className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle>Answer Sets</CardTitle>
+                    <div>
+                      <CardTitle>Answer Sets</CardTitle>
+                      <CardDescription>
+                        Define, configure, and manage answer options for all question types
+                      </CardDescription>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <p className="text-muted-foreground">
-                    Answer sets define the available options for choice-based questions (Choice, Radio Button, Multi-Select). 
-                    Each question can have multiple answer sets that can be conditionally displayed based on previous answers.
+                    Answer Sets are the foundation for defining response options in your questionnaire. They control what 
+                    users can select, input, or configure for each question. The Answer Set Editor adapts its interface 
+                    based on the question type, showing relevant configuration options for choice-based types, input types, 
+                    and special types.
                   </p>
                   
                   <Separator />
@@ -1184,13 +1191,13 @@ const Documentation = () => {
                           <span className="font-medium">Standard Answer Sets</span>
                         </div>
                         <p className="text-sm text-muted-foreground mb-3">
-                          Manually defined lists with label/value pairs. Each question starts with one default answer set.
+                          Manually defined configurations attached directly to questions. Each question starts with one default answer set.
                         </p>
                         <ul className="text-xs text-muted-foreground space-y-1">
                           <li>• Editable name and tag for identification</li>
-                          <li>• Multiple answers with label + value</li>
+                          <li>• Type-specific configuration fields</li>
                           <li>• Can be marked as default</li>
-                          <li>• Supports Action Records on each answer</li>
+                          <li>• Supports Action Records on choice answers</li>
                         </ul>
                       </div>
                       
@@ -1214,30 +1221,38 @@ const Documentation = () => {
                   
                   <Separator />
                   
-                  {/* Answer Set Editor Flow */}
+                  {/* Answer Set Structure */}
                   <div>
-                    <h4 className="font-semibold mb-4">Answer Set Editor</h4>
+                    <h4 className="font-semibold mb-4">Answer Set Structure</h4>
                     <p className="text-sm text-muted-foreground mb-4">
-                      When you select a question, the Answer Set Editor appears below the question details, allowing you to manage all answer options.
+                      Every answer set contains core identification fields plus type-specific configuration:
                     </p>
                     
-                    <div className="p-4 rounded-lg bg-muted/30 border space-y-4">
-                      <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="p-4 rounded-lg bg-muted/30 border">
+                      <div className="grid gap-4 sm:grid-cols-3">
                         <div>
-                          <div className="text-sm font-medium mb-2">Answer Set Header</div>
+                          <div className="text-sm font-medium mb-2">Core Fields</div>
                           <ul className="text-xs text-muted-foreground space-y-1">
-                            <li>• <strong>Name:</strong> Descriptive name (e.g., "Department Options")</li>
-                            <li>• <strong>Tag:</strong> Short identifier (e.g., "DEPT")</li>
-                            <li>• <strong>Default Toggle:</strong> Mark as the primary answer set</li>
+                            <li>• <strong>ID:</strong> Unique identifier</li>
+                            <li>• <strong>Name:</strong> Descriptive label</li>
+                            <li>• <strong>Tag:</strong> Short reference code</li>
+                            <li>• <strong>isDefault:</strong> Primary set flag</li>
                           </ul>
                         </div>
                         <div>
-                          <div className="text-sm font-medium mb-2">Answer Row</div>
+                          <div className="text-sm font-medium mb-2">Choice Type Fields</div>
                           <ul className="text-xs text-muted-foreground space-y-1">
-                            <li>• <strong>Label:</strong> What users see (e.g., "Engineering")</li>
-                            <li>• <strong>Value:</strong> What's stored (e.g., "ENG")</li>
-                            <li>• <strong>Zap Icon:</strong> Attach an Action Record</li>
-                            <li>• <strong>Trash Icon:</strong> Remove the answer</li>
+                            <li>• <strong>answers[]:</strong> List of options</li>
+                            <li>• <strong>dynamicValues:</strong> Enable data source</li>
+                            <li>• <strong>dynamicConfig:</strong> Data source settings</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium mb-2">Input Type Fields</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• <strong>minValue/maxValue:</strong> Number limits</li>
+                            <li>• <strong>minDate/maxDate:</strong> Date limits</li>
+                            <li>• <strong>textAreaFormat:</strong> Plain/Rich text</li>
                           </ul>
                         </div>
                       </div>
@@ -1246,44 +1261,435 @@ const Documentation = () => {
                   
                   <Separator />
                   
-                  {/* Adding Answers Flow */}
+                  {/* Choice-Based Answer Sets */}
                   <div>
-                    <h4 className="font-semibold mb-4">Adding & Managing Answers</h4>
-                    <div className="space-y-4">
-                      <div className="flex gap-4 p-4 rounded-lg border">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
-                          1
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <CheckSquare className="h-5 w-5 text-primary" />
+                      Choice-Based Answer Sets
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      For Choice-options, Dropdown, Radio Button, and Multi-Select question types, answer sets contain 
+                      a list of selectable options. Each answer has:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg border mb-4">
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-1">Label</div>
+                          <p className="text-xs text-muted-foreground">Display text shown to users (e.g., "Engineering Department")</p>
                         </div>
-                        <div>
-                          <div className="font-medium">Click "Add Answer"</div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Creates a new empty answer row at the bottom of the list. Each new answer starts with empty label and value fields.
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-1">Value</div>
+                          <p className="text-xs text-muted-foreground">Stored data when selected (e.g., "ENG")</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-1">Active</div>
+                          <p className="text-xs text-muted-foreground">Whether this answer is currently enabled</p>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-1">Action Record</div>
+                          <p className="text-xs text-muted-foreground">Optional ITSM categorization (via <Zap className="h-3 w-3 inline" /> icon)</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg bg-muted/30 border">
+                      <div className="text-sm font-medium mb-2">Selection Behavior</div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="p-3 rounded border bg-background">
+                          <div className="font-medium text-sm mb-1">Single-Select Types</div>
+                          <p className="text-xs text-muted-foreground">
+                            <strong>Choice-options & Dropdown:</strong> Activating one answer automatically deactivates all others. 
+                            Only one answer can be active at a time.
+                          </p>
+                        </div>
+                        <div className="p-3 rounded border bg-background">
+                          <div className="font-medium text-sm mb-1">Multi-Select Type</div>
+                          <p className="text-xs text-muted-foreground">
+                            <strong>Multi-Select:</strong> Multiple answers can be active simultaneously. 
+                            Users can select any combination of options.
                           </p>
                         </div>
                       </div>
-                      
-                      <div className="flex gap-4 p-4 rounded-lg border">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
-                          2
-                        </div>
-                        <div>
-                          <div className="font-medium">Fill in Label and Value</div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            The label is displayed to users; the value is stored in the response data. They can be the same or different depending on your needs.
-                          </p>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Text Type Configuration */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Type className="h-5 w-5 text-primary" />
+                      Text & TextArea Configuration
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Text-based question types have specialized configuration options in the Answer Set Editor:
+                    </p>
+                    
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-3">Text (Single Line)</div>
+                        <ul className="text-sm text-muted-foreground space-y-2">
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                            <span><strong>Default Value:</strong> Pre-filled text input</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                            <span><strong>Validation Type:</strong> Select from None, Cost Center, Email, IP Address, Phone, or URL</span>
+                          </li>
+                        </ul>
+                        <div className="mt-3 p-2 rounded bg-muted/50 text-xs">
+                          <strong>Example patterns:</strong>
+                          <ul className="mt-1 space-y-1 text-muted-foreground">
+                            <li>• Email: user@example.com</li>
+                            <li>• Phone: +1-555-123-4567</li>
+                            <li>• URL: https://example.com</li>
+                          </ul>
                         </div>
                       </div>
                       
-                      <div className="flex gap-4 p-4 rounded-lg border">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">
-                          3
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-3">TextArea (Multi Line)</div>
+                        <ul className="text-sm text-muted-foreground space-y-2">
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                            <span><strong>Default Value:</strong> Pre-filled text content</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                            <span><strong>Format Toggle:</strong> Plain Text or Rich Text</span>
+                          </li>
+                        </ul>
+                        <div className="mt-3 p-2 rounded bg-muted/50 text-xs">
+                          <strong>Rich Text Features:</strong>
+                          <ul className="mt-1 space-y-1 text-muted-foreground">
+                            <li>• Bold, Italic formatting</li>
+                            <li>• Bullet and numbered lists</li>
+                            <li>• Undo/Redo actions</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Number & Decimal Configuration */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Hash className="h-5 w-5 text-primary" />
+                      Number & Decimal Configuration
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Numeric question types support value restrictions and defaults:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg border">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <div className="font-medium mb-2">Configuration Fields</div>
+                          <ul className="text-sm text-muted-foreground space-y-2">
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Default Value:</strong> Initial number to display</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Number Restriction:</strong> Toggle to enable limits</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Min Value:</strong> Lowest allowed number</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Max Value:</strong> Highest allowed number</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-2">Example Configuration</div>
+                          <div className="space-y-2 text-xs text-muted-foreground">
+                            <p><strong>Quantity Field:</strong></p>
+                            <ul className="space-y-1">
+                              <li>• Default: 1</li>
+                              <li>• Min Value: 1</li>
+                              <li>• Max Value: 100</li>
+                            </ul>
+                            <p className="mt-2"><strong>Percentage Field:</strong></p>
+                            <ul className="space-y-1">
+                              <li>• Default: 0</li>
+                              <li>• Min Value: 0</li>
+                              <li>• Max Value: 100</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Date Configuration */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-primary" />
+                      Date Configuration
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Date question types offer flexible configuration for date and time input:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg border">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <div className="font-medium mb-3">Available Options</div>
+                          <ul className="text-sm text-muted-foreground space-y-2">
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Include Time:</strong> Split into date and time inputs</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Date Restriction:</strong> Enable min/max limits</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Min Date:</strong> Earliest selectable date</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Max Date:</strong> Latest selectable date</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="p-3 rounded bg-muted/50">
+                            <div className="text-sm font-medium mb-1">Without Time</div>
+                            <p className="text-xs text-muted-foreground">Single date picker showing calendar view</p>
+                          </div>
+                          <div className="p-3 rounded bg-muted/50">
+                            <div className="text-sm font-medium mb-1">With Time</div>
+                            <p className="text-xs text-muted-foreground">Date picker + separate time input (HH:MM format)</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Rating Configuration */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Star className="h-5 w-5 text-primary" />
+                      Rating Configuration
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Rating questions provide scale-based input with customizable appearance:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg border mb-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <div className="font-medium mb-3">Scale Settings</div>
+                          <ul className="text-sm text-muted-foreground space-y-2">
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Min Value:</strong> Starting point (e.g., 1)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Max Value:</strong> Ending point (e.g., 5, 10)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Min Label:</strong> Text for lowest value</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Max Label:</strong> Text for highest value</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Default Value:</strong> Pre-selected rating</span>
+                            </li>
+                          </ul>
                         </div>
                         <div>
-                          <div className="font-medium">Optionally Attach Action Record</div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Click the <Zap className="h-3 w-3 inline" /> icon next to any answer to configure ITSM categorization 
-                            (operation/product categories, impact, urgency) that triggers when this answer is selected.
-                          </p>
+                          <div className="font-medium mb-3">Display Styles</div>
+                          <div className="space-y-2">
+                            <div className="p-2 rounded bg-muted/50 flex items-center gap-2">
+                              <span className="text-lg">1️⃣ 2️⃣ 3️⃣</span>
+                              <span className="text-sm">Numbers</span>
+                            </div>
+                            <div className="p-2 rounded bg-muted/50 flex items-center gap-2">
+                              <span className="text-lg">⭐⭐⭐</span>
+                              <span className="text-sm">Stars</span>
+                            </div>
+                            <div className="p-2 rounded bg-muted/50 flex items-center gap-2">
+                              <span className="text-lg">😀😐😢</span>
+                              <span className="text-sm">Smileys</span>
+                            </div>
+                            <div className="p-2 rounded bg-muted/50 flex items-center gap-2">
+                              <span className="text-lg">❤️❤️❤️</span>
+                              <span className="text-sm">Hearts</span>
+                            </div>
+                            <div className="p-2 rounded bg-muted/50 flex items-center gap-2">
+                              <span className="text-lg">👍👎</span>
+                              <span className="text-sm">Thumbs</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 rounded-lg bg-muted/30 border text-sm">
+                      <strong>Example:</strong> NPS (Net Promoter Score) uses Min: 0, Max: 10, 
+                      Min Label: "Not Likely", Max Label: "Very Likely", Display: Numbers
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Boolean Configuration */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <ToggleLeft className="h-5 w-5 text-primary" />
+                      Boolean Configuration
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Boolean questions provide simple true/false or yes/no answers:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg border">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1">
+                          <div className="font-medium mb-2">Configuration</div>
+                          <ul className="text-sm text-muted-foreground space-y-2">
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Default Value:</strong> Toggle switch to set initial state (ON/OFF)</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="p-4 rounded bg-muted/50 text-center">
+                          <div className="text-sm font-medium mb-2">Preview</div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">OFF</span>
+                            <div className="w-12 h-6 bg-primary rounded-full relative">
+                              <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                            </div>
+                            <span>ON</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* File Attachment Configuration */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      File Attachment Configuration
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Document (File Attachment) questions allow users to upload files with configurable restrictions:
+                    </p>
+                    
+                    <div className="p-4 rounded-lg border">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <div className="font-medium mb-3">Configuration Options</div>
+                          <ul className="text-sm text-muted-foreground space-y-2">
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Allowed File Types:</strong> Select from PDF, Word, Excel, PowerPoint, Text, Images</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Max File Size:</strong> Limit in MB (default: 10 MB)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>Number of Files:</strong> Maximum uploads allowed (1-20, default: 3)</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div>
+                          <div className="font-medium mb-3">File Type Extensions</div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="p-2 rounded bg-muted/50">
+                              <strong>PDF:</strong> .pdf
+                            </div>
+                            <div className="p-2 rounded bg-muted/50">
+                              <strong>Word:</strong> .doc, .docx
+                            </div>
+                            <div className="p-2 rounded bg-muted/50">
+                              <strong>Excel:</strong> .xls, .xlsx
+                            </div>
+                            <div className="p-2 rounded bg-muted/50">
+                              <strong>PowerPoint:</strong> .ppt, .pptx
+                            </div>
+                            <div className="p-2 rounded bg-muted/50">
+                              <strong>Text:</strong> .txt
+                            </div>
+                            <div className="p-2 rounded bg-muted/50">
+                              <strong>Images:</strong> .jpg, .png, .gif
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Downloadable Document Configuration */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <ArrowRight className="h-5 w-5 text-primary" />
+                      Downloadable Document Configuration
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Downloadable Document questions provide files for users to download (e.g., terms, instructions, templates):
+                    </p>
+                    
+                    <div className="p-4 rounded-lg border">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <div className="font-medium mb-3">Configuration Options</div>
+                          <ul className="text-sm text-muted-foreground space-y-2">
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>File Upload:</strong> Drag & drop or click to attach document</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>File Name:</strong> Displayed name for the download</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>File URL:</strong> Link to the file (auto-generated)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span><strong>File Type:</strong> Detected file format</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="p-3 rounded bg-muted/50">
+                          <div className="text-sm font-medium mb-2">Use Cases</div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• Terms and Conditions documents</li>
+                            <li>• Instruction manuals</li>
+                            <li>• Template files for completion</li>
+                            <li>• Reference materials</li>
+                            <li>• Compliance forms</li>
+                          </ul>
                         </div>
                       </div>
                     </div>
@@ -1300,7 +1706,8 @@ const Documentation = () => {
                         <span className="font-medium">"Add from Existing" Feature</span>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Quickly populate your answer set from a library of common, reusable answer templates.
+                        Quickly populate your answer set from a library of common, reusable answer templates. 
+                        Available only for choice-based question types.
                       </p>
                       
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1333,69 +1740,7 @@ const Documentation = () => {
                       <div className="mt-4 p-3 rounded-lg bg-muted/30 border-dashed border">
                         <p className="text-xs text-muted-foreground">
                           <strong>Note:</strong> The library picker includes a search bar. Selecting a template replaces the current answer set's content while preserving its ID. 
-                          This feature is hidden for simple types (Text, Number, Date, Rating, Boolean).
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  {/* Simple Types Behavior */}
-                  <div>
-                    <h4 className="font-semibold mb-4">Simple Type Behavior</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      For non-choice question types, the Answer Set Editor adapts to show only relevant fields:
-                    </p>
-                    
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="p-3 rounded-lg border">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Type className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-sm">Text Questions</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Shows a Textarea for entering a "Default Text Answer" instead of multiple choice options.
-                        </p>
-                      </div>
-                      
-                      <div className="p-3 rounded-lg border">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Hash className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-sm">Number Questions</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Shows a number input for default value along with min/max/step configuration.
-                        </p>
-                      </div>
-                      
-                      <div className="p-3 rounded-lg border">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Calendar className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-sm">Date Questions</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Shows a date picker for default value with optional min/max date constraints.
-                        </p>
-                      </div>
-                      
-                      <div className="p-3 rounded-lg border">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Star className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-sm">Rating Questions</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Shows scale configuration (min/max) with optional endpoint labels.
-                        </p>
-                      </div>
-                      
-                      <div className="p-3 rounded-lg border">
-                        <div className="flex items-center gap-2 mb-2">
-                          <ToggleLeft className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-sm">Boolean Questions</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Shows a Switch toggle for setting the default value (true/false).
+                          This feature is hidden for simple types (Text, Number, Date, Rating, Boolean) and when Dynamic Values is enabled.
                         </p>
                       </div>
                     </div>
@@ -1430,9 +1775,15 @@ const Documentation = () => {
                   <div className="p-4 rounded-lg bg-muted/50 border">
                     <div className="text-sm font-medium mb-2">💡 Answer Set Initialization</div>
                     <p className="text-sm text-muted-foreground">
-                      Every new answer set (standard or inline) is automatically initialized with one empty answer 
-                      containing empty label and value fields, marked as active. This ensures you always have a starting point for configuration.
+                      Every new answer set (standard or inline) is automatically initialized with appropriate defaults based on question type:
                     </p>
+                    <ul className="text-sm text-muted-foreground mt-2 space-y-1">
+                      <li>• <strong>Choice types:</strong> One empty answer with blank label/value, marked active</li>
+                      <li>• <strong>Number types:</strong> Min/Max values set to undefined (no restrictions)</li>
+                      <li>• <strong>Date types:</strong> Date restriction disabled by default</li>
+                      <li>• <strong>Rating types:</strong> Scale 1-5 with "Numbers" display style</li>
+                      <li>• <strong>Boolean types:</strong> Default value set to false (OFF)</li>
+                    </ul>
                   </div>
                 </CardContent>
               </Card>
