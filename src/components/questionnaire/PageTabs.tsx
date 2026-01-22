@@ -46,10 +46,10 @@ const PageTabs = ({
           key={page.id}
           className={cn(
             "group flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors",
-            "border border-transparent",
+            "border",
             activePageId === page.id
-              ? "bg-background border-border shadow-sm"
-              : "hover:bg-background/50"
+              ? "bg-primary/10 border-primary text-primary shadow-sm"
+              : "border-transparent hover:bg-background/50"
           )}
           onClick={() => onSelectPage(page.id)}
           onDoubleClick={(e) => handleDoubleClick(page.id, e)}

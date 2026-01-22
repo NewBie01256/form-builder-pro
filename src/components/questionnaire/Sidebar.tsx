@@ -170,13 +170,14 @@ const Sidebar = ({
       <div key={section.id} className="ml-4">
         <div
           className={cn(
-            "flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors",
-            "hover:bg-accent",
-            selectedSectionId === section.id && !selectedQuestionId && !selectedBranchId && "bg-accent text-accent-foreground"
+            "flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors border",
+            selectedSectionId === section.id && !selectedQuestionId && !selectedBranchId
+              ? "bg-primary/10 border-primary text-primary"
+              : "border-transparent hover:bg-accent"
           )}
           onClick={() => onSelectSection(section.id)}
         >
-          <Layers className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Layers className={cn("h-4 w-4 shrink-0", selectedSectionId === section.id && !selectedQuestionId && !selectedBranchId ? "text-primary" : "text-muted-foreground")} />
           <span className="truncate text-sm font-medium">{section.name || 'Untitled Section'}</span>
         </div>
 
@@ -217,13 +218,14 @@ const Sidebar = ({
       <div key={page.id}>
         <div
           className={cn(
-            "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors",
-            "hover:bg-accent",
-            activePageId === page.id && !selectedSectionId && "bg-accent text-accent-foreground"
+            "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors border",
+            activePageId === page.id
+              ? "bg-primary/10 border-primary text-primary"
+              : "border-transparent hover:bg-accent"
           )}
           onClick={() => onSelectPage(page.id)}
         >
-          <File className="h-4 w-4 text-muted-foreground shrink-0" />
+          <File className={cn("h-4 w-4 shrink-0", activePageId === page.id ? "text-primary" : "text-muted-foreground")} />
           <span className="truncate text-sm font-medium">{page.name || 'Untitled Page'}</span>
         </div>
 
