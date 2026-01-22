@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import {
   Select,
   SelectContent,
@@ -289,11 +290,13 @@ const Sidebar = ({
 
                       <div className="space-y-1 min-w-0">
                         <Label className="text-xs text-muted-foreground">Description</Label>
-                        <Input
+                        <AutoResizeTextarea
                           placeholder="Description"
                           value={questionnaire.description}
                           onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, description: e.target.value })}
-                          className="h-7 text-xs w-full min-w-0"
+                          className="text-xs w-full min-w-0 min-h-[28px] py-1.5"
+                          minRows={1}
+                          maxRows={5}
                         />
                       </div>
 
