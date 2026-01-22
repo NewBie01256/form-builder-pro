@@ -21,6 +21,7 @@ import {
 import { Plus, ChevronDown, ChevronUp, Trash2, Library, Zap, FileUp } from "lucide-react";
 import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer, AnswerLevelOperator, QuestionType } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
+import DynamicRuleValueInput from "./DynamicRuleValueInput";
 import {
   Collapsible,
   CollapsibleContent,
@@ -875,23 +876,24 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUp
                       </SelectContent>
                     </Select>
 
-                    <Select
-                      value={child.previousAnswerId}
-                      onValueChange={(value) => {
-                        updateChild(index, { ...child, previousAnswerId: value });
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Select answer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getAnswersForAnswerSet(child.previousQuestionId, child.previousAnswerSetId || '').map(ans => (
-                          <SelectItem key={ans.id} value={ans.id}>
-                            {ans.label || 'Untitled Answer'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {/* Answer - Dynamic based on question type */}
+                    {(() => {
+                      const sourceQuestion = allQuestions.find(q => q.id === child.previousQuestionId);
+                      const questionType = sourceQuestion?.type || 'Choice';
+                      const answers = getAnswersForAnswerSet(child.previousQuestionId, child.previousAnswerSetId || '');
+                      
+                      return (
+                        <DynamicRuleValueInput
+                          questionType={questionType}
+                          answers={answers}
+                          value={child.previousAnswerId}
+                          onChange={(value) => {
+                            updateChild(index, { ...child, previousAnswerId: value });
+                          }}
+                          disabled={!child.previousAnswerSetId}
+                        />
+                      );
+                    })()}
                   </div>
 
                   {/* Actions */}
