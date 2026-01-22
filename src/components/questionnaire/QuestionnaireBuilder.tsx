@@ -85,6 +85,7 @@ const QuestionnaireBuilder = () => {
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [publishedRecords, setPublishedRecords] = useState<Record<string, PublishedRecord>>(loadPublishedRecords());
+  const [publishValidationError, setPublishValidationError] = useState<string | null>(null);
 
   // Load drafts from localStorage on mount
   useEffect(() => {
@@ -100,6 +101,13 @@ const QuestionnaireBuilder = () => {
   useEffect(() => {
     savePublishedRecords(publishedRecords);
   }, [publishedRecords]);
+
+  // Clear publish validation error when questionnaire changes
+  useEffect(() => {
+    if (publishValidationError) {
+      setPublishValidationError(null);
+    }
+  }, [questionnaire]);
 
   const handleCreateQuestionnaire = () => {
     const defaultPage: Page = {
@@ -564,6 +572,38 @@ const QuestionnaireBuilder = () => {
   const handlePublish = () => {
     if (!questionnaire) return;
     
+    // Validate: check if any page is empty (no questions and no branches)
+    const countBranchContent = (branch: ConditionalBranch): number => {
+      let count = branch.questions.length;
+      branch.childBranches.forEach(cb => {
+        count += countBranchContent(cb);
+      });
+      return count;
+    };
+    
+    const emptyPages = questionnaire.pages.filter(page => {
+      let totalQuestions = 0;
+      let totalBranches = 0;
+      
+      page.sections.forEach(section => {
+        totalQuestions += section.questions.length;
+        totalBranches += section.branches.length;
+        section.branches.forEach(branch => {
+          totalQuestions += countBranchContent(branch);
+        });
+      });
+      
+      return totalQuestions === 0 && totalBranches === 0;
+    });
+    
+    if (emptyPages.length > 0) {
+      const pageNames = emptyPages.map(p => `"${p.name || 'Untitled Page'}"`).join(', ');
+      setPublishValidationError(`Page ${pageNames} is missing Configurations`);
+      return;
+    }
+    
+    // Clear any previous error
+    setPublishValidationError(null);
     const stats = getQuestionnaireStats(questionnaire);
     
     // Count answer sets
@@ -966,6 +1006,13 @@ const QuestionnaireBuilder = () => {
           <div className="p-6 space-y-6">
             {questionnaire && activePage && (
               <div className="space-y-4">
+                {/* Publish Validation Error */}
+                {publishValidationError && (
+                  <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 border border-destructive text-destructive">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span className="text-sm font-medium">{publishValidationError}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">{activePage.name || 'Untitled Page'}</h2>
                   <div className="flex items-center gap-2">
