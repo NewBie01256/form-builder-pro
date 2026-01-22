@@ -232,7 +232,7 @@ const Sidebar = ({
   };
 
   return (
-    <div className="flex-none w-[30%] max-w-[300px] min-w-0 border-r border-border h-full overflow-hidden flex flex-col bg-card">
+    <div className="h-full overflow-hidden flex flex-col bg-card">
       <div className="p-4 border-b border-border flex items-center justify-between">
         <h2 className="font-semibold text-sm text-foreground">Questionnaire Tree</h2>
         {questionnaire && (

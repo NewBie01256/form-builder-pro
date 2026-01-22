@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play } from "lucide-react";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { exportQuestionnaire, buildExportData } from "@/lib/questionnaireExport";
 import {
   Question,
@@ -913,33 +914,38 @@ const QuestionnaireBuilder = () => {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
-      <Sidebar
-        questionnaire={questionnaire}
-        activePageId={activePageId}
-        selectedSectionId={selectedSectionId}
-        selectedQuestionId={selectedQuestionId}
-        selectedBranchId={selectedBranchId}
-        onCreateQuestionnaire={handleCreateQuestionnaire}
-        onSelectPage={setActivePageId}
-        onSelectSection={handleSelectSection}
-        onSelectQuestion={handleSelectQuestion}
-        onSelectBranch={handleSelectBranch}
-        onReset={() => {
-          setQuestionnaire(null);
-          setActivePageId(null);
-          setSelectedSectionId(null);
-          setSelectedQuestionId(null);
-          setSelectedBranchId(null);
-          setEditingDraftId(null);
-          setEditingRecordId(null);
-        }}
-        onUpdateQuestionnaire={setQuestionnaire}
-        onPublish={handlePublish}
-        canPublish={!!editingRecordId}
-      />
+    <ResizablePanelGroup direction="horizontal" className="h-screen w-full bg-background">
+      <ResizablePanel defaultSize={25} minSize={15} maxSize={40}>
+        <Sidebar
+          questionnaire={questionnaire}
+          activePageId={activePageId}
+          selectedSectionId={selectedSectionId}
+          selectedQuestionId={selectedQuestionId}
+          selectedBranchId={selectedBranchId}
+          onCreateQuestionnaire={handleCreateQuestionnaire}
+          onSelectPage={setActivePageId}
+          onSelectSection={handleSelectSection}
+          onSelectQuestion={handleSelectQuestion}
+          onSelectBranch={handleSelectBranch}
+          onReset={() => {
+            setQuestionnaire(null);
+            setActivePageId(null);
+            setSelectedSectionId(null);
+            setSelectedQuestionId(null);
+            setSelectedBranchId(null);
+            setEditingDraftId(null);
+            setEditingRecordId(null);
+          }}
+          onUpdateQuestionnaire={setQuestionnaire}
+          onPublish={handlePublish}
+          canPublish={!!editingRecordId}
+        />
+      </ResizablePanel>
 
-      <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
+      <ResizableHandle withHandle />
+
+      <ResizablePanel defaultSize={75} minSize={50}>
+        <div className="h-full overflow-hidden flex flex-col">
         {questionnaire && (
           <PageTabs
             pages={questionnaire.pages}
@@ -1330,8 +1336,9 @@ const QuestionnaireBuilder = () => {
             )}
           </div>
         </ScrollArea>
-      </div>
-    </div>
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 };
 
