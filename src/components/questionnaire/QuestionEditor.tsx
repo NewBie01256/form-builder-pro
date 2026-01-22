@@ -11,17 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { HelpCircle, Plus, GitBranch, Trash2, Library } from "lucide-react";
 import { Question, AnswerLevelRuleGroup, AnswerSet, TextValidationType } from "@/types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";
@@ -140,8 +130,8 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
             Question Details
           </CardTitle>
           {onDelete && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <ConfirmDialog
+              trigger={
                 <Button
                   variant="ghost"
                   size="sm"
@@ -150,27 +140,11 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete Question
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Question</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete "{question.text || 'Untitled Question'}"? 
-                    This will also delete all answer sets and conditional branching rules. 
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    onClick={() => onDelete(question.id)}
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              }
+              title="Delete Question"
+              description={`Are you sure you want to delete "${question.text || 'Untitled Question'}"? This will also delete all answer sets and conditional branching rules. This action cannot be undone.`}
+              onConfirm={() => onDelete(question.id)}
+            />
           )}
         </div>
       </CardHeader>
@@ -318,8 +292,8 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                     <span className="text-sm flex-1 truncate">
                       {group.inlineAnswerSet?.name || 'Untitled Answer Set'}
                     </span>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                    <ConfirmDialog
+                      trigger={
                         <Button
                           variant="ghost"
                           size="sm"
@@ -328,27 +302,11 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Answer Set</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{group.inlineAnswerSet?.name || 'Untitled Answer Set'}"? 
-                            This will also delete all associated branching rules. 
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={() => handleRemoveAnswerLevelBranching(group.id)}
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                      }
+                      title="Delete Answer Set"
+                      description={`Are you sure you want to delete "${group.inlineAnswerSet?.name || 'Untitled Answer Set'}"? This will also delete all associated branching rules. This action cannot be undone.`}
+                      onConfirm={() => handleRemoveAnswerLevelBranching(group.id)}
+                    />
                   </div>
                 ))}
               </div>

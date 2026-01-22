@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, X, FileText } from "lucide-react";
 import { Page } from "@/types/questionnaire";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface PageTabsProps {
   pages: Page[];
@@ -72,17 +73,21 @@ const PageTabs = ({
             </span>
           )}
           {pages.length > 1 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeletePage(page.id);
-              }}
-            >
-              <X className="h-3 w-3" />
-            </Button>
+            <ConfirmDialog
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              }
+              title="Delete Page"
+              description={`Are you sure you want to delete "${page.name || `Page ${index + 1}`}"? This will remove all sections, questions, and branches within it. This action cannot be undone.`}
+              onConfirm={() => onDeletePage(page.id)}
+            />
           )}
         </div>
       ))}

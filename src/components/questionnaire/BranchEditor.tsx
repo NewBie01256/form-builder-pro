@@ -7,17 +7,7 @@ import { ConditionalBranch, Question } from "@/types/questionnaire";
 import RuleGroupEditor from "./RuleGroupEditor";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface BranchEditorProps {
   branch: ConditionalBranch;
@@ -53,8 +43,8 @@ const BranchEditor = ({
             Conditional Branch Details
           </CardTitle>
           {onDeleteBranch && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <ConfirmDialog
+              trigger={
                 <Button
                   variant="ghost"
                   size="sm"
@@ -63,27 +53,11 @@ const BranchEditor = ({
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete Branch
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Branch</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete "{branch.name || 'Untitled Branch'}"? 
-                    This will also delete all questions and child branches within it. 
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    onClick={() => onDeleteBranch(branch.id)}
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              }
+              title="Delete Branch"
+              description={`Are you sure you want to delete "${branch.name || 'Untitled Branch'}"? This will also delete all questions and child branches within it. This action cannot be undone.`}
+              onConfirm={() => onDeleteBranch(branch.id)}
+            />
           )}
         </div>
       </CardHeader>
