@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen } from "lucide-react";
+import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play } from "lucide-react";
+import { exportQuestionnaire } from "@/lib/questionnaireExport";
 import {
   Question,
   ConditionalBranch,
@@ -793,6 +794,22 @@ const QuestionnaireBuilder = () => {
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">{activePage.name || 'Untitled Page'}</h2>
                   <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        exportQuestionnaire(questionnaire);
+                        toast.success("Questionnaire exported successfully!");
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export JSON
+                    </Button>
+                    <Link to="/execute">
+                      <Button variant="outline">
+                        <Play className="h-4 w-4 mr-2" />
+                        Open Executor
+                      </Button>
+                    </Link>
                     <Button variant="outline" onClick={handleSaveAsDraft}>
                       <Save className="h-4 w-4 mr-2" />
                       Save as Draft
