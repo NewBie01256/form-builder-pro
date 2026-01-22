@@ -50,19 +50,25 @@ const saveDraftsToStorage = (drafts: SavedDraft[]) => {
 };
 
 const PUBLISHED_RECORDS_KEY = 'published-itsm-records';
+const PUBLISHED_QUESTIONNAIRES_KEY = 'published-questionnaires';
 
-const loadPublishedRecords = (): Record<string, ITSMRecord> => {
+interface PublishedRecord {
+  metadata: ITSMRecord;
+  questionnaire: Questionnaire;
+}
+
+const loadPublishedRecords = (): Record<string, PublishedRecord> => {
   try {
-    const stored = localStorage.getItem(PUBLISHED_RECORDS_KEY);
+    const stored = localStorage.getItem(PUBLISHED_QUESTIONNAIRES_KEY);
     return stored ? JSON.parse(stored) : {};
   } catch {
     return {};
   }
 };
 
-const savePublishedRecords = (records: Record<string, ITSMRecord>) => {
+const savePublishedRecords = (records: Record<string, PublishedRecord>) => {
   try {
-    localStorage.setItem(PUBLISHED_RECORDS_KEY, JSON.stringify(records));
+    localStorage.setItem(PUBLISHED_QUESTIONNAIRES_KEY, JSON.stringify(records));
   } catch (e) {
     console.error('Failed to save published records to localStorage', e);
   }
@@ -77,7 +83,7 @@ const QuestionnaireBuilder = () => {
   const [savedDrafts, setSavedDrafts] = useState<SavedDraft[]>([]);
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
-  const [publishedRecords, setPublishedRecords] = useState<Record<string, ITSMRecord>>(loadPublishedRecords());
+  const [publishedRecords, setPublishedRecords] = useState<Record<string, PublishedRecord>>(loadPublishedRecords());
 
   // Load drafts from localStorage on mount
   useEffect(() => {
@@ -608,14 +614,14 @@ const QuestionnaireBuilder = () => {
     // Use existing record ID or create a new one
     const recordId = editingRecordId || `published-${Date.now()}`;
     
-    const updatedRecord: ITSMRecord = {
+    const updatedMetadata: ITSMRecord = {
       id: recordId,
       name: questionnaire.name || 'Untitled Questionnaire',
       description: questionnaire.description || '',
       category: 'Service Request', // Default for new records
       status: 'Active',
       priority: 'Medium',
-      createdAt: publishedRecords[recordId]?.createdAt || new Date().toISOString().split('T')[0],
+      createdAt: publishedRecords[recordId]?.metadata.createdAt || new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0],
       questionCount: stats.questionCount,
       serviceCatalog: questionnaire.serviceCatalog || 'General',
@@ -626,9 +632,14 @@ const QuestionnaireBuilder = () => {
       answerSetCount
     };
     
+    const publishedRecord: PublishedRecord = {
+      metadata: updatedMetadata,
+      questionnaire: { ...questionnaire, status: 'Active' }
+    };
+    
     setPublishedRecords(prev => ({
       ...prev,
-      [recordId]: updatedRecord
+      [recordId]: publishedRecord
     }));
     
     // If this was a new questionnaire, set the editing record ID for future updates
@@ -730,26 +741,12 @@ const QuestionnaireBuilder = () => {
     toast.success("Draft deleted");
   };
 
-  const handleEditPublishedRecord = (record: ITSMRecord) => {
-    // Create a basic questionnaire structure from the published record
-    // In a real app, you'd store the full questionnaire data
-    const defaultPage: Page = {
-      id: `page-${Date.now()}`,
-      name: 'Page 1',
-      description: '',
-      sections: []
-    };
-    setQuestionnaire({
-      name: record.name,
-      description: record.description,
-      status: record.status,
-      version: '1.0',
-      serviceCatalog: record.serviceCatalog,
-      pages: [defaultPage]
-    });
-    setActivePageId(defaultPage.id);
-    setSelectedSectionId(null);
-    setEditingRecordId(record.id);
+  const handleEditPublishedRecord = (publishedRecord: PublishedRecord) => {
+    // Restore the full questionnaire from the published record
+    setQuestionnaire(publishedRecord.questionnaire);
+    setActivePageId(publishedRecord.questionnaire.pages[0]?.id || null);
+    setSelectedSectionId(publishedRecord.questionnaire.pages[0]?.sections[0]?.id || null);
+    setEditingRecordId(publishedRecord.metadata.id);
   };
 
   const handleDeletePublishedRecord = (recordId: string) => {
@@ -1118,7 +1115,7 @@ const QuestionnaireBuilder = () => {
                 )}
 
                 {/* Published Records (user-created) */}
-                {Object.values(publishedRecords).filter(r => !sampleITSMRecords.some(s => s.id === r.id)).length > 0 && (
+                {Object.values(publishedRecords).filter(r => !sampleITSMRecords.some(s => s.id === r.metadata.id)).length > 0 && (
                   <div className="space-y-3">
                     <h3 className="text-lg font-semibold flex items-center gap-2">
                       <FileText className="h-5 w-5 text-muted-foreground" />
@@ -1126,10 +1123,10 @@ const QuestionnaireBuilder = () => {
                     </h3>
                     <div className="grid gap-3">
                       {Object.values(publishedRecords)
-                        .filter(r => !sampleITSMRecords.some(s => s.id === r.id))
-                        .map((record) => (
+                        .filter(r => !sampleITSMRecords.some(s => s.id === r.metadata.id))
+                        .map((publishedRecord) => (
                         <Card 
-                          key={record.id} 
+                          key={publishedRecord.metadata.id} 
                           className="hover:shadow-md transition-shadow cursor-pointer group border-primary/30"
                         >
                           <CardContent className="p-4">
@@ -1140,33 +1137,33 @@ const QuestionnaireBuilder = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <h3 className="font-semibold truncate">{record.name}</h3>
+                                    <h3 className="font-semibold truncate">{publishedRecord.metadata.name}</h3>
                                     <Badge variant="default" className="text-xs">
-                                      {record.status}
+                                      {publishedRecord.metadata.status}
                                     </Badge>
                                   </div>
-                                  <p className="text-sm text-muted-foreground mt-1 truncate">{record.description || 'No description'}</p>
+                                  <p className="text-sm text-muted-foreground mt-1 truncate">{publishedRecord.metadata.description || 'No description'}</p>
                                   <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
                                     <span className="flex items-center gap-1" title="Pages">
                                       <Files className="h-3 w-3" />
-                                      {record.pageCount}
+                                      {publishedRecord.metadata.pageCount}
                                     </span>
                                     <span className="flex items-center gap-1" title="Sections">
                                       <Layers className="h-3 w-3" />
-                                      {record.sectionCount}
+                                      {publishedRecord.metadata.sectionCount}
                                     </span>
                                     <span className="flex items-center gap-1" title="Questions">
                                       <HelpCircle className="h-3 w-3" />
-                                      {record.questionCount}
+                                      {publishedRecord.metadata.questionCount}
                                     </span>
                                     <span className="flex items-center gap-1" title="Branches">
                                       <GitBranch className="h-3 w-3" />
-                                      {record.branchCount}
+                                      {publishedRecord.metadata.branchCount}
                                     </span>
                                     <span className="text-muted-foreground/60">|</span>
                                     <span className="flex items-center gap-1">
                                       <Clock className="h-3 w-3" />
-                                      {record.updatedAt}
+                                      {publishedRecord.metadata.updatedAt}
                                     </span>
                                   </div>
                                 </div>
@@ -1175,7 +1172,7 @@ const QuestionnaireBuilder = () => {
                                 <Button 
                                   variant="ghost" 
                                   size="sm"
-                                  onClick={() => handleEditPublishedRecord(record)}
+                                  onClick={() => handleEditPublishedRecord(publishedRecord)}
                                 >
                                   <Edit className="h-4 w-4 mr-1" />
                                   Edit
@@ -1184,7 +1181,7 @@ const QuestionnaireBuilder = () => {
                                   variant="ghost" 
                                   size="sm"
                                   className="text-destructive hover:text-destructive"
-                                  onClick={() => handleDeletePublishedRecord(record.id)}
+                                  onClick={() => handleDeletePublishedRecord(publishedRecord.metadata.id)}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -1203,8 +1200,8 @@ const QuestionnaireBuilder = () => {
                 {/* ITSM Records List */}
                 <div className="grid gap-3">
                   {sampleITSMRecords.map((baseRecord) => {
-                    // Use published version if available, otherwise use the base record
-                    const record = publishedRecords[baseRecord.id] || baseRecord;
+                    // Use published version's metadata if available, otherwise use the base record
+                    const record = publishedRecords[baseRecord.id]?.metadata || baseRecord;
                     return (
                     <Card 
                       key={record.id} 
@@ -1286,7 +1283,14 @@ const QuestionnaireBuilder = () => {
                             variant="ghost" 
                             size="sm"
                             className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                            onClick={() => handleEditRecord(record)}
+                            onClick={() => {
+                              // If we have a published version with full questionnaire, use it
+                              if (publishedRecords[baseRecord.id]) {
+                                handleEditPublishedRecord(publishedRecords[baseRecord.id]);
+                              } else {
+                                handleEditRecord(baseRecord);
+                              }
+                            }}
                           >
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
