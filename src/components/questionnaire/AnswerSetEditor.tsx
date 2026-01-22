@@ -145,6 +145,37 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
   if (isSimpleType) {
     return (
       <div className="border border-border rounded-lg p-4 bg-muted/30">
+        {/* Answer Set Name and Tag - consistent across all types */}
+        <div className="grid gap-3 sm:grid-cols-2 mb-4">
+          <div className="space-y-2">
+            <Label>Set Name</Label>
+            <Input
+              placeholder="Answer Set Name"
+              value={answerSet.name}
+              onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Tag</Label>
+            <Input
+              placeholder="Tag"
+              value={answerSet.tag}
+              onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2 mb-4">
+          <Checkbox
+            id={`default-simple-${answerSet.id}`}
+            checked={answerSet.isDefault}
+            onCheckedChange={(checked) => onUpdate({ ...answerSet, isDefault: !!checked })}
+          />
+          <Label htmlFor={`default-simple-${answerSet.id}`} className="text-sm font-normal">
+            Is Default
+          </Label>
+        </div>
+
         <div className="space-y-2">
           {questionType === 'Text' ? (
             <div className="space-y-3">
