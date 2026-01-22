@@ -14,9 +14,11 @@ import { Questionnaire } from "@/types/questionnaire";
 interface QuestionnaireDetailsProps {
   questionnaire: Questionnaire;
   onUpdate: (updated: Questionnaire) => void;
+  onPublish?: () => void;
+  canPublish?: boolean;
 }
 
-const QuestionnaireDetails = ({ questionnaire, onUpdate }: QuestionnaireDetailsProps) => {
+const QuestionnaireDetails = ({ questionnaire, onUpdate, onPublish, canPublish = false }: QuestionnaireDetailsProps) => {
   return (
     <Card>
       <CardHeader className="pb-4">
@@ -80,7 +82,13 @@ const QuestionnaireDetails = ({ questionnaire, onUpdate }: QuestionnaireDetailsP
           </div>
           
           <div className="pt-6">
-            <Button>Publish</Button>
+            <Button 
+              onClick={onPublish} 
+              disabled={!canPublish}
+              title={!canPublish ? "Only records opened from Templates can be published back" : "Publish changes to the record"}
+            >
+              Publish
+            </Button>
           </div>
         </div>
       </CardContent>

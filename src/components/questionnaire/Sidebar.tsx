@@ -32,6 +32,8 @@ interface SidebarProps {
   onSelectBranch: (id: string) => void;
   onReset: () => void;
   onUpdateQuestionnaire: (updated: Questionnaire) => void;
+  onPublish?: () => void;
+  canPublish?: boolean;
 }
 
 const Sidebar = ({
@@ -47,6 +49,8 @@ const Sidebar = ({
   onSelectBranch,
   onReset,
   onUpdateQuestionnaire,
+  onPublish,
+  canPublish = false,
 }: SidebarProps) => {
   const [detailsOpen, setDetailsOpen] = useState(true);
 
@@ -324,7 +328,13 @@ const Sidebar = ({
                           </SelectContent>
                         </Select>
                       </div>
-                      <Button size="sm" className="mt-5 h-8 text-xs">
+                      <Button 
+                        size="sm" 
+                        className="mt-5 h-8 text-xs"
+                        onClick={onPublish}
+                        disabled={!canPublish}
+                        title={!canPublish ? "Only records opened from Templates can be published" : "Publish changes"}
+                      >
                         Publish
                       </Button>
                     </div>
