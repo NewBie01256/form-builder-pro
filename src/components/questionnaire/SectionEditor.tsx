@@ -119,6 +119,23 @@ const SectionEditor = ({
   onSelectBranch,
 }: SectionEditorProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isEditingName, setIsEditingName] = useState(false);
+
+  const handleNameDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditingName(true);
+  };
+
+  const handleNameBlur = () => {
+    setIsEditingName(false);
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === "Escape") {
+      setIsEditingName(false);
+    }
+  };
+
   const handleAddQuestion = (branchId?: string) => {
     const defaultAnswerSet: AnswerSet = {
       id: `as-${Date.now()}`,
@@ -273,15 +290,24 @@ const SectionEditor = ({
       <Card className="border-l-4 border-l-primary/50">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-1">
+            <div className="flex items-center gap-2 flex-1" onDoubleClick={handleNameDoubleClick}>
               <Layers className="h-5 w-5 text-primary shrink-0" />
-              <Input
-                value={section.name}
-                onChange={(e) => onUpdate({ ...section, name: e.target.value })}
-                onClick={(e) => e.stopPropagation()}
-                className="h-8 text-base font-semibold border-0 bg-transparent px-1 focus-visible:ring-1 focus-visible:ring-offset-0"
-                placeholder="Section name"
-              />
+              {isEditingName ? (
+                <Input
+                  value={section.name}
+                  onChange={(e) => onUpdate({ ...section, name: e.target.value })}
+                  onClick={(e) => e.stopPropagation()}
+                  onBlur={handleNameBlur}
+                  onKeyDown={handleNameKeyDown}
+                  className="h-8 text-base font-semibold border border-primary bg-background px-1 focus-visible:ring-1 focus-visible:ring-offset-0"
+                  placeholder="Section name"
+                  autoFocus
+                />
+              ) : (
+                <span className="text-base font-semibold cursor-pointer hover:text-primary transition-colors">
+                  {section.name || "Untitled Section"}
+                </span>
+              )}
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0">
                   {isExpanded ? (
