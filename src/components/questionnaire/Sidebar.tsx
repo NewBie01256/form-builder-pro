@@ -274,36 +274,36 @@ const Sidebar = ({
                   </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="px-2 py-2">
+                  <div className="px-2 py-2 overflow-hidden">
                     {/* Entire Details Section in a Box */}
-                    <div className="border border-border rounded-lg p-3 bg-muted/30 space-y-3">
-                      <div className="space-y-1">
+                    <div className="border border-border rounded-lg p-3 bg-muted/30 space-y-3 overflow-hidden">
+                      <div className="space-y-1 min-w-0">
                         <Label className="text-xs text-muted-foreground">Name</Label>
                         <Input
                           placeholder="Questionnaire name"
                           value={questionnaire.name}
                           onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, name: e.target.value })}
-                          className="h-7 text-xs"
+                          className="h-7 text-xs w-full min-w-0"
                         />
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-0">
                         <Label className="text-xs text-muted-foreground">Description</Label>
                         <Input
                           placeholder="Description"
                           value={questionnaire.description}
                           onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, description: e.target.value })}
-                          className="h-7 text-xs"
+                          className="h-7 text-xs w-full min-w-0"
                         />
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-0">
                         <Label className="text-xs text-muted-foreground">Service Catalog</Label>
                         <Select
                           value={questionnaire.serviceCatalog}
                           onValueChange={(value) => onUpdateQuestionnaire({ ...questionnaire, serviceCatalog: value })}
                         >
-                          <SelectTrigger className="h-7 text-xs">
+                          <SelectTrigger className="h-7 text-xs w-full min-w-0">
                             <SelectValue placeholder="Select catalog" />
                           </SelectTrigger>
                           <SelectContent>
@@ -314,13 +314,13 @@ const Sidebar = ({
                         </Select>
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-0">
                         <Label className="text-xs text-muted-foreground">Status</Label>
                         <Select
                           value={questionnaire.status}
                           onValueChange={(value) => onUpdateQuestionnaire({ ...questionnaire, status: value })}
                         >
-                          <SelectTrigger className="h-7 text-xs">
+                          <SelectTrigger className="h-7 text-xs w-full min-w-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
