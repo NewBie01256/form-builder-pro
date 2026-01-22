@@ -695,28 +695,52 @@ const QuestionnaireBuilder = () => {
     
     const stats = getQuestionnaireStats(questionnaire);
     
-    if (editingDraftId) {
-      // Update existing draft
-      setSavedDrafts(prev => prev.map(draft => 
-        draft.id === editingDraftId
-          ? {
-              ...draft,
-              questionnaire: { ...questionnaire, status: 'Draft' },
-              savedAt: new Date().toLocaleString(),
-              ...stats
-            }
-          : draft
-      ));
-      toast.success("Draft updated!");
+    // Determine the draft ID to use:
+    // 1. If editing an existing draft, use that ID
+    // 2. If editing a record/template, use a draft ID based on the record ID
+    // 3. Otherwise, create a new draft ID
+    const draftIdToUse = editingDraftId || (editingRecordId ? `draft-${editingRecordId}` : null);
+    
+    if (draftIdToUse) {
+      // Check if this draft already exists
+      const existingDraft = savedDrafts.find(d => d.id === draftIdToUse);
+      
+      if (existingDraft) {
+        // Update existing draft
+        setSavedDrafts(prev => prev.map(draft => 
+          draft.id === draftIdToUse
+            ? {
+                ...draft,
+                questionnaire: { ...questionnaire, status: 'Draft' },
+                savedAt: new Date().toLocaleString(),
+                ...stats
+              }
+            : draft
+        ));
+        toast.success("Draft updated!");
+      } else {
+        // Create new draft with the determined ID
+        const newDraft: SavedDraft = {
+          id: draftIdToUse,
+          questionnaire: { ...questionnaire, status: 'Draft' },
+          savedAt: new Date().toLocaleString(),
+          ...stats
+        };
+        setSavedDrafts(prev => [...prev, newDraft]);
+        setEditingDraftId(draftIdToUse);
+        toast.success("Questionnaire saved as draft!");
+      }
     } else {
-      // Create new draft
+      // Create new draft with a fresh ID
+      const newDraftId = `draft-${Date.now()}`;
       const newDraft: SavedDraft = {
-        id: `draft-${Date.now()}`,
+        id: newDraftId,
         questionnaire: { ...questionnaire, status: 'Draft' },
         savedAt: new Date().toLocaleString(),
         ...stats
       };
       setSavedDrafts(prev => [...prev, newDraft]);
+      setEditingDraftId(newDraftId);
       toast.success("Questionnaire saved as draft!");
     }
     
@@ -727,6 +751,7 @@ const QuestionnaireBuilder = () => {
     setSelectedQuestionId(null);
     setSelectedBranchId(null);
     setEditingDraftId(null);
+    setEditingRecordId(null);
   };
 
   const handleEditDraft = (draft: SavedDraft) => {
