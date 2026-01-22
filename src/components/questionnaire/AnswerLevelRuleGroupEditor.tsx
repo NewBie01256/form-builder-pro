@@ -124,6 +124,39 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
   if (isSimpleType) {
     return (
       <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 mt-3">
+        {/* Answer Set Name and Tag - consistent across all types */}
+        <div className="grid gap-3 sm:grid-cols-2 mb-4">
+          <div className="space-y-2">
+            <Label className="text-xs">Set Name</Label>
+            <Input
+              placeholder="Answer Set Name"
+              value={answerSet.name}
+              onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
+              className="h-8"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Tag</Label>
+            <Input
+              placeholder="Tag"
+              value={answerSet.tag}
+              onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
+              className="h-8"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2 mb-4">
+          <Checkbox
+            id={`default-inline-simple-${answerSet.id}`}
+            checked={answerSet.isDefault}
+            onCheckedChange={(checked) => onUpdate({ ...answerSet, isDefault: !!checked })}
+          />
+          <Label htmlFor={`default-inline-simple-${answerSet.id}`} className="text-xs font-normal">
+            Is Default
+          </Label>
+        </div>
+
         <div className="space-y-3">
           <Label className="text-sm font-semibold text-primary">{getSimpleTypeLabel()}</Label>
           {questionType === 'Text' ? (
