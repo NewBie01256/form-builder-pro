@@ -730,6 +730,12 @@ const QuestionnaireBuilder = () => {
       [recordId]: publishedRecord
     }));
     
+    // Remove draft if publishing from a draft
+    if (editingDraftId) {
+      setSavedDrafts(prev => prev.filter(d => d.id !== editingDraftId));
+      setEditingDraftId(null);
+    }
+    
     // If this was a new questionnaire, set the editing record ID for future updates
     if (!editingRecordId) {
       setEditingRecordId(recordId);
