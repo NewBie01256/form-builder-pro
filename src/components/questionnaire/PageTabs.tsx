@@ -67,7 +67,7 @@ const PageTabs = ({
               autoFocus
             />
           ) : (
-            <span className="text-sm truncate min-w-[60px]">
+            <span className="text-sm truncate min-w-[60px] select-none">
               {page.name || `Page ${index + 1}`}
             </span>
           )}
