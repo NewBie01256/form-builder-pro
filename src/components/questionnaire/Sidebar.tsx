@@ -275,45 +275,49 @@ const Sidebar = ({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <div className="px-3 py-2 space-y-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Name</Label>
-                      <Input
-                        placeholder="Questionnaire name"
-                        value={questionnaire.name}
-                        onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, name: e.target.value })}
-                        className="h-8 text-sm"
-                      />
+                    {/* Details Box */}
+                    <div className="border border-border rounded-lg p-3 bg-muted/30 space-y-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Name</Label>
+                        <Input
+                          placeholder="Questionnaire name"
+                          value={questionnaire.name}
+                          onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, name: e.target.value })}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Description</Label>
+                        <Input
+                          placeholder="Description"
+                          value={questionnaire.description}
+                          onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, description: e.target.value })}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Service Catalog</Label>
+                        <Select
+                          value={questionnaire.serviceCatalog}
+                          onValueChange={(value) => onUpdateQuestionnaire({ ...questionnaire, serviceCatalog: value })}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue placeholder="Select catalog" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Catalog A">Catalog A</SelectItem>
+                            <SelectItem value="Catalog B">Catalog B</SelectItem>
+                            <SelectItem value="Catalog C">Catalog C</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Description</Label>
-                      <Input
-                        placeholder="Description"
-                        value={questionnaire.description}
-                        onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, description: e.target.value })}
-                        className="h-8 text-sm"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Service Catalog</Label>
-                      <Select
-                        value={questionnaire.serviceCatalog}
-                        onValueChange={(value) => onUpdateQuestionnaire({ ...questionnaire, serviceCatalog: value })}
-                      >
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue placeholder="Select catalog" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Catalog A">Catalog A</SelectItem>
-                          <SelectItem value="Catalog B">Catalog B</SelectItem>
-                          <SelectItem value="Catalog C">Catalog C</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="space-y-1 flex-1">
+                    {/* Status and Publish */}
+                    <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">Status</Label>
                         <Select
                           value={questionnaire.status}
@@ -330,7 +334,7 @@ const Sidebar = ({
                       </div>
                       <Button 
                         size="sm" 
-                        className="mt-5 h-8 text-xs"
+                        className="w-full h-8 text-xs"
                         onClick={onPublish}
                         disabled={!questionnaire?.name}
                         title={!questionnaire?.name ? "Please add a name before publishing" : "Publish questionnaire"}
