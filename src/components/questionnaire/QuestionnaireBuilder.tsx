@@ -85,6 +85,8 @@ const QuestionnaireBuilder = () => {
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [publishedRecords, setPublishedRecords] = useState<Record<string, PublishedRecord>>(loadPublishedRecords());
+  const [newlyAddedPageId, setNewlyAddedPageId] = useState<string | null>(null);
+  const [newlyAddedSectionId, setNewlyAddedSectionId] = useState<string | null>(null);
 
   // Load drafts from localStorage on mount
   useEffect(() => {
@@ -790,7 +792,7 @@ const QuestionnaireBuilder = () => {
     if (!questionnaire) return;
     const newPage: Page = {
       id: `page-${Date.now()}`,
-      name: `Page ${questionnaire.pages.length + 1}`,
+      name: '',
       description: '',
       sections: []
     };
@@ -799,6 +801,7 @@ const QuestionnaireBuilder = () => {
       pages: [...questionnaire.pages, newPage]
     });
     setActivePageId(newPage.id);
+    setNewlyAddedPageId(newPage.id);
     setSelectedSectionId(null);
     setSelectedQuestionId(null);
     setSelectedBranchId(null);
@@ -842,6 +845,7 @@ const QuestionnaireBuilder = () => {
       )
     });
     setSelectedSectionId(newSection.id);
+    setNewlyAddedSectionId(newSection.id);
     setSelectedQuestionId(null);
     setSelectedBranchId(null);
   };
@@ -950,6 +954,7 @@ const QuestionnaireBuilder = () => {
           <PageTabs
             pages={questionnaire.pages}
             activePageId={activePageId}
+            newlyAddedPageId={newlyAddedPageId}
             onSelectPage={(id) => {
               setActivePageId(id);
               setSelectedSectionId(null);
@@ -959,6 +964,7 @@ const QuestionnaireBuilder = () => {
             onAddPage={handleAddPage}
             onDeletePage={handleDeletePage}
             onUpdatePage={handleUpdatePage}
+            onClearNewlyAdded={() => setNewlyAddedPageId(null)}
           />
         )}
 
@@ -1026,8 +1032,15 @@ const QuestionnaireBuilder = () => {
                     allQuestions={allQuestions}
                     selectedQuestionId={selectedSectionId === section.id ? selectedQuestionId : null}
                     selectedBranchId={selectedSectionId === section.id ? selectedBranchId : null}
+                    isSelected={selectedSectionId === section.id}
+                    isNewlyAdded={newlyAddedSectionId === section.id}
                     onUpdate={(updated) => handleUpdateSection(section.id, updated)}
                     onDelete={() => handleDeleteSection(section.id)}
+                    onSelect={() => {
+                      setSelectedSectionId(section.id);
+                      setSelectedQuestionId(null);
+                      setSelectedBranchId(null);
+                    }}
                     onSelectQuestion={(qId, bId) => {
                       setSelectedSectionId(section.id);
                       handleSelectQuestion(qId, bId);
@@ -1036,6 +1049,7 @@ const QuestionnaireBuilder = () => {
                       setSelectedSectionId(section.id);
                       handleSelectBranch(bId);
                     }}
+                    onClearNewlyAdded={() => setNewlyAddedSectionId(null)}
                   />
                 ))}
               </div>
