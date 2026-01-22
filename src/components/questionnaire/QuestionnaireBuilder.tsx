@@ -49,6 +49,25 @@ const saveDraftsToStorage = (drafts: SavedDraft[]) => {
   }
 };
 
+const PUBLISHED_RECORDS_KEY = 'published-itsm-records';
+
+const loadPublishedRecords = (): Record<string, ITSMRecord> => {
+  try {
+    const stored = localStorage.getItem(PUBLISHED_RECORDS_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
+const savePublishedRecords = (records: Record<string, ITSMRecord>) => {
+  try {
+    localStorage.setItem(PUBLISHED_RECORDS_KEY, JSON.stringify(records));
+  } catch (e) {
+    console.error('Failed to save published records to localStorage', e);
+  }
+};
+
 const QuestionnaireBuilder = () => {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [activePageId, setActivePageId] = useState<string | null>(null);
@@ -57,6 +76,8 @@ const QuestionnaireBuilder = () => {
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const [savedDrafts, setSavedDrafts] = useState<SavedDraft[]>([]);
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [publishedRecords, setPublishedRecords] = useState<Record<string, ITSMRecord>>(loadPublishedRecords());
 
   // Load drafts from localStorage on mount
   useEffect(() => {
@@ -67,6 +88,11 @@ const QuestionnaireBuilder = () => {
   useEffect(() => {
     saveDraftsToStorage(savedDrafts);
   }, [savedDrafts]);
+
+  // Save published records whenever they change
+  useEffect(() => {
+    savePublishedRecords(publishedRecords);
+  }, [publishedRecords]);
 
   const handleCreateQuestionnaire = () => {
     const defaultPage: Page = {
@@ -525,8 +551,86 @@ const QuestionnaireBuilder = () => {
     });
     setActivePageId(page1.id);
     setSelectedSectionId(page1.sections[0].id);
+    setEditingRecordId(record.id);
   };
 
+  const handlePublish = () => {
+    if (!questionnaire || !editingRecordId) return;
+    
+    const stats = getQuestionnaireStats(questionnaire);
+    
+    // Count answer sets
+    let answerSetCount = 0;
+    let actionCount = 0;
+    
+    const countInBranch = (branch: ConditionalBranch) => {
+      branch.questions.forEach(q => {
+        answerSetCount += q.answerSets.length;
+        q.answerSets.forEach(as => {
+          as.answers.forEach(a => {
+            if (a.actionRecord) actionCount++;
+          });
+        });
+        q.answerLevelRuleGroups.forEach(rg => {
+          if (rg.inlineAnswerSet) {
+            answerSetCount++;
+            rg.inlineAnswerSet.answers.forEach(a => {
+              if (a.actionRecord) actionCount++;
+            });
+          }
+        });
+      });
+      branch.childBranches.forEach(countInBranch);
+    };
+    
+    questionnaire.pages.forEach(page => {
+      page.sections.forEach(section => {
+        section.questions.forEach(q => {
+          answerSetCount += q.answerSets.length;
+          q.answerSets.forEach(as => {
+            as.answers.forEach(a => {
+              if (a.actionRecord) actionCount++;
+            });
+          });
+          q.answerLevelRuleGroups.forEach(rg => {
+            if (rg.inlineAnswerSet) {
+              answerSetCount++;
+              rg.inlineAnswerSet.answers.forEach(a => {
+                if (a.actionRecord) actionCount++;
+              });
+            }
+          });
+        });
+        section.branches.forEach(countInBranch);
+      });
+    });
+    
+    const updatedRecord: ITSMRecord = {
+      id: editingRecordId,
+      name: questionnaire.name,
+      description: questionnaire.description,
+      category: 'Incident', // Default, could be made editable
+      status: 'Active',
+      priority: 'Medium', // Default, could be made editable
+      createdAt: publishedRecords[editingRecordId]?.createdAt || new Date().toISOString().split('T')[0],
+      updatedAt: new Date().toISOString().split('T')[0],
+      questionCount: stats.questionCount,
+      serviceCatalog: questionnaire.serviceCatalog,
+      pageCount: stats.pageCount,
+      sectionCount: stats.sectionCount,
+      branchCount: stats.branchCount,
+      actionCount,
+      answerSetCount
+    };
+    
+    setPublishedRecords(prev => ({
+      ...prev,
+      [editingRecordId]: updatedRecord
+    }));
+    
+    setQuestionnaire({ ...questionnaire, status: 'Active' });
+    toast.success("Questionnaire published successfully!");
+  };
   const countQuestionsInBranch = (branch: ConditionalBranch): number => {
     let count = branch.questions.length;
     branch.childBranches.forEach(cb => {
@@ -766,8 +870,12 @@ const QuestionnaireBuilder = () => {
           setSelectedSectionId(null);
           setSelectedQuestionId(null);
           setSelectedBranchId(null);
+          setEditingDraftId(null);
+          setEditingRecordId(null);
         }}
         onUpdateQuestionnaire={setQuestionnaire}
+        onPublish={handlePublish}
+        canPublish={!!editingRecordId}
       />
 
       <div className="w-[70%] flex-1 overflow-hidden flex flex-col">
@@ -975,7 +1083,10 @@ const QuestionnaireBuilder = () => {
 
                 {/* ITSM Records List */}
                 <div className="grid gap-3">
-                  {sampleITSMRecords.map((record) => (
+                  {sampleITSMRecords.map((baseRecord) => {
+                    // Use published version if available, otherwise use the base record
+                    const record = publishedRecords[baseRecord.id] || baseRecord;
+                    return (
                     <Card 
                       key={record.id} 
                       className="hover:shadow-md transition-shadow cursor-pointer group"
@@ -1064,7 +1175,8 @@ const QuestionnaireBuilder = () => {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                  );
+                  })}
                 </div>
               </div>
             )}
