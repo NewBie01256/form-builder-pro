@@ -26,10 +26,19 @@ const evaluateRule = (
   const responseValue = responses[rule.sourceQuestionId];
   if (responseValue === undefined || responseValue === null) return false;
 
-  // Find the answer set and answer to get the comparison value
-  const answerSet = sourceQuestion.answerSets.find(as => as.id === rule.sourceAnswerSetId);
-  const targetAnswer = answerSet?.answers.find(a => a.id === rule.sourceAnswerId);
-  const targetValue = targetAnswer?.value ?? rule.sourceAnswerId;
+  // For choice-based types, find the answer to get the comparison value
+  const isChoiceType = ['Choice', 'Dropdown', 'MultiSelect', 'RadioButton'].includes(sourceQuestion.type);
+  
+  let targetValue: string;
+  if (isChoiceType) {
+    // Find the answer set and answer to get the comparison value
+    const answerSet = sourceQuestion.answerSets.find(as => as.id === rule.sourceAnswerSetId);
+    const targetAnswer = answerSet?.answers.find(a => a.id === rule.sourceAnswerId);
+    targetValue = targetAnswer?.value ?? rule.sourceAnswerId;
+  } else {
+    // For simple types (Text, Number, Date, Boolean, Rating), the sourceAnswerId IS the value
+    targetValue = rule.sourceAnswerId;
+  }
 
   return evaluateOperator(rule.operator, responseValue, targetValue);
 };
@@ -127,21 +136,30 @@ const evaluateAnswerLevelRule = (
   const responseValue = responses[rule.previousQuestionId];
   if (responseValue === undefined || responseValue === null) return false;
 
-  // Find the answer set - check both regular answer sets and inline answer sets from rule groups
-  let answerSet = sourceQuestion.answerSets.find(as => as.id === rule.previousAnswerSetId);
+  // For choice-based types, find the answer to get the comparison value
+  const isChoiceType = ['Choice', 'Dropdown', 'MultiSelect', 'RadioButton'].includes(sourceQuestion.type);
   
-  // If not found in regular answer sets, check inline answer sets from rule groups
-  if (!answerSet && sourceQuestion.answerLevelRuleGroups) {
-    for (const ruleGroup of sourceQuestion.answerLevelRuleGroups) {
-      if (ruleGroup.inlineAnswerSet?.id === rule.previousAnswerSetId) {
-        answerSet = ruleGroup.inlineAnswerSet;
-        break;
+  let targetValue: string;
+  if (isChoiceType) {
+    // Find the answer set - check both regular answer sets and inline answer sets from rule groups
+    let answerSet = sourceQuestion.answerSets.find(as => as.id === rule.previousAnswerSetId);
+    
+    // If not found in regular answer sets, check inline answer sets from rule groups
+    if (!answerSet && sourceQuestion.answerLevelRuleGroups) {
+      for (const ruleGroup of sourceQuestion.answerLevelRuleGroups) {
+        if (ruleGroup.inlineAnswerSet?.id === rule.previousAnswerSetId) {
+          answerSet = ruleGroup.inlineAnswerSet;
+          break;
+        }
       }
     }
-  }
 
-  const targetAnswer = answerSet?.answers.find(a => a.id === rule.previousAnswerId);
-  const targetValue = targetAnswer?.value ?? rule.previousAnswerId;
+    const targetAnswer = answerSet?.answers.find(a => a.id === rule.previousAnswerId);
+    targetValue = targetAnswer?.value ?? rule.previousAnswerId;
+  } else {
+    // For simple types (Text, Number, Date, Boolean, Rating), the previousAnswerId IS the value
+    targetValue = rule.previousAnswerId;
+  }
 
   return evaluateOperator(rule.operator, responseValue, targetValue);
 };

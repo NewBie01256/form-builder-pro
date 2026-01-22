@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, ChevronDown, Trash2 } from "lucide-react";
 import { RuleGroup, QuestionLevelRule, Question, AnswerLevelOperator } from "@/types/questionnaire";
+import DynamicRuleValueInput from "./DynamicRuleValueInput";
 
 interface RuleGroupEditorProps {
   group: RuleGroup;
@@ -244,25 +245,24 @@ const RuleGroupEditor = ({ group, allQuestions, currentQuestionOrder, onUpdate, 
                       </SelectContent>
                     </Select>
 
-                    {/* Answer */}
-                    <Select
-                      value={child.sourceAnswerId}
-                      onValueChange={(value) => {
-                        updateChild(index, { ...child, sourceAnswerId: value });
-                      }}
-                      disabled={!child.sourceAnswerSetId}
-                    >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Select answer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getAnswersForAnswerSet(child.sourceQuestionId, child.sourceAnswerSetId).map(ans => (
-                          <SelectItem key={ans.id} value={ans.id}>
-                            {ans.label || 'Untitled Answer'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {/* Answer - Dynamic based on question type */}
+                    {(() => {
+                      const sourceQuestion = allQuestions.find(q => q.id === child.sourceQuestionId);
+                      const questionType = sourceQuestion?.type || 'Choice';
+                      const answers = getAnswersForAnswerSet(child.sourceQuestionId, child.sourceAnswerSetId);
+                      
+                      return (
+                        <DynamicRuleValueInput
+                          questionType={questionType}
+                          answers={answers}
+                          value={child.sourceAnswerId}
+                          onChange={(value) => {
+                            updateChild(index, { ...child, sourceAnswerId: value });
+                          }}
+                          disabled={!child.sourceAnswerSetId}
+                        />
+                      );
+                    })()}
                   </div>
 
                   {/* Actions */}
