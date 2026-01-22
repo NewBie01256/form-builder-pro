@@ -40,6 +40,57 @@ const Execute = () => {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Helper to extract default values from all questions
+  const getDefaultResponses = (q: Questionnaire): ResponseMap => {
+    const defaults: ResponseMap = {};
+    
+    const processQuestion = (question: Question) => {
+      const defaultAnswerSet = question.answerSets.find(as => as.isDefault) || question.answerSets[0];
+      if (!defaultAnswerSet) return;
+      
+      const defaultAnswer = defaultAnswerSet.answers[0];
+      if (!defaultAnswer?.value) return;
+      
+      // Set default value based on question type
+      switch (question.type) {
+        case 'Number':
+        case 'Decimal':
+        case 'Rating':
+          const numVal = parseFloat(defaultAnswer.value);
+          if (!isNaN(numVal)) {
+            defaults[question.id] = numVal;
+          }
+          break;
+        case 'Boolean':
+          defaults[question.id] = defaultAnswer.value === 'true';
+          break;
+        case 'MultiSelect':
+          // For MultiSelect, default could be comma-separated values
+          if (defaultAnswer.value) {
+            defaults[question.id] = [defaultAnswer.value];
+          }
+          break;
+        default:
+          // Text, TextArea, Date, Choice, Dropdown, RadioButton
+          defaults[question.id] = defaultAnswer.value;
+      }
+    };
+
+    const processFromBranch = (branch: ConditionalBranch) => {
+      branch.questions.forEach(processQuestion);
+      branch.childBranches.forEach(processFromBranch);
+    };
+
+    q.pages.forEach((page) => {
+      page.sections.forEach((section) => {
+        section.questions.forEach(processQuestion);
+        section.branches.forEach(processFromBranch);
+      });
+    });
+
+    return defaults;
+  };
+
   // Check for pre-loaded questionnaire from builder on mount
   useEffect(() => {
     const stored = sessionStorage.getItem('executor-questionnaire');
@@ -49,7 +100,7 @@ const Execute = () => {
         setExportedData(parsed);
         setQuestionnaire(parsed.questionnaire);
         setActivePageIndex(0);
-        setResponses({});
+        setResponses(getDefaultResponses(parsed.questionnaire));
         setIsSubmitted(false);
         setValidationErrors([]);
         sessionStorage.removeItem('executor-questionnaire');
@@ -69,7 +120,7 @@ const Execute = () => {
       setExportedData(parsed);
       setQuestionnaire(parsed.questionnaire);
       setActivePageIndex(0);
-      setResponses({});
+      setResponses(getDefaultResponses(parsed.questionnaire));
       setIsSubmitted(false);
       setValidationErrors([]);
       toast.success("Questionnaire loaded successfully!");
