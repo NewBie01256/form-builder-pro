@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { RequiredLabel } from "@/components/ui/required-label";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -127,21 +128,21 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
         {/* Answer Set Name and Tag - consistent across all types */}
         <div className="grid gap-3 sm:grid-cols-2 mb-4">
           <div className="space-y-2">
-            <Label className="text-xs">Set Name</Label>
+            <RequiredLabel className="text-xs">Set Name</RequiredLabel>
             <Input
               placeholder="Answer Set Name"
               value={answerSet.name}
               onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
-              className="h-8"
+              className={`h-8 ${!answerSet.name.trim() ? "border-destructive" : ""}`}
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs">Tag</Label>
+            <RequiredLabel className="text-xs">Tag</RequiredLabel>
             <Input
               placeholder="Tag"
               value={answerSet.tag}
               onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
-              className="h-8"
+              className={`h-8 ${!answerSet.tag.trim() ? "border-destructive" : ""}`}
             />
           </div>
         </div>
@@ -593,21 +594,21 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label className="text-xs">Set Name</Label>
+          <RequiredLabel className="text-xs">Set Name</RequiredLabel>
           <Input
             placeholder="Answer Set Name"
             value={answerSet.name}
             onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
-            className="h-8"
+            className={`h-8 ${!answerSet.name.trim() ? "border-destructive" : ""}`}
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-xs">Tag</Label>
+          <RequiredLabel className="text-xs">Tag</RequiredLabel>
           <Input
             placeholder="Tag"
             value={answerSet.tag}
             onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
-            className="h-8"
+            className={`h-8 ${!answerSet.tag.trim() ? "border-destructive" : ""}`}
           />
         </div>
       </div>
@@ -633,19 +634,22 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
         </div>
 
         <div className="space-y-2">
+          {answerSet.answers.length === 0 && (
+            <p className="text-xs text-destructive">At least one answer is required</p>
+          )}
           {answerSet.answers.map(ans => (
             <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
               <Input
                 placeholder="Label"
                 value={ans.label}
                 onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
-                className="flex-1 h-7 text-sm"
+                className={`flex-1 h-7 text-sm ${!ans.label.trim() ? "border-destructive" : ""}`}
               />
               <Input
                 placeholder="Value"
                 value={ans.value}
                 onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
-                className="flex-1 h-7 text-sm"
+                className={`flex-1 h-7 text-sm ${!ans.value.trim() ? "border-destructive" : ""}`}
               />
               <div className="flex items-center space-x-1">
                 <Checkbox
