@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play } from "lucide-react";
+import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { exportQuestionnaire, buildExportData } from "@/lib/questionnaireExport";
 import {
@@ -1063,7 +1063,15 @@ const QuestionnaireBuilder = () => {
                 {publishValidationError && (
                   <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 border border-destructive text-destructive">
                     <AlertCircle className="h-4 w-4 shrink-0" />
-                    <span className="text-sm font-medium">{publishValidationError}</span>
+                    <span className="text-sm font-medium flex-1">{publishValidationError}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/20"
+                      onClick={() => setPublishValidationError(null)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
