@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,14 +102,10 @@ interface SectionEditorProps {
   allQuestions: Question[];
   selectedQuestionId: string | null;
   selectedBranchId: string | null;
-  isSelected?: boolean;
-  isNewlyAdded?: boolean;
   onUpdate: (updated: Section) => void;
   onDelete: () => void;
-  onSelect: () => void;
   onSelectQuestion: (questionId: string, branchId: string | null) => void;
   onSelectBranch: (branchId: string) => void;
-  onClearNewlyAdded?: () => void;
 }
 
 const SectionEditor = ({
@@ -117,25 +113,13 @@ const SectionEditor = ({
   allQuestions,
   selectedQuestionId,
   selectedBranchId,
-  isSelected = false,
-  isNewlyAdded = false,
   onUpdate,
   onDelete,
-  onSelect,
   onSelectQuestion,
   onSelectBranch,
-  onClearNewlyAdded,
 }: SectionEditorProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
-
-  // Auto-edit newly added sections
-  useEffect(() => {
-    if (isNewlyAdded) {
-      setIsEditingName(true);
-      onClearNewlyAdded?.();
-    }
-  }, [isNewlyAdded, onClearNewlyAdded]);
 
   const handleNameDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -303,19 +287,11 @@ const SectionEditor = ({
 
   return (
     <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-      <Card 
-        className={cn(
-          "border-l-4 transition-colors cursor-pointer",
-          isSelected 
-            ? "border-l-primary border-primary/50 bg-primary/5" 
-            : "border-l-primary/50 hover:bg-muted/30"
-        )}
-        onClick={onSelect}
-      >
+      <Card className="border-l-4 border-l-primary/50">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1" onDoubleClick={handleNameDoubleClick}>
-              <Layers className={cn("h-5 w-5 shrink-0", isSelected ? "text-primary" : "text-primary/70")} />
+              <Layers className="h-5 w-5 text-primary shrink-0" />
               {isEditingName ? (
                 <Input
                   value={section.name}
