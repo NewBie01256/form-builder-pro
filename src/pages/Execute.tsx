@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +39,26 @@ const Execute = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check for pre-loaded questionnaire from builder on mount
+  useEffect(() => {
+    const stored = sessionStorage.getItem('executor-questionnaire');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as ExportedQuestionnaire;
+        setExportedData(parsed);
+        setQuestionnaire(parsed.questionnaire);
+        setActivePageIndex(0);
+        setResponses({});
+        setIsSubmitted(false);
+        setValidationErrors([]);
+        sessionStorage.removeItem('executor-questionnaire');
+        toast.success("Questionnaire loaded from builder!");
+      } catch (error) {
+        console.error('Failed to parse stored questionnaire', error);
+      }
+    }
+  }, []);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

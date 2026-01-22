@@ -804,12 +804,19 @@ const QuestionnaireBuilder = () => {
                       <Download className="h-4 w-4 mr-2" />
                       Export JSON
                     </Button>
-                    <Link to="/execute">
-                      <Button variant="outline">
-                        <Play className="h-4 w-4 mr-2" />
-                        Open Executor
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        if (questionnaire) {
+                          const exportData = exportQuestionnaire(questionnaire);
+                          sessionStorage.setItem('executor-questionnaire', JSON.stringify(exportData));
+                          window.open('/execute', '_blank');
+                        }
+                      }}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Open Executor
+                    </Button>
                     <Button variant="outline" onClick={handleSaveAsDraft}>
                       <Save className="h-4 w-4 mr-2" />
                       Save as Draft
