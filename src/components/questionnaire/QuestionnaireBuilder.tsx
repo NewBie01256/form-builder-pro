@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play } from "lucide-react";
-import { exportQuestionnaire } from "@/lib/questionnaireExport";
+import { exportQuestionnaire, buildExportData } from "@/lib/questionnaireExport";
 import {
   Question,
   ConditionalBranch,
@@ -808,7 +808,7 @@ const QuestionnaireBuilder = () => {
                       variant="outline"
                       onClick={() => {
                         if (questionnaire) {
-                          const exportData = exportQuestionnaire(questionnaire);
+                          const exportData = buildExportData(questionnaire);
                           sessionStorage.setItem('executor-questionnaire', JSON.stringify(exportData));
                           window.open('/execute', '_blank');
                         }

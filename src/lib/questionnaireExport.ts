@@ -6,12 +6,16 @@ export interface ExportedQuestionnaire {
   questionnaire: Questionnaire;
 }
 
-export const exportQuestionnaire = (questionnaire: Questionnaire): void => {
-  const exportData: ExportedQuestionnaire = {
+export const buildExportData = (questionnaire: Questionnaire): ExportedQuestionnaire => {
+  return {
     version: "1.0",
     exportedAt: new Date().toISOString(),
     questionnaire,
   };
+};
+
+export const exportQuestionnaire = (questionnaire: Questionnaire): void => {
+  const exportData = buildExportData(questionnaire);
 
   const blob = new Blob([JSON.stringify(exportData, null, 2)], {
     type: "application/json",
