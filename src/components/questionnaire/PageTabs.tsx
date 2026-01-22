@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, X, FileText } from "lucide-react";
@@ -21,6 +22,23 @@ const PageTabs = ({
   onDeletePage,
   onUpdatePage,
 }: PageTabsProps) => {
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+
+  const handleDoubleClick = (pageId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingPageId(pageId);
+  };
+
+  const handleBlur = () => {
+    setEditingPageId(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === "Escape") {
+      setEditingPageId(null);
+    }
+  };
+
   return (
     <div className="flex items-center gap-1 px-4 py-2 border-b bg-muted/30 overflow-x-auto">
       {pages.map((page, index) => (
@@ -34,18 +52,25 @@ const PageTabs = ({
               : "hover:bg-background/50"
           )}
           onClick={() => onSelectPage(page.id)}
+          onDoubleClick={(e) => handleDoubleClick(page.id, e)}
         >
           <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-          <Input
-            value={page.name}
-            onChange={(e) => {
-              e.stopPropagation();
-              onUpdatePage(page.id, { name: e.target.value });
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="h-6 w-24 px-1 text-sm border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
-            placeholder={`Page ${index + 1}`}
-          />
+          {editingPageId === page.id ? (
+            <Input
+              value={page.name}
+              onChange={(e) => onUpdatePage(page.id, { name: e.target.value })}
+              onClick={(e) => e.stopPropagation()}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              className="h-6 w-24 px-1 text-sm border border-primary bg-background focus-visible:ring-1 focus-visible:ring-offset-0"
+              placeholder={`Page ${index + 1}`}
+              autoFocus
+            />
+          ) : (
+            <span className="text-sm truncate min-w-[60px]">
+              {page.name || `Page ${index + 1}`}
+            </span>
+          )}
           {pages.length > 1 && (
             <Button
               variant="ghost"
