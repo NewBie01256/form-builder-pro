@@ -913,7 +913,7 @@ const QuestionnaireBuilder = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       <Sidebar
         questionnaire={questionnaire}
         activePageId={activePageId}
@@ -939,7 +939,7 @@ const QuestionnaireBuilder = () => {
         canPublish={!!editingRecordId}
       />
 
-      <div className="w-[70%] flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
         {questionnaire && (
           <PageTabs
             pages={questionnaire.pages}
