@@ -808,6 +808,10 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
               </Button>
             </div>
 
+            {answerSet.answers.length === 0 && (
+              <p className="text-xs text-destructive mb-2">At least one answer is required</p>
+            )}
+
             {questionType === 'RadioButton' ? (
               // Radio Button Display
               <div className="space-y-2">
@@ -820,13 +824,13 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                           placeholder="Label"
                           value={ans.label}
                           onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
-                          className="h-8"
+                          className={`h-8 ${!ans.label.trim() ? "border-destructive" : ""}`}
                         />
                         <Input
                           placeholder="Value"
                           value={ans.value}
                           onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
-                          className="h-8"
+                          className={`h-8 ${!ans.value.trim() ? "border-destructive" : ""}`}
                         />
                       </div>
                       <div className="flex items-center space-x-2">
@@ -859,13 +863,13 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                       placeholder="Label"
                       value={ans.label}
                       onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
-                      className="flex-1 h-8"
+                      className={`flex-1 h-8 ${!ans.label.trim() ? "border-destructive" : ""}`}
                     />
                     <Input
                       placeholder="Value"
                       value={ans.value}
                       onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
-                      className="flex-1 h-8"
+                      className={`flex-1 h-8 ${!ans.value.trim() ? "border-destructive" : ""}`}
                     />
                     <div className="flex items-center space-x-2">
                       <Checkbox
