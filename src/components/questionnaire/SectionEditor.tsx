@@ -14,6 +14,7 @@ import QuestionEditor from "./QuestionEditor";
 import BranchEditor from "./BranchEditor";
 import { cn } from "@/lib/utils";
 import { HelpCircle } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // Recursive component to render branch with nested children
 interface BranchContainerProps {
@@ -318,14 +319,20 @@ const SectionEditor = ({
                 </Button>
               </CollapsibleTrigger>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDelete}
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <ConfirmDialog
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              }
+              title="Delete Section"
+              description={`Are you sure you want to delete "${section.name || 'Untitled Section'}"? This will remove all questions and branches within it. This action cannot be undone.`}
+              onConfirm={onDelete}
+            />
           </div>
         </CardHeader>
         <CollapsibleContent>

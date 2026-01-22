@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { exportQuestionnaire, buildExportData } from "@/lib/questionnaireExport";
 import {
   Question,
@@ -1236,14 +1237,20 @@ const QuestionnaireBuilder = () => {
                                   <Edit className="h-4 w-4 mr-1" />
                                   Edit
                                 </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  className="text-destructive hover:text-destructive"
-                                  onClick={() => handleDeleteDraft(draft.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <ConfirmDialog
+                                  trigger={
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      className="text-destructive hover:text-destructive"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  }
+                                  title="Delete Draft"
+                                  description={`Are you sure you want to delete the draft "${draft.questionnaire.name || 'Untitled Questionnaire'}"? This action cannot be undone.`}
+                                  onConfirm={() => handleDeleteDraft(draft.id)}
+                                />
                               </div>
                             </div>
                           </CardContent>
@@ -1316,14 +1323,20 @@ const QuestionnaireBuilder = () => {
                                   <Edit className="h-4 w-4 mr-1" />
                                   Edit
                                 </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  className="text-destructive hover:text-destructive"
-                                  onClick={() => handleDeletePublishedRecord(publishedRecord.metadata.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <ConfirmDialog
+                                  trigger={
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      className="text-destructive hover:text-destructive"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  }
+                                  title="Delete Published Record"
+                                  description={`Are you sure you want to delete "${publishedRecord.metadata.name}"? This action cannot be undone.`}
+                                  onConfirm={() => handleDeletePublishedRecord(publishedRecord.metadata.id)}
+                                />
                               </div>
                             </div>
                           </CardContent>
