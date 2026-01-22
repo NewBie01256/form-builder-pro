@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { RequiredLabel } from "@/components/ui/required-label";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -151,18 +152,19 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
       <CardContent className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="question-title">Question Title</Label>
+            <RequiredLabel htmlFor="question-title">Question Title</RequiredLabel>
             <Input
               id="question-title"
               placeholder="Enter your question"
               value={question.text}
               onChange={(e) => onUpdate(question.id, { text: e.target.value })}
+              className={!question.text.trim() ? "border-destructive" : ""}
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Question Type</Label>
+              <RequiredLabel>Question Type</RequiredLabel>
               <Select
                 value={question.type}
                 onValueChange={(value) => onUpdate(question.id, { type: value as any })}

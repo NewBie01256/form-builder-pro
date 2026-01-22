@@ -12,6 +12,7 @@ import { AnswerSet, Answer, QuestionType, TextValidationType, TextAreaFormat } f
 import ActionRecordEditor from "./ActionRecordEditor";
 import DynamicValuesPanel, { DynamicValueConfig, DynamicValueFilterGroup } from "./DynamicValuesPanel";
 import RichTextEditor from "@/components/ui/rich-text-editor";
+import { RequiredLabel } from "@/components/ui/required-label";
 
 interface AnswerSetEditorProps {
   answerSet: AnswerSet;
@@ -148,19 +149,21 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
         {/* Answer Set Name and Tag - consistent across all types */}
         <div className="grid gap-3 sm:grid-cols-2 mb-4">
           <div className="space-y-2">
-            <Label>Set Name</Label>
+            <RequiredLabel>Set Name</RequiredLabel>
             <Input
               placeholder="Answer Set Name"
               value={answerSet.name}
               onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
+              className={!answerSet.name.trim() ? "border-destructive" : ""}
             />
           </div>
           <div className="space-y-2">
-            <Label>Tag</Label>
+            <RequiredLabel>Tag</RequiredLabel>
             <Input
               placeholder="Tag"
               value={answerSet.tag}
               onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
+              className={!answerSet.tag.trim() ? "border-destructive" : ""}
             />
           </div>
         </div>
@@ -690,19 +693,21 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Set Name</Label>
+          <RequiredLabel>Set Name</RequiredLabel>
           <Input
             placeholder="Answer Set Name"
             value={answerSet.name}
             onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
+            className={!answerSet.name.trim() ? "border-destructive" : ""}
           />
         </div>
         <div className="space-y-2">
-          <Label>Tag</Label>
+          <RequiredLabel>Tag</RequiredLabel>
           <Input
             placeholder="Tag"
             value={answerSet.tag}
             onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
+            className={!answerSet.tag.trim() ? "border-destructive" : ""}
           />
         </div>
       </div>
