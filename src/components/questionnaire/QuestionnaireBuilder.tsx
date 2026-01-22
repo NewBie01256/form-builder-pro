@@ -555,7 +555,7 @@ const QuestionnaireBuilder = () => {
   };
 
   const handlePublish = () => {
-    if (!questionnaire || !editingRecordId) return;
+    if (!questionnaire) return;
     
     const stats = getQuestionnaireStats(questionnaire);
     
@@ -605,17 +605,20 @@ const QuestionnaireBuilder = () => {
       });
     });
     
+    // Use existing record ID or create a new one
+    const recordId = editingRecordId || `published-${Date.now()}`;
+    
     const updatedRecord: ITSMRecord = {
-      id: editingRecordId,
-      name: questionnaire.name,
-      description: questionnaire.description,
-      category: 'Incident', // Default, could be made editable
+      id: recordId,
+      name: questionnaire.name || 'Untitled Questionnaire',
+      description: questionnaire.description || '',
+      category: 'Service Request', // Default for new records
       status: 'Active',
-      priority: 'Medium', // Default, could be made editable
-      createdAt: publishedRecords[editingRecordId]?.createdAt || new Date().toISOString().split('T')[0],
+      priority: 'Medium',
+      createdAt: publishedRecords[recordId]?.createdAt || new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0],
       questionCount: stats.questionCount,
-      serviceCatalog: questionnaire.serviceCatalog,
+      serviceCatalog: questionnaire.serviceCatalog || 'General',
       pageCount: stats.pageCount,
       sectionCount: stats.sectionCount,
       branchCount: stats.branchCount,
@@ -625,8 +628,13 @@ const QuestionnaireBuilder = () => {
     
     setPublishedRecords(prev => ({
       ...prev,
-      [editingRecordId]: updatedRecord
+      [recordId]: updatedRecord
     }));
+    
+    // If this was a new questionnaire, set the editing record ID for future updates
+    if (!editingRecordId) {
+      setEditingRecordId(recordId);
+    }
     
     setQuestionnaire({ ...questionnaire, status: 'Active' });
     toast.success("Questionnaire published successfully!");
@@ -720,6 +728,37 @@ const QuestionnaireBuilder = () => {
   const handleDeleteDraft = (draftId: string) => {
     setSavedDrafts(prev => prev.filter(d => d.id !== draftId));
     toast.success("Draft deleted");
+  };
+
+  const handleEditPublishedRecord = (record: ITSMRecord) => {
+    // Create a basic questionnaire structure from the published record
+    // In a real app, you'd store the full questionnaire data
+    const defaultPage: Page = {
+      id: `page-${Date.now()}`,
+      name: 'Page 1',
+      description: '',
+      sections: []
+    };
+    setQuestionnaire({
+      name: record.name,
+      description: record.description,
+      status: record.status,
+      version: '1.0',
+      serviceCatalog: record.serviceCatalog,
+      pages: [defaultPage]
+    });
+    setActivePageId(defaultPage.id);
+    setSelectedSectionId(null);
+    setEditingRecordId(record.id);
+  };
+
+  const handleDeletePublishedRecord = (recordId: string) => {
+    setPublishedRecords(prev => {
+      const updated = { ...prev };
+      delete updated[recordId];
+      return updated;
+    });
+    toast.success("Published record deleted");
   };
 
   const activePage = questionnaire?.pages.find(p => p.id === activePageId) || null;
@@ -1066,6 +1105,86 @@ const QuestionnaireBuilder = () => {
                                   size="sm"
                                   className="text-destructive hover:text-destructive"
                                   onClick={() => handleDeleteDraft(draft.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Published Records (user-created) */}
+                {Object.values(publishedRecords).filter(r => !sampleITSMRecords.some(s => s.id === r.id)).length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-muted-foreground" />
+                      Published Records
+                    </h3>
+                    <div className="grid gap-3">
+                      {Object.values(publishedRecords)
+                        .filter(r => !sampleITSMRecords.some(s => s.id === r.id))
+                        .map((record) => (
+                        <Card 
+                          key={record.id} 
+                          className="hover:shadow-md transition-shadow cursor-pointer group border-primary/30"
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-3 flex-1 min-w-0">
+                                <div className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+                                  <FileText className="h-5 w-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="font-semibold truncate">{record.name}</h3>
+                                    <Badge variant="default" className="text-xs">
+                                      {record.status}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mt-1 truncate">{record.description || 'No description'}</p>
+                                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
+                                    <span className="flex items-center gap-1" title="Pages">
+                                      <Files className="h-3 w-3" />
+                                      {record.pageCount}
+                                    </span>
+                                    <span className="flex items-center gap-1" title="Sections">
+                                      <Layers className="h-3 w-3" />
+                                      {record.sectionCount}
+                                    </span>
+                                    <span className="flex items-center gap-1" title="Questions">
+                                      <HelpCircle className="h-3 w-3" />
+                                      {record.questionCount}
+                                    </span>
+                                    <span className="flex items-center gap-1" title="Branches">
+                                      <GitBranch className="h-3 w-3" />
+                                      {record.branchCount}
+                                    </span>
+                                    <span className="text-muted-foreground/60">|</span>
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {record.updatedAt}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleEditPublishedRecord(record)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => handleDeletePublishedRecord(record.id)}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>

@@ -332,8 +332,8 @@ const Sidebar = ({
                         size="sm" 
                         className="mt-5 h-8 text-xs"
                         onClick={onPublish}
-                        disabled={!canPublish}
-                        title={!canPublish ? "Only records opened from Templates can be published" : "Publish changes"}
+                        disabled={!questionnaire?.name}
+                        title={!questionnaire?.name ? "Please add a name before publishing" : "Publish questionnaire"}
                       >
                         Publish
                       </Button>
