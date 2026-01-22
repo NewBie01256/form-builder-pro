@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { 
   Upload, 
@@ -27,6 +26,7 @@ import {
 import QuestionRenderer from "@/components/executor/QuestionRenderer";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { isQuestionVisible, isBranchVisible } from "@/lib/conditionEvaluator";
 
 type ResponseValue = string | string[] | number | boolean | null;
 type ResponseMap = Record<string, ResponseValue>;
@@ -97,18 +97,25 @@ const Execute = () => {
     return questions;
   };
 
+  // Memoize all questions for condition evaluation
+  const allQuestions = useMemo(() => collectAllQuestions(), [questionnaire]);
+
   const collectPageQuestions = (pageIndex: number): Question[] => {
     if (!questionnaire || !questionnaire.pages[pageIndex]) return [];
     const questions: Question[] = [];
     const page = questionnaire.pages[pageIndex];
 
     const collectFromBranch = (branch: ConditionalBranch) => {
-      questions.push(...branch.questions);
-      branch.childBranches.forEach(collectFromBranch);
+      // Only collect questions from visible branches
+      if (isBranchVisible(branch, responses, allQuestions)) {
+        questions.push(...branch.questions.filter(q => isQuestionVisible(q, responses, allQuestions)));
+        branch.childBranches.forEach(collectFromBranch);
+      }
     };
 
     page.sections.forEach((section) => {
-      questions.push(...section.questions);
+      // Only collect visible questions
+      questions.push(...section.questions.filter(q => isQuestionVisible(q, responses, allQuestions)));
       section.branches.forEach(collectFromBranch);
     });
 
@@ -386,45 +393,69 @@ const Execute = () => {
 
           {/* Sections */}
           <div className="space-y-8">
-            {activePage.sections.map((section) => (
-              <Card key={section.id}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{section.name}</CardTitle>
-                  {section.description && (
-                    <CardDescription>{section.description}</CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {section.questions.map((question) => (
-                    <div key={question.id} className={cn(question.hidden && "hidden")}>
-                      <QuestionRenderer
-                        question={question}
-                        value={responses[question.id] ?? null}
-                        onChange={(value) => handleResponseChange(question.id, value)}
-                      />
-                    </div>
-                  ))}
+            {activePage.sections.map((section) => {
+              // Get visible questions for this section
+              const visibleSectionQuestions = section.questions.filter(q => 
+                isQuestionVisible(q, responses, allQuestions)
+              );
+              
+              // Get visible branches
+              const visibleBranches = section.branches.filter(branch => 
+                isBranchVisible(branch, responses, allQuestions)
+              );
 
-                  {/* Render branch questions (simplified - showing all) */}
-                  {section.branches.map((branch) => (
-                    <div key={branch.id} className="pl-4 border-l-2 border-border space-y-6">
-                      <div className="text-sm text-muted-foreground font-medium">
-                        {branch.name}
+              // Only show section if it has visible content
+              const hasVisibleContent = visibleSectionQuestions.length > 0 || visibleBranches.length > 0;
+              if (!hasVisibleContent) return null;
+
+              return (
+                <Card key={section.id}>
+                  <CardHeader>
+                    <CardTitle className="text-lg">{section.name}</CardTitle>
+                    {section.description && (
+                      <CardDescription>{section.description}</CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {visibleSectionQuestions.map((question) => (
+                      <div key={question.id}>
+                        <QuestionRenderer
+                          question={question}
+                          value={responses[question.id] ?? null}
+                          onChange={(value) => handleResponseChange(question.id, value)}
+                        />
                       </div>
-                      {branch.questions.map((question) => (
-                        <div key={question.id} className={cn(question.hidden && "hidden")}>
-                          <QuestionRenderer
-                            question={question}
-                            value={responses[question.id] ?? null}
-                            onChange={(value) => handleResponseChange(question.id, value)}
-                          />
+                    ))}
+
+                    {/* Render visible branch questions */}
+                    {visibleBranches.map((branch) => {
+                      const visibleBranchQuestions = branch.questions.filter(q => 
+                        isQuestionVisible(q, responses, allQuestions)
+                      );
+                      
+                      if (visibleBranchQuestions.length === 0) return null;
+                      
+                      return (
+                        <div key={branch.id} className="pl-4 border-l-2 border-border space-y-6">
+                          <div className="text-sm text-muted-foreground font-medium">
+                            {branch.name}
+                          </div>
+                          {visibleBranchQuestions.map((question) => (
+                            <div key={question.id}>
+                              <QuestionRenderer
+                                question={question}
+                                value={responses[question.id] ?? null}
+                                onChange={(value) => handleResponseChange(question.id, value)}
+                              />
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))}
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </ScrollArea>
