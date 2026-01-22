@@ -572,33 +572,80 @@ const QuestionnaireBuilder = () => {
   const handlePublish = () => {
     if (!questionnaire) return;
     
-    // Validate: check if any page is empty (no questions and no branches)
-    const countBranchContent = (branch: ConditionalBranch): number => {
-      let count = branch.questions.length;
-      branch.childBranches.forEach(cb => {
-        count += countBranchContent(cb);
-      });
-      return count;
+    const validationErrors: string[] = [];
+    
+    // Helper to check if a rule group has rules
+    const hasRules = (ruleGroup: { children: unknown[] }): boolean => {
+      return ruleGroup.children && ruleGroup.children.length > 0;
     };
     
-    const emptyPages = questionnaire.pages.filter(page => {
-      let totalQuestions = 0;
-      let totalBranches = 0;
+    // Helper to validate branches recursively
+    const validateBranch = (branch: ConditionalBranch, path: string): void => {
+      // Check if branch has no questions
+      if (branch.questions.length === 0 && branch.childBranches.length === 0) {
+        validationErrors.push(`Branch "${branch.name || 'Untitled Branch'}" in ${path} has no questions`);
+      }
       
-      page.sections.forEach(section => {
-        totalQuestions += section.questions.length;
-        totalBranches += section.branches.length;
-        section.branches.forEach(branch => {
-          totalQuestions += countBranchContent(branch);
+      // Check if branch is missing rules
+      if (!hasRules(branch.ruleGroup)) {
+        validationErrors.push(`Branch "${branch.name || 'Untitled Branch'}" in ${path} is missing rules`);
+      }
+      
+      // Check answer-level rule groups in branch questions
+      branch.questions.forEach(q => {
+        q.answerLevelRuleGroups.forEach((rg, rgIndex) => {
+          if (!hasRules(rg)) {
+            validationErrors.push(`Answer Set ${rgIndex + 1} in question "${q.text || 'Untitled Question'}" (${path}) is missing rules`);
+          }
         });
       });
       
-      return totalQuestions === 0 && totalBranches === 0;
+      // Recurse into child branches
+      branch.childBranches.forEach(cb => validateBranch(cb, path));
+    };
+    
+    // Validate pages, sections, branches
+    questionnaire.pages.forEach(page => {
+      const pageName = page.name || 'Untitled Page';
+      
+      // Check empty pages
+      let pageHasContent = false;
+      page.sections.forEach(section => {
+        if (section.questions.length > 0 || section.branches.length > 0) {
+          pageHasContent = true;
+        }
+      });
+      
+      if (!pageHasContent) {
+        validationErrors.push(`Page "${pageName}" is missing Configurations`);
+      }
+      
+      // Validate sections
+      page.sections.forEach(section => {
+        const sectionName = section.name || 'Untitled Section';
+        const sectionPath = `Page "${pageName}" > Section "${sectionName}"`;
+        
+        // Check empty sections
+        if (section.questions.length === 0 && section.branches.length === 0) {
+          validationErrors.push(`Section "${sectionName}" in Page "${pageName}" is empty`);
+        }
+        
+        // Check answer-level rule groups in section questions
+        section.questions.forEach(q => {
+          q.answerLevelRuleGroups.forEach((rg, rgIndex) => {
+            if (!hasRules(rg)) {
+              validationErrors.push(`Answer Set ${rgIndex + 1} in question "${q.text || 'Untitled Question'}" (${sectionPath}) is missing rules`);
+            }
+          });
+        });
+        
+        // Validate branches
+        section.branches.forEach(branch => validateBranch(branch, sectionPath));
+      });
     });
     
-    if (emptyPages.length > 0) {
-      const pageNames = emptyPages.map(p => `"${p.name || 'Untitled Page'}"`).join(', ');
-      setPublishValidationError(`Page ${pageNames} is missing Configurations`);
+    if (validationErrors.length > 0) {
+      setPublishValidationError(validationErrors.join(' | '));
       return;
     }
     
