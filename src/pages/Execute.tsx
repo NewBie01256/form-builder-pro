@@ -26,7 +26,7 @@ import {
 import QuestionRenderer from "@/components/executor/QuestionRenderer";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { isQuestionVisible, isBranchVisible } from "@/lib/conditionEvaluator";
+import { isQuestionVisible, isBranchVisible, getActiveAnswerSetForQuestion } from "@/lib/conditionEvaluator";
 
 type ResponseValue = string | string[] | number | boolean | null;
 type ResponseMap = Record<string, ResponseValue>;
@@ -423,6 +423,7 @@ const Execute = () => {
                           question={question}
                           value={responses[question.id] ?? null}
                           onChange={(value) => handleResponseChange(question.id, value)}
+                          activeAnswerSet={getActiveAnswerSetForQuestion(question, responses, allQuestions)}
                         />
                       </div>
                     ))}
@@ -446,6 +447,7 @@ const Execute = () => {
                                 question={question}
                                 value={responses[question.id] ?? null}
                                 onChange={(value) => handleResponseChange(question.id, value)}
+                                activeAnswerSet={getActiveAnswerSetForQuestion(question, responses, allQuestions)}
                               />
                             </div>
                           ))}
