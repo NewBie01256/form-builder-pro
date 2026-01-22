@@ -13,15 +13,17 @@ interface QuestionRendererProps {
   question: Question;
   value: string | string[] | number | boolean | null;
   onChange: (value: string | string[] | number | boolean | null) => void;
+  activeAnswerSet?: AnswerSet | null;
 }
 
-const getActiveAnswerSet = (question: Question): AnswerSet | null => {
+const getDefaultAnswerSet = (question: Question): AnswerSet | null => {
   if (question.answerSets.length === 0) return null;
   return question.answerSets.find((as) => as.isDefault) || question.answerSets[0];
 };
 
-const QuestionRenderer = ({ question, value, onChange }: QuestionRendererProps) => {
-  const answerSet = getActiveAnswerSet(question);
+const QuestionRenderer = ({ question, value, onChange, activeAnswerSet }: QuestionRendererProps) => {
+  // Use the provided activeAnswerSet (from rule evaluation) or fall back to default
+  const answerSet = activeAnswerSet ?? getDefaultAnswerSet(question);
   const activeAnswers = answerSet?.answers.filter((a) => a.active) || [];
 
   const renderChoiceQuestion = () => (
