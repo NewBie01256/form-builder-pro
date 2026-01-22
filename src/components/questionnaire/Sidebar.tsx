@@ -273,10 +273,10 @@ const Sidebar = ({
                     )}
                   </div>
                 </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="px-2 py-2 overflow-hidden">
+                <CollapsibleContent className="overflow-hidden">
+                  <div className="px-2 py-2 overflow-hidden min-w-0 w-full">
                     {/* Entire Details Section in a Box */}
-                    <div className="border border-border rounded-lg p-3 bg-muted/30 space-y-3 overflow-hidden">
+                    <div className="border border-border rounded-lg p-3 bg-muted/30 space-y-3 overflow-hidden min-w-0 w-full">
                       <div className="space-y-1 min-w-0">
                         <Label className="text-xs text-muted-foreground">Name</Label>
                         <Input
