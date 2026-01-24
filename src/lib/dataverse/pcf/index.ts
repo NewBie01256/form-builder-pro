@@ -68,7 +68,15 @@ export {
   createErrorHandler,
   getErrorHandler,
   errorHandler,
+  // Utility functions
+  withRetry,
+  withSafeExecution,
+  withSafeRetry,
+  handleError,
   type IErrorHandler,
+  type RetryOptions,
+  type SafeResult,
+  type ErrorHandlers,
 } from './ErrorHandler';
 
 // ============================================================================

@@ -365,90 +365,121 @@ if (result.success) {
 
       case 'errorHandling':
         return `// ═══════════════════════════════════════════════════════════════════════════
-// Error Handling with Result Pattern
+// Error Handler Wrapper Class - Generic Usage
+// ═══════════════════════════════════════════════════════════════════════════
+
+import { 
+  createCrudService,
+  errorHandler,           // Singleton instance
+  getErrorHandler,        // Factory function
+  withRetry,              // Auto-retry wrapper
+  withSafeExecution,      // Result pattern wrapper
+  withSafeRetry,          // Combined retry + safe execution
+  handleError,            // Switch-case helper
+  type NormalizedError,
+} from '@/lib/dataverse/pcf';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 1. BASIC ERROR HANDLING - Using errorHandler singleton
 // ═══════════════════════════════════════════════════════════════════════════
 
 const crudService = createCrudService(context, {
   entityLogicalName: '${entityVar}'
 });
 
-// All operations return DataverseResult<T> - NEVER throws!
-const result = await crudService.retrieve('${recordId || 'record-guid-here'}');
-
-// Type-safe error handling
-if (result.success) {
-  // ✅ TypeScript knows result.data exists
-  console.log('Record:', result.data);
-} else {
-  // ❌ TypeScript knows result.error exists
-  const error = result.error;
+try {
+  const data = await crudService.retrieve('${recordId || 'record-guid-here'}');
+} catch (error) {
+  // Get semantic error code
+  const code = errorHandler.getErrorCode(error);
   
-  // Handle specific error types
-  switch (error.code) {
-    case 'NOT_FOUND':
-      // Record doesn't exist or was deleted
-      showNotification('Record not found', 'warning');
-      break;
-      
-    case 'PERMISSION_DENIED':
-      // User lacks required privileges
-      showNotification('Access denied. Contact admin.', 'error');
-      break;
-      
-    case 'NETWORK_ERROR':
-      // Connection issue
-      showNotification('Network error. Check connection.', 'error');
-      // Optionally retry
-      break;
-      
-    case 'VALIDATION_ERROR':
-      // Invalid data submitted
-      showNotification(\`Validation: \${error.message}\`, 'warning');
-      break;
-      
-    case 'CONCURRENT_EDIT':
-      // Record modified by another user
-      showNotification('Record was modified. Refresh and retry.', 'warning');
-      break;
-      
-    default:
-      // Unexpected error - log for debugging
-      console.error('Unexpected error:', error);
-      showNotification('An error occurred', 'error');
+  // Get user-friendly message
+  const message = errorHandler.getUserMessage(error);
+  
+  // Check error types
+  if (errorHandler.isNotFound(error)) {
+    console.log('Record was deleted');
+  } else if (errorHandler.isAccessDenied(error)) {
+    console.log('No permission');
+  } else if (errorHandler.isRetryable(error)) {
+    console.log('Can retry this operation');
   }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// Error Handling Utilities
-// ═══════════════════════════════════════════════════════════════════════════
-
-// Helper to safely execute with fallback
-async function safeRetrieve<T>(
-  service: CrudService,
-  id: string,
-  fallback: T
-): Promise<T> {
-  const result = await service.retrieve(id);
-  return result.success ? result.data as T : fallback;
-}
-
-// Helper to retry on network errors
-async function retryOnNetworkError<T>(
-  operation: () => Promise<DataverseResult<T>>,
-  maxRetries = 3
-): Promise<DataverseResult<T>> {
-  let lastResult: DataverseResult<T>;
   
-  for (let i = 0; i < maxRetries; i++) {
-    lastResult = await operation();
-    if (lastResult.success || lastResult.error.code !== 'NETWORK_ERROR') {
-      return lastResult;
+  // Get full normalized error object
+  const normalized = errorHandler.normalize(error, 'retrieve', '${entityVar}');
+  console.log(normalized.code);        // 'NOT_FOUND', 'ACCESS_DENIED', etc.
+  console.log(normalized.message);     // Technical message
+  console.log(normalized.userMessage); // User-friendly message
+  console.log(normalized.isRetryable); // boolean
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2. AUTO-RETRY WRAPPER - Automatic retry with exponential backoff
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Wrap any async operation - automatically retries on transient errors
+const data = await withRetry(
+  () => fetch('https://api.example.com/data'),
+  {
+    maxRetries: 3,           // Max retry attempts
+    baseDelayMs: 1000,       // Initial delay (1 second)
+    maxDelayMs: 10000,       // Max delay cap (10 seconds)
+    backoffMultiplier: 2,    // Exponential: 1s → 2s → 4s
+    onRetry: (attempt, error, delay) => {
+      console.log(\`Retry \${attempt} after \${delay}ms\`);
     }
-    await new Promise(r => setTimeout(r, 1000 * (i + 1))); // Exponential backoff
   }
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 3. SAFE EXECUTION WRAPPER - Returns Result instead of throwing
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Never throws - always returns { success, data } or { success, error }
+const result = await withSafeExecution(
+  () => crudService.retrieve('some-id'),
+  { operation: 'retrieve', entityType: '${entityVar}' }
+);
+
+if (result.success) {
+  console.log('Data:', result.data);
+} else {
+  console.log('Error:', result.error.userMessage);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 4. COMBINED: SAFE RETRY - Best of both worlds
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Retries transient errors AND returns Result pattern
+const safeResult = await withSafeRetry(
+  () => someRiskyOperation(),
+  {
+    maxRetries: 3,
+    operation: 'create',
+    entityType: '${entityVar}'
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 5. DECLARATIVE ERROR HANDLERS - Clean switch-case alternative
+// ═══════════════════════════════════════════════════════════════════════════
+
+try {
+  await crudService.delete('some-id');
+} catch (error) {
+  const result = handleError(error, {
+    onNotFound: () => ({ redirect: '/list', message: 'Already deleted' }),
+    onAccessDenied: () => ({ redirect: '/login', message: 'Please sign in' }),
+    onNetwork: () => ({ retry: true, message: 'Check connection' }),
+    onUnknown: (err) => ({ log: err, message: 'Contact support' }),
+  }, { message: 'An error occurred' });
   
-  return lastResult!;
+  if (result.redirect) navigate(result.redirect);
+  if (result.retry) retryOperation();
+  showToast(result.message);
 }`;
+
 
       default:
         return '// Select an operation';
