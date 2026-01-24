@@ -80,3 +80,31 @@ export {
   createBaseServiceConfig,
   type BaseServiceConfig,
 } from './BaseDataverseService';
+
+// ============================================================================
+// CRUD Service
+// ============================================================================
+
+export {
+  CrudService,
+  createCrudService,
+  type EntityRecord,
+  type CrudServiceConfig,
+  type UpsertResult,
+} from './CrudService';
+
+// ============================================================================
+// Example Entity Types (for reference)
+// ============================================================================
+
+export type {
+  Account,
+  Contact,
+  Incident,
+} from './CrudService.examples';
+
+export {
+  createAccountService,
+  createContactService,
+  createIncidentService,
+} from './CrudService.examples';
