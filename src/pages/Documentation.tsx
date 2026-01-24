@@ -3292,6 +3292,7 @@ const Documentation = () => {
                 <CardContent className="space-y-6">
                   <p className="text-muted-foreground">
                     Test your questionnaire in real-time using the built-in Preview feature before exporting or publishing.
+                    The Preview opens a fully functional Questionnaire Executor that simulates the end-user experience.
                   </p>
                   
                   <div className="p-4 rounded-lg border bg-muted/30">
@@ -3302,7 +3303,7 @@ const Documentation = () => {
                           1
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Click the <strong>"Preview"</strong> button in the builder header toolbar
+                          Click the <strong>"Preview"</strong> button (with Play icon) in the builder header toolbar
                         </p>
                       </div>
                       <div className="flex gap-3">
@@ -3310,7 +3311,7 @@ const Documentation = () => {
                           2
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          A new browser tab opens with the Questionnaire Executor loaded with your current questionnaire data
+                          A new browser tab opens with the Questionnaire Executor pre-loaded with your current questionnaire data
                         </p>
                       </div>
                       <div className="flex gap-3">
@@ -3318,7 +3319,7 @@ const Documentation = () => {
                           3
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Navigate through pages, test conditional branches, and verify answer validation
+                          Navigate through pages, test conditional branches, and verify answer validation works correctly
                         </p>
                       </div>
                       <div className="flex gap-3">
@@ -3326,9 +3327,33 @@ const Documentation = () => {
                           4
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Submit and download responses as JSON or CSV to verify the output format
+                          Submit and download responses as JSON or CSV to verify the output format matches your requirements
                         </p>
                       </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Supported Question Types in Preview</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      The Preview executor renders all 13 question types with full interactivity:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">Text Input</Badge>
+                      <Badge variant="secondary">Text Area</Badge>
+                      <Badge variant="secondary">Rich Text</Badge>
+                      <Badge variant="secondary">Number</Badge>
+                      <Badge variant="secondary">Date Picker</Badge>
+                      <Badge variant="secondary">Radio Button</Badge>
+                      <Badge variant="secondary">Checkbox</Badge>
+                      <Badge variant="secondary">Select Dropdown</Badge>
+                      <Badge variant="secondary">Toggle/Switch</Badge>
+                      <Badge variant="secondary">Slider</Badge>
+                      <Badge variant="secondary">Rating</Badge>
+                      <Badge variant="secondary">File Attachment</Badge>
+                      <Badge variant="secondary">Reference Link</Badge>
                     </div>
                   </div>
                   
@@ -3340,35 +3365,76 @@ const Documentation = () => {
                       <div className="p-4 rounded-lg border">
                         <div className="font-medium mb-2">Page Navigation</div>
                         <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                          <li>Progress bar showing completion</li>
+                          <li>Visual progress bar showing completion percentage</li>
                           <li>Previous/Next navigation buttons</li>
+                          <li>Page indicator (e.g., "Page 2 of 5")</li>
                           <li>Conditional page visibility based on answers</li>
+                          <li>Submit button on final page</li>
                         </ul>
                       </div>
                       <div className="p-4 rounded-lg border">
                         <div className="font-medium mb-2">Validation</div>
                         <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                          <li>Required field enforcement</li>
-                          <li>Regex pattern validation</li>
-                          <li>Error messages for incomplete fields</li>
+                          <li>Required field enforcement with visual indicators</li>
+                          <li>Regex pattern validation for text fields</li>
+                          <li>Min/Max validation for numbers and dates</li>
+                          <li>Error toast messages for incomplete fields</li>
+                          <li>Per-page validation before navigation</li>
                         </ul>
                       </div>
                       <div className="p-4 rounded-lg border">
-                        <div className="font-medium mb-2">Conditional Logic</div>
+                        <div className="font-medium mb-2">Conditional Logic Evaluation</div>
                         <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                          <li>Sections show/hide based on rules</li>
-                          <li>Branch evaluation in real-time</li>
-                          <li>Dynamic question visibility</li>
+                          <li>Sections show/hide based on rule groups</li>
+                          <li>Branch evaluation in real-time as you answer</li>
+                          <li>Dynamic question visibility within branches</li>
+                          <li>Support for AND/OR match types</li>
+                          <li>Nested condition evaluation</li>
+                          <li>Operators: equals, not_equals, contains, greater_than, less_than, starts_with, ends_with</li>
                         </ul>
                       </div>
                       <div className="p-4 rounded-lg border">
                         <div className="font-medium mb-2">Response Export</div>
                         <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                          <li>Download as JSON format</li>
-                          <li>Download as CSV format</li>
-                          <li>Includes all metadata and timestamps</li>
+                          <li>Download completed responses as JSON</li>
+                          <li>Download completed responses as CSV</li>
+                          <li>Includes questionnaire metadata</li>
+                          <li>Timestamps for submission</li>
+                          <li>All answered question IDs and values</li>
                         </ul>
                       </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Default Value Initialization</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      When a questionnaire is loaded in Preview, default values are automatically applied:
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
+                      <li>Questions with a <strong>Default Answer Set</strong> are pre-populated with the first answer value</li>
+                      <li>Toggle questions default to their configured initial state</li>
+                      <li>Slider questions start at their minimum value</li>
+                      <li>Users can modify all pre-filled values during the session</li>
+                    </ul>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Alternative: Manual Import</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      You can also test questionnaires by manually importing JSON files:
+                    </p>
+                    <div className="p-4 rounded-lg border bg-muted/30">
+                      <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                        <li>Export your questionnaire using the <strong>"Export JSON"</strong> button in the builder</li>
+                        <li>Navigate to <strong>/execute</strong> directly or share the JSON file</li>
+                        <li>Click <strong>"Import Questionnaire"</strong> and select your JSON file</li>
+                        <li>The executor loads and validates the questionnaire structure</li>
+                      </ol>
                     </div>
                   </div>
                   
@@ -3378,9 +3444,25 @@ const Documentation = () => {
                       <div className="text-sm">
                         <strong className="text-blue-700 dark:text-blue-300">Instant Sync:</strong>
                         <span className="text-blue-600 dark:text-blue-400 ml-1">
-                          Preview uses session storage to instantly load your current questionnaire state. 
-                          No need to export and re-import—just click Preview to test immediately.
+                          The Preview button uses session storage to instantly transfer your current questionnaire state. 
+                          No need to export and re-import—just click Preview to test immediately. The session data is 
+                          automatically cleared after loading to prevent stale data on page refresh.
                         </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                    <div className="flex items-start gap-3">
+                      <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                      <div className="text-sm">
+                        <strong className="text-amber-700 dark:text-amber-300">Testing Tips:</strong>
+                        <ul className="text-amber-600 dark:text-amber-400 mt-2 space-y-1 list-disc list-inside">
+                          <li>Test all conditional branches by selecting different answer combinations</li>
+                          <li>Verify required fields show validation errors when left empty</li>
+                          <li>Check that hidden sections/questions don't appear in the final response</li>
+                          <li>Download both JSON and CSV to verify export formats meet your needs</li>
+                        </ul>
                       </div>
                     </div>
                   </div>
