@@ -1,13 +1,120 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Plus, GitBranch, HelpCircle, Trash2 } from "lucide-react";
+import {
+  Button,
+  Card,
+  CardHeader,
+  Input,
+  Label,
+  makeStyles,
+  tokens,
+} from "@fluentui/react-components";
+import {
+  Add24Regular,
+  Delete24Regular,
+  BranchFork24Regular,
+  QuestionCircle24Regular,
+} from "@fluentui/react-icons";
 import { ConditionalBranch, Question } from "@/types/questionnaire";
 import RuleGroupEditor from "./RuleGroupEditor";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 import { ConfirmDialog } from "@/components/fluent";
+
+const useStyles = makeStyles({
+  card: {
+    border: `2px dashed ${tokens.colorNeutralStroke2}`,
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  header: {
+    padding: tokens.spacingVerticalM,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  title: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    fontSize: tokens.fontSizeBase400,
+    fontWeight: tokens.fontWeightSemibold,
+  },
+  content: {
+    padding: tokens.spacingHorizontalM,
+    paddingTop: 0,
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalL,
+  },
+  fieldGroup: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalS,
+  },
+  buttonRow: {
+    display: "flex",
+    gap: tokens.spacingHorizontalM,
+  },
+  questionsSection: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalM,
+  },
+  questionsLayout: {
+    display: "flex",
+    gap: tokens.spacingHorizontalM,
+  },
+  questionList: {
+    width: "20%",
+    minWidth: "180px",
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalS,
+  },
+  questionItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    padding: tokens.spacingVerticalS,
+    borderRadius: tokens.borderRadiusMedium,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground1,
+    cursor: "pointer",
+  },
+  questionItemHover: {
+    backgroundColor: tokens.colorNeutralBackground1Hover,
+  },
+  questionItemSelected: {
+    backgroundColor: tokens.colorNeutralBackground1Selected,
+  },
+  questionText: {
+    flex: 1,
+    fontSize: tokens.fontSizeBase200,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+  questionEditor: {
+    width: "80%",
+    flex: 1,
+  },
+  emptyState: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "128px",
+    border: `1px dashed ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+  emptyText: {
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground3,
+  },
+  sectionLabel: {
+    fontSize: tokens.fontSizeBase400,
+    fontWeight: tokens.fontWeightSemibold,
+  },
+});
 
 interface BranchEditorProps {
   branch: ConditionalBranch;
@@ -34,46 +141,48 @@ const BranchEditor = ({
   onDeleteBranch,
   questionEditor,
 }: BranchEditorProps) => {
+  const styles = useStyles();
+
   return (
-    <Card className="border-dashed-custom">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <GitBranch className="h-5 w-5 text-primary" />
+    <Card className={styles.card}>
+      <CardHeader
+        header={
+          <div className={styles.title}>
+            <BranchFork24Regular style={{ color: tokens.colorBrandForeground1 }} />
             Conditional Branch Details
-          </CardTitle>
-          {onDeleteBranch && (
+          </div>
+        }
+        action={
+          onDeleteBranch && (
             <ConfirmDialog
               trigger={
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-muted-foreground hover:text-destructive"
+                  appearance="subtle"
+                  icon={<Delete24Regular />}
                 >
-                  <Trash2 className="h-4 w-4 mr-1" />
                   Delete Branch
                 </Button>
               }
               title="Delete Branch"
-              description={`Are you sure you want to delete "${branch.name || 'Untitled Branch'}"? This will also delete all questions and child branches within it. This action cannot be undone.`}
+              description={`Are you sure you want to delete "${branch.name || "Untitled Branch"}"? This will also delete all questions and child branches within it. This action cannot be undone.`}
               onConfirm={() => onDeleteBranch(branch.id)}
             />
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
+          )
+        }
+      />
+      <div className={styles.content}>
+        <div className={styles.fieldGroup}>
           <Label htmlFor="branch-name">Branch Name</Label>
           <Input
             id="branch-name"
             placeholder="Enter branch name"
             value={branch.name}
-            onChange={(e) => onUpdateBranch(branch.id, { name: e.target.value })}
+            onChange={(e, data) => onUpdateBranch(branch.id, { name: data.value })}
           />
         </div>
 
-        <div className="space-y-4">
-          <Label className="text-base font-semibold">Branch Conditions</Label>
+        <div className={styles.fieldGroup}>
+          <Label className={styles.sectionLabel}>Branch Conditions</Label>
           <RuleGroupEditor
             group={branch.conditionGroup || branch.ruleGroup}
             allQuestions={allQuestions}
@@ -81,68 +190,61 @@ const BranchEditor = ({
           />
         </div>
 
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => onAddQuestion(branch.id)}>
-            <Plus className="h-4 w-4 mr-2" />
+        <div className={styles.buttonRow}>
+          <Button appearance="outline" icon={<Add24Regular />} onClick={() => onAddQuestion(branch.id)}>
             Add Question under this Branch
           </Button>
-          <Button variant="outline" onClick={() => onAddChildBranch(branch.id)}>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button appearance="outline" icon={<Add24Regular />} onClick={() => onAddChildBranch(branch.id)}>
             Add Conditional Branch
           </Button>
         </div>
 
         {branch.questions.length > 0 && (
-          <div className="space-y-3">
-            <Label className="text-base font-semibold">Questions in this Branch</Label>
-            <div className="flex gap-4">
+          <div className={styles.questionsSection}>
+            <Label className={styles.sectionLabel}>Questions in this Branch</Label>
+            <div className={styles.questionsLayout}>
               {/* Left panel - Question list (20%) */}
-              <div className="w-[20%] min-w-[180px] space-y-2">
-                {branch.questions.map(q => (
+              <div className={styles.questionList}>
+                {branch.questions.map((q) => (
                   <div
                     key={q.id}
                     className={cn(
-                      "flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors",
-                      "hover:bg-accent hover:border-accent",
-                      selectedQuestionId === q.id 
-                        ? "bg-accent border-primary" 
-                        : "bg-card border-border"
+                      styles.questionItem,
+                      selectedQuestionId === q.id && styles.questionItemSelected
                     )}
                     onClick={() => onSelectQuestion(q.id)}
                   >
-                    <HelpCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm flex-1 truncate">{q.text || 'Untitled Question'}</span>
+                    <QuestionCircle24Regular style={{ width: 16, height: 16, flexShrink: 0, color: tokens.colorNeutralForeground3 }} />
+                    <span className={styles.questionText}>{q.text || "Untitled Question"}</span>
                     {onDeleteQuestion && (
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive flex-shrink-0"
+                        appearance="subtle"
+                        size="small"
+                        icon={<Delete24Regular style={{ width: 16, height: 16 }} />}
                         onClick={(e) => {
                           e.stopPropagation();
                           onDeleteQuestion(q.id);
                         }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      />
                     )}
                   </div>
                 ))}
               </div>
 
               {/* Right panel - Question details (80%) */}
-              <div className="w-[80%] flex-1">
+              <div className={styles.questionEditor}>
                 {questionEditor ? (
                   questionEditor
                 ) : (
-                  <div className="flex items-center justify-center h-32 border border-dashed border-border rounded-lg bg-muted/20">
-                    <p className="text-sm text-muted-foreground">Select a question to view details</p>
+                  <div className={styles.emptyState}>
+                    <p className={styles.emptyText}>Select a question to view details</p>
                   </div>
                 )}
               </div>
             </div>
           </div>
         )}
-      </CardContent>
+      </div>
     </Card>
   );
 };
