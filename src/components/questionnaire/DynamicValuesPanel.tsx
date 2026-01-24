@@ -22,12 +22,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { X, Plus, Trash2, FolderPlus, Check, ChevronsUpDown, Database } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { X, Plus, Trash2, FolderPlus, Check, ChevronsUpDown, Database, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DATAVERSE_ENTITIES,
+  DATAVERSE_OPERATORS,
+  getEntityByLogicalName,
+  getFilterableFields,
+  type DataverseEntity,
+  type DataverseField,
+  type DataverseOperator,
+} from "@/data/dataverseEntities";
 
 // Re-export types from questionnaire.ts for backward compatibility
 export type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig, DynamicValueOperator } from "@/types/questionnaire";
-import type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig, DynamicValueOperator } from "@/types/questionnaire";
+import type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig } from "@/types/questionnaire";
 
 interface DynamicValuesPanelProps {
   isOpen: boolean;
@@ -36,27 +46,11 @@ interface DynamicValuesPanelProps {
   onSave: (config: DynamicValueConfig) => void;
 }
 
-// Sample tables for demonstration - in a real app, these would come from the database schema
-const SAMPLE_TABLES = [
-  { name: 'users', fields: ['id', 'name', 'email', 'role', 'department', 'status', 'created_at'] },
-  { name: 'departments', fields: ['id', 'name', 'code', 'manager_id', 'active'] },
-  { name: 'categories', fields: ['id', 'name', 'parent_id', 'description', 'sort_order'] },
-  { name: 'products', fields: ['id', 'name', 'sku', 'price', 'category_id', 'status'] },
-  { name: 'locations', fields: ['id', 'name', 'address', 'city', 'country', 'active'] },
-];
-
-const OPERATORS = [
-  { value: 'equals', label: 'Equals' },
-  { value: 'not_equals', label: 'Not Equals' },
-  { value: 'contains', label: 'Contains' },
-  { value: 'not_contains', label: 'Not Contains' },
-  { value: 'greater_than', label: 'Greater Than' },
-  { value: 'less_than', label: 'Less Than' },
-  { value: 'starts_with', label: 'Starts With' },
-  { value: 'ends_with', label: 'Ends With' },
-  { value: 'is_null', label: 'Is Null' },
-  { value: 'is_not_null', label: 'Is Not Null' },
-];
+// Map internal operators to Dataverse operators for display
+const OPERATORS = DATAVERSE_OPERATORS.map(op => ({
+  value: op.value,
+  label: op.label,
+}));
 
 const createEmptyConditionGroup = (): DynamicValueFilterGroup => ({
   type: 'group',
@@ -76,7 +70,7 @@ const createEmptyCondition = (): DynamicValueFilter => ({
 // Recursive component for rendering filter groups - matching the table-based layout
 interface FilterGroupEditorProps {
   group: DynamicValueFilterGroup;
-  availableFields: string[];
+  availableFields: DataverseField[];
   onUpdate: (updated: DynamicValueFilterGroup) => void;
   onDelete?: () => void;
   isRoot?: boolean;
@@ -190,8 +184,8 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
                         <SelectContent>
                           <SelectItem value="__empty__" disabled>Select field...</SelectItem>
                           {availableFields.map(field => (
-                            <SelectItem key={field} value={field}>
-                              {field}
+                            <SelectItem key={field.logicalName} value={field.logicalName}>
+                              {field.displayName}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -213,7 +207,7 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
                         </SelectContent>
                       </Select>
 
-                      {!['is_null', 'is_not_null'].includes(child.operator) ? (
+                      {!['null', 'not_null'].includes(child.operator) ? (
                         <Input
                           placeholder="Value"
                           value={child.value}
@@ -281,8 +275,8 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
     }
   }, [isOpen, config]);
 
-  const selectedTable = SAMPLE_TABLES.find(t => t.name === tableName);
-  const availableFields = selectedTable?.fields || [];
+  const selectedEntity = getEntityByLogicalName(tableName);
+  const availableFields = selectedEntity?.fields || [];
 
   const handleSave = () => {
     onSave({
@@ -311,7 +305,10 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
     <div className="fixed inset-y-0 right-0 w-[40%] min-w-[400px] bg-background border-l border-border shadow-xl z-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-muted/30">
-        <h2 className="text-lg font-semibold">Configure Dynamic Values</h2>
+        <div>
+          <h2 className="text-lg font-semibold">Configure Dynamic Values</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Map to Dataverse tables for PCF control integration</p>
+        </div>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-5 w-5" />
         </Button>
@@ -319,9 +316,18 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Table Selection - Searchable Lookup */}
+        {/* Dataverse Info Banner */}
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+          <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+          <div className="text-xs text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">Dataverse Integration</p>
+            <p>Configuration will be used by the PCF control to query Microsoft Dynamics 365 CRM tables via OData/FetchXML.</p>
+          </div>
+        </div>
+
+        {/* Entity Selection - Searchable Lookup */}
         <div className="space-y-2">
-          <Label className="text-sm font-semibold">Data Source Table</Label>
+          <Label className="text-sm font-semibold">Dataverse Entity</Label>
           <Popover open={tableSearchOpen} onOpenChange={setTableSearchOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -333,35 +339,39 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
                 {tableName ? (
                   <span className="flex items-center gap-2">
                     <Database className="h-4 w-4 text-muted-foreground" />
-                    {tableName}
+                    <span>{selectedEntity?.displayName}</span>
+                    <Badge variant="outline" className="text-xs font-mono">{tableName}</Badge>
                   </span>
                 ) : (
-                  <span className="text-muted-foreground">Search tables...</span>
+                  <span className="text-muted-foreground">Search entities...</span>
                 )}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
               <Command>
-                <CommandInput placeholder="Search tables..." />
+                <CommandInput placeholder="Search entities..." />
                 <CommandList>
-                  <CommandEmpty>No table found.</CommandEmpty>
+                  <CommandEmpty>No entity found.</CommandEmpty>
                   <CommandGroup>
-                    {SAMPLE_TABLES.map((table) => (
+                    {DATAVERSE_ENTITIES.map((entity) => (
                       <CommandItem
-                        key={table.name}
-                        value={table.name}
-                        onSelect={(currentValue) => {
-                          handleTableChange(currentValue);
+                        key={entity.logicalName}
+                        value={`${entity.logicalName} ${entity.displayName}`}
+                        onSelect={() => {
+                          handleTableChange(entity.logicalName);
                           setTableSearchOpen(false);
                         }}
                       >
                         <Database className="mr-2 h-4 w-4 text-muted-foreground" />
-                        {table.name}
+                        <span className="flex-1">{entity.displayName}</span>
+                        <Badge variant="outline" className="ml-2 text-xs font-mono">
+                          {entity.logicalName}
+                        </Badge>
                         <Check
                           className={cn(
-                            "ml-auto h-4 w-4",
-                            tableName === table.name ? "opacity-100" : "opacity-0"
+                            "ml-2 h-4 w-4",
+                            tableName === entity.logicalName ? "opacity-100" : "opacity-0"
                           )}
                         />
                       </CommandItem>
@@ -372,26 +382,29 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
             </PopoverContent>
           </Popover>
           <p className="text-xs text-muted-foreground">
-            Select the database table from which dynamic values will be fetched.
+            Select the Dataverse entity (table) from which dynamic values will be fetched.
           </p>
         </div>
 
-        {/* Field Mappings */}
+        {/* Attribute Mappings */}
         {tableName && (
           <div className="space-y-4 border border-border rounded-lg p-4 bg-muted/20">
-            <Label className="text-sm font-semibold">Field Mappings</Label>
+            <Label className="text-sm font-semibold">Attribute Mappings</Label>
             
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label className="text-xs">Label Field</Label>
+                <Label className="text-xs">Label Attribute (Display Name)</Label>
                 <Select value={labelField} onValueChange={setLabelField}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select field for label..." />
                   </SelectTrigger>
                   <SelectContent>
                     {availableFields.map(field => (
-                      <SelectItem key={field} value={field}>
-                        {field}
+                      <SelectItem key={field.logicalName} value={field.logicalName}>
+                        <span className="flex items-center gap-2">
+                          {field.displayName}
+                          <span className="text-xs text-muted-foreground font-mono">({field.logicalName})</span>
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -402,15 +415,18 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Value Field</Label>
+                <Label className="text-xs">Value Attribute (Primary Key)</Label>
                 <Select value={valueField} onValueChange={setValueField}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select field for value..." />
                   </SelectTrigger>
                   <SelectContent>
                     {availableFields.map(field => (
-                      <SelectItem key={field} value={field}>
-                        {field}
+                      <SelectItem key={field.logicalName} value={field.logicalName}>
+                        <span className="flex items-center gap-2">
+                          {field.displayName}
+                          <span className="text-xs text-muted-foreground font-mono">({field.logicalName})</span>
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -423,10 +439,10 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
           </div>
         )}
 
-        {/* Filters Section with Grouping */}
+        {/* Filter Conditions (OData $filter) */}
         {tableName && (
           <div className="space-y-4">
-            <Label className="text-sm font-semibold">Filter Conditions</Label>
+            <Label className="text-sm font-semibold">Filter Conditions (OData $filter)</Label>
             <FilterGroupEditor
               group={conditionGroup}
               availableFields={availableFields}
@@ -435,10 +451,10 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
           </div>
         )}
 
-        {/* Ordering */}
+        {/* Ordering (OData $orderby) */}
         {tableName && (
           <div className="space-y-4 border border-border rounded-lg p-4 bg-muted/20">
-            <Label className="text-sm font-semibold">Ordering</Label>
+            <Label className="text-sm font-semibold">Ordering (OData $orderby)</Label>
             
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -453,8 +469,8 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
                   <SelectContent>
                     <SelectItem value="__none__">None</SelectItem>
                     {availableFields.map(field => (
-                      <SelectItem key={field} value={field}>
-                        {field}
+                      <SelectItem key={field.logicalName} value={field.logicalName}>
+                        {field.displayName}
                       </SelectItem>
                     ))}
                   </SelectContent>
