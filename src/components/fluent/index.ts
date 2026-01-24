@@ -10,7 +10,8 @@
 
 // Custom Components
 export { FluentThemeProvider, useSystemDarkMode, customLightTheme, customDarkTheme } from './FluentThemeProvider';
-export { ConfirmDialog } from './ConfirmDialog';
+export { ConfirmDialog, ConfirmDialogProvider, useConfirmDialog } from './ConfirmDialog';
+export type { ConfirmOptions } from './ConfirmDialog';
 
 // Re-export icons from centralized icon file
 export * from './icons';
