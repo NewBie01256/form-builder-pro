@@ -601,13 +601,21 @@ export default function DataversePlaygroundPage() {
                 <div style={{ display: 'flex', gap: tokens.spacingHorizontalL }}>
                   <div className={styles.stepNumber}>4</div>
                   <div className={styles.stepContent}>
-                    <Title3>Handle Errors with Result Pattern</Title3>
+                    <Title3>Handle Errors with ErrorHandler Wrapper</Title3>
                     <Body1>
-                      All operations use the Result pattern - they never throw exceptions. 
-                      This provides type-safe error handling with specific error codes.
+                      Use the <code>errorHandler</code> wrapper class for consistent, typed error handling. 
+                      It provides utility methods like <code>isNotFound()</code>, <code>isRetryable()</code>, 
+                      and wrappers like <code>withRetry()</code> and <code>withSafeExecution()</code>.
                     </Body1>
                     <div className={styles.codeSection}>
                       <CodeBlock code={CODE_STEP4_ERROR} language="typescript" />
+                    </div>
+                    <div className={styles.tipBox}>
+                      <Lightbulb24Regular />
+                      <Text>
+                        <strong>Try it!</strong> In the Playground, select the <strong>Error Handling</strong> operation 
+                        to simulate different error scenarios and see how to handle them.
+                      </Text>
                     </div>
                   </div>
                 </div>
