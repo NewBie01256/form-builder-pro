@@ -103,6 +103,12 @@ const Documentation = () => {
                 <a href="#question-properties" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Question Properties
                 </a>
+                <a href="#validation" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Validation & Required Fields
+                </a>
+                <a href="#delete-confirmations" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Delete Confirmations
+                </a>
                 <a href="#templates" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Templates & Drafts
                 </a>
@@ -2972,6 +2978,243 @@ const Documentation = () => {
                         values for backend processing or conditional logic.
                       </p>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Validation & Required Fields */}
+            <section id="validation">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <CheckCircle className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Validation & Required Fields</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    The builder enforces mandatory field validation to ensure questionnaire data integrity. 
+                    Required fields are visually marked with a red asterisk (*) and highlighted with a red border when empty.
+                  </p>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Mandatory Fields</h4>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Question Configuration</div>
+                        <ul className="text-sm text-muted-foreground space-y-2">
+                          <li className="flex items-center gap-2">
+                            <Badge variant="destructive" className="text-xs">Required</Badge>
+                            <span>Question Title</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Badge variant="destructive" className="text-xs">Required</Badge>
+                            <span>Question Type</span>
+                          </li>
+                        </ul>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Answer Set Configuration</div>
+                        <ul className="text-sm text-muted-foreground space-y-2">
+                          <li className="flex items-center gap-2">
+                            <Badge variant="destructive" className="text-xs">Required</Badge>
+                            <span>Set Name</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Badge variant="destructive" className="text-xs">Required</Badge>
+                            <span>Tag</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Answer Validation</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      For choice-type questions (Radio Button, Checkbox, Dropdown, MultiSelect), the builder validates:
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="p-3 rounded-lg border">
+                        <div className="text-sm font-medium">Minimum Answers</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          At least one answer option is required
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="text-sm font-medium">Answer Label</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Each answer must have a display label
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="text-sm font-medium">Answer Value</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Each answer must have a stored value
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Visual Indicators</h4>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border border-destructive">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-destructive font-medium">Red Border</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Empty required fields are highlighted with a red border to draw attention
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium">Required Label <span className="text-destructive">*</span></span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Mandatory fields display a red asterisk (*) next to their label
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50 border">
+                    <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                      <Info className="h-4 w-4 text-primary" />
+                      Answer-Level Branching
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Validation also applies to inline answer sets within Answer-Level Conditional Branching. 
+                      Set Name, Tag, and answer options are all validated with the same requirements.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Delete Confirmations */}
+            <section id="delete-confirmations">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Trash2 className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Delete Confirmations</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    To prevent accidental data loss, all delete actions in the builder require explicit confirmation 
+                    through a confirmation dialog before any content is removed.
+                  </p>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Protected Delete Actions</h4>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <span className="font-medium text-sm">Pages</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Deleting a page removes all its sections, questions, and branches
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <span className="font-medium text-sm">Sections</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Deleting a section removes all its questions and branches
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <span className="font-medium text-sm">Questions</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Deleting a question removes all its answer sets and rules
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <span className="font-medium text-sm">Branches</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Deleting a branch removes all its questions and child branches
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <span className="font-medium text-sm">Answer Sets</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Deleting an answer set removes all its answers and action records
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <span className="font-medium text-sm">Drafts & Records</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Deleting saved drafts or published records is permanent
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Confirmation Dialog</h4>
+                    <div className="p-4 rounded-lg border">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        When you click a delete button, a confirmation dialog appears with:
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary" />
+                          <span>Clear title indicating what will be deleted</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary" />
+                          <span>Warning message about the action being irreversible</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary" />
+                          <span>Cancel button to abort the action</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary" />
+                          <span>Destructive-styled Delete button to confirm</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50 border">
+                    <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                      <Info className="h-4 w-4 text-primary" />
+                      Reusable Component
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      The confirmation dialog is built as a generic, reusable component (ConfirmDialog) 
+                      that can be used throughout the application for any destructive action.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
