@@ -15,10 +15,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Plus, FileText, GitBranch, HelpCircle, RotateCcw, ChevronDown, ChevronUp, Settings, Zap, Layers, File } from "lucide-react";
+import { Plus, FileText, GitBranch, HelpCircle, RotateCcw, ChevronDown, ChevronUp, Settings, Zap, Layers, File, Search, X } from "lucide-react";
 import { Question, ConditionalBranch, Questionnaire, Page, Section } from "@/types/questionnaire";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface SidebarProps {
   questionnaire: Questionnaire | null;
@@ -54,6 +54,39 @@ const Sidebar = ({
   canPublish = false,
 }: SidebarProps) => {
   const [detailsOpen, setDetailsOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Helper to check if text matches search query
+  const matchesSearch = (text: string | undefined): boolean => {
+    if (!searchQuery.trim()) return true;
+    return (text || '').toLowerCase().includes(searchQuery.toLowerCase());
+  };
+
+  // Check if a branch or any of its descendants match the search
+  const branchMatchesSearch = (branch: ConditionalBranch): boolean => {
+    if (matchesSearch(branch.name)) return true;
+    if (branch.questions.some(q => matchesSearch(q.text))) return true;
+    return branch.childBranches.some(cb => branchMatchesSearch(cb));
+  };
+
+  // Check if a section or any of its descendants match the search
+  const sectionMatchesSearch = (section: Section): boolean => {
+    if (matchesSearch(section.name)) return true;
+    if (section.questions.some(q => matchesSearch(q.text))) return true;
+    return section.branches.some(b => branchMatchesSearch(b));
+  };
+
+  // Check if a page or any of its descendants match the search
+  const pageMatchesSearch = (page: Page): boolean => {
+    if (matchesSearch(page.name)) return true;
+    return page.sections.some(s => sectionMatchesSearch(s));
+  };
+
+  // Filter pages based on search
+  const filteredPages = useMemo(() => {
+    if (!questionnaire || !searchQuery.trim()) return questionnaire?.pages || [];
+    return questionnaire.pages.filter(page => pageMatchesSearch(page));
+  }, [questionnaire, searchQuery]);
 
   // Find all ancestor branch IDs for a given branch or question
   const findAncestorBranchIds = (
@@ -251,6 +284,23 @@ const Sidebar = ({
     const hasSelectedChild = selectedSectionId === section.id && (selectedQuestionId || selectedBranchId);
     const isSectionDirectlySelected = selectedSectionId === section.id && !selectedQuestionId && !selectedBranchId;
     
+    // Filter questions and branches based on search
+    const filteredQuestions = searchQuery.trim() 
+      ? section.questions.filter(q => matchesSearch(q.text))
+      : section.questions;
+    
+    const filteredBranches = searchQuery.trim()
+      ? section.branches.filter(b => branchMatchesSearch(b))
+      : section.branches;
+
+    // Don't render section if it has no matching children when searching
+    const sectionDirectlyMatches = matchesSearch(section.name);
+    const hasMatchingChildren = filteredQuestions.length > 0 || filteredBranches.length > 0;
+    
+    if (searchQuery.trim() && !sectionDirectlyMatches && !hasMatchingChildren) {
+      return <></>;
+    }
+    
     return (
       <div key={section.id} className="ml-4">
         <div
@@ -273,7 +323,7 @@ const Sidebar = ({
         </div>
 
         {/* Section Questions */}
-        {section.questions.map(q => (
+        {filteredQuestions.map(q => (
           <div
             key={q.id}
             className={cn(
@@ -297,9 +347,9 @@ const Sidebar = ({
         ))}
 
         {/* Section Branches */}
-        {section.branches.map((branch, idx) => (
+        {filteredBranches.map((branch, idx) => (
           <div key={branch.id} className="ml-4">
-            {renderBranchTree(branch, section.id, pageId, 0, idx === section.branches.length - 1, [])}
+            {renderBranchTree(branch, section.id, pageId, 0, idx === filteredBranches.length - 1, [])}
           </div>
         ))}
       </div>
@@ -311,6 +361,11 @@ const Sidebar = ({
     const isPageInPath = selectedPageId === page.id;
     const isPageActive = activePageId === page.id;
     const hasSelectedDescendant = isPageInPath && (selectedSectionId || selectedQuestionId || selectedBranchId);
+
+    // Filter sections based on search
+    const filteredSections = searchQuery.trim()
+      ? page.sections.filter(s => sectionMatchesSearch(s))
+      : page.sections;
     
     return (
       <div key={page.id}>
@@ -329,7 +384,7 @@ const Sidebar = ({
           <span className="truncate text-sm font-medium">{page.name || 'Untitled Page'}</span>
         </div>
 
-        {page.sections.map(section => renderSectionTree(section, page.id))}
+        {filteredSections.map(section => renderSectionTree(section, page.id))}
       </div>
     );
   };
@@ -449,9 +504,36 @@ const Sidebar = ({
                 </CollapsibleContent>
               </Collapsible>
 
+              {/* Search Box */}
+              <div className="relative mt-2">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search tree..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8 text-xs pl-8 pr-8"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
               {/* Pages Tree */}
               <div className="mt-2 space-y-0.5">
-                {questionnaire.pages.map(page => renderPageTree(page))}
+                {filteredPages.length > 0 ? (
+                  filteredPages.map(page => renderPageTree(page))
+                ) : searchQuery ? (
+                  <div className="text-xs text-muted-foreground text-center py-4">
+                    No results found for "{searchQuery}"
+                  </div>
+                ) : (
+                  questionnaire.pages.map(page => renderPageTree(page))
+                )}
               </div>
             </div>
           ) : (
