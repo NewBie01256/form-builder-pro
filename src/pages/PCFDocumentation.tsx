@@ -500,181 +500,211 @@ export class DynamicEntityDropdown implements ComponentFramework.StandardControl
 }`;
 
 const GUIDE_STEP3_ENTITY_CONFIGS = `// =============================================================================
-// STEP 3: Pre-built configurations for common Dataverse entities
+// STEP 3: Discover entities and fields dynamically FROM Dataverse
 // =============================================================================
 //
-// CREATE FILE: src/lib/dataverse/entityConfigs.ts
+// ⚠️  NO PRE-BUILT CONFIGS - Everything is fetched from YOUR Dataverse at runtime!
 //
-// ⚠️  THESE ARE NOT HARDCODED VALUES!
-//     These are CONFIGURATIONS that tell the service which REAL entities
-//     and fields to fetch from YOUR Dynamics 365 environment.
-//
-// WHEN YOU DEPLOY:
-// - 'account' → fetches from YOUR accounts table
-// - 'contact' → fetches from YOUR contacts table
-// - 'incident' → fetches from YOUR cases table
-// - etc.
+// This shows how to:
+// 1. Get the list of available entities from YOUR CRM
+// 2. Get the fields of any entity dynamically
+// 3. Build dropdown configs based on actual metadata
 
-import type { DropdownConfig } from './DynamicDropdownService';
+import { 
+  BaseDataverseService,
+  type IPCFContext,
+  type DataverseResult,
+  type EntityMetadata,
+  type AttributeMetadata,
+} from '@/lib/dataverse/pcf';
 
 /**
- * ════════════════════════════════════════════════════════════════════════════
- * PRE-BUILT CONFIGS FOR COMMON DYNAMICS 365 ENTITIES
- * ════════════════════════════════════════════════════════════════════════════
- * 
- * These configurations define:
- * - Which entity table to query (entityName)
- * - Which field contains the ID (valueField) 
- * - Which field to display (labelField)
- * - How to filter records (filter)
- * - How to sort results (orderBy)
- * 
- * The ACTUAL DATA comes from YOUR Dataverse at runtime!
+ * Service to discover entities and fields from YOUR Dataverse at runtime
  */
-export const ENTITY_DROPDOWN_CONFIGS = {
+export class EntityDiscoveryService extends BaseDataverseService {
+  
+  constructor(context: IPCFContext) {
+    super(context);
+  }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ACCOUNTS - Fetches real accounts from your D365
-  // ═══════════════════════════════════════════════════════════════════════════
-  accounts: {
-    entityName: 'account',            // Standard D365 entity
-    valueField: 'accountid',          // Primary key (GUID)
-    labelField: 'name',               // Account name
-    filter: 'statecode eq 0',         // Active records only
-    orderBy: 'name asc',              // Alphabetical
-    additionalFields: ['telephone1', 'emailaddress1', 'revenue'],
-  } as DropdownConfig,
+  /**
+   * Get metadata for any entity in YOUR Dataverse
+   * Returns the actual fields, types, and constraints from YOUR CRM
+   * 
+   * @param entityName - Logical name (e.g., 'account', 'contact', or YOUR custom entity)
+   */
+  async getEntityFields(entityName: string): Promise<DataverseResult<AttributeMetadata[]>> {
+    // ═══════════════════════════════════════════════════════════════════════
+    // THIS CALLS YOUR DATAVERSE TO GET REAL METADATA
+    // ═══════════════════════════════════════════════════════════════════════
+    const result = await this.getEntityMetadata(entityName);
+    
+    if (!result.success) {
+      return result;
+    }
+    
+    return { success: true, data: result.data.Attributes };
+  }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CONTACTS - Fetches real contacts from your D365
-  // ═══════════════════════════════════════════════════════════════════════════
-  contacts: {
-    entityName: 'contact',            // Standard D365 entity
-    valueField: 'contactid',          // Primary key (GUID)
-    labelField: 'fullname',           // Full name (auto-generated)
-    filter: 'statecode eq 0',         // Active records only
-    orderBy: 'fullname asc',          // Alphabetical
-    additionalFields: ['emailaddress1', 'telephone1', 'jobtitle'],
-  } as DropdownConfig,
+  /**
+   * Get the primary key field name for any entity
+   */
+  async getPrimaryKeyField(entityName: string): Promise<DataverseResult<string>> {
+    const result = await this.getEntityMetadata(entityName);
+    
+    if (!result.success) {
+      return result;
+    }
+    
+    // PrimaryIdAttribute is the actual primary key from YOUR entity
+    return { success: true, data: result.data.PrimaryIdAttribute };
+  }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CASES (Incidents) - Fetches real cases from your D365
-  // ═══════════════════════════════════════════════════════════════════════════
-  cases: {
-    entityName: 'incident',           // Case entity (internal name)
-    valueField: 'incidentid',         // Primary key (GUID)
-    labelField: 'title',              // Case title
-    filter: 'statecode eq 0',         // Active cases only
-    orderBy: 'createdon desc',        // Newest first
-    additionalFields: ['ticketnumber', 'prioritycode', 'statuscode'],
-  } as DropdownConfig,
+  /**
+   * Get the primary name field (display field) for any entity
+   */
+  async getPrimaryNameField(entityName: string): Promise<DataverseResult<string>> {
+    const result = await this.getEntityMetadata(entityName);
+    
+    if (!result.success) {
+      return result;
+    }
+    
+    // PrimaryNameAttribute is the actual display field from YOUR entity
+    return { success: true, data: result.data.PrimaryNameAttribute };
+  }
 
-  // High priority cases only
-  highPriorityCases: {
-    entityName: 'incident',
-    valueField: 'incidentid',
-    labelField: 'title',
-    filter: 'statecode eq 0 and prioritycode eq 1',  // Active + High priority
-    orderBy: 'createdon desc',
-  } as DropdownConfig,
+  /**
+   * Build a dropdown config dynamically from YOUR Dataverse metadata
+   * No hardcoding - everything discovered at runtime
+   */
+  async buildDynamicConfig(
+    entityName: string,
+    options?: {
+      filter?: string;
+      orderDirection?: 'asc' | 'desc';
+      top?: number;
+    }
+  ): Promise<DataverseResult<DropdownConfig>> {
+    
+    // Fetch REAL metadata from YOUR Dataverse
+    const metadataResult = await this.getEntityMetadata(entityName);
+    
+    if (!metadataResult.success) {
+      return metadataResult;
+    }
+    
+    const metadata = metadataResult.data;
+    
+    // Build config using actual field names from YOUR CRM
+    const config: DropdownConfig = {
+      entityName: entityName,
+      valueField: metadata.PrimaryIdAttribute,      // Real primary key
+      labelField: metadata.PrimaryNameAttribute,    // Real display field
+      filter: options?.filter || 'statecode eq 0',  // Default: active only
+      orderBy: \`\${metadata.PrimaryNameAttribute} \${options?.orderDirection || 'asc'}\`,
+      top: options?.top || 500,
+    };
+    
+    return { success: true, data: config };
+  }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // OPPORTUNITIES - Fetches real opportunities from your D365
-  // ═══════════════════════════════════════════════════════════════════════════
-  opportunities: {
-    entityName: 'opportunity',        // Standard D365 entity
-    valueField: 'opportunityid',      // Primary key (GUID)
-    labelField: 'name',               // Opportunity name
-    filter: 'statecode eq 0',         // Open opportunities only
-    orderBy: 'estimatedclosedate asc', // By close date
-    additionalFields: ['estimatedvalue', 'closeprobability'],
-  } as DropdownConfig,
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SYSTEM USERS - Fetches real users from your D365 (for assignment)
-  // ═══════════════════════════════════════════════════════════════════════════
-  users: {
-    entityName: 'systemuser',         // User entity
-    valueField: 'systemuserid',       // Primary key (GUID)
-    labelField: 'fullname',           // User's full name
-    filter: 'isdisabled eq false',    // Enabled users only
-    orderBy: 'fullname asc',          // Alphabetical
-    additionalFields: ['internalemailaddress', 'title'],
-  } as DropdownConfig,
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEAMS - Fetches real teams from your D365 (for assignment)
-  // ═══════════════════════════════════════════════════════════════════════════
-  teams: {
-    entityName: 'team',               // Team entity
-    valueField: 'teamid',             // Primary key (GUID)
-    labelField: 'name',               // Team name
-    filter: 'teamtype eq 0',          // Owner teams only (not Access)
-    orderBy: 'name asc',              // Alphabetical
-  } as DropdownConfig,
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PRODUCTS - Fetches real products from your D365
-  // ═══════════════════════════════════════════════════════════════════════════
-  products: {
-    entityName: 'product',            // Product entity
-    valueField: 'productid',          // Primary key (GUID)
-    labelField: 'name',               // Product name
-    filter: 'statecode eq 0',         // Active products only
-    orderBy: 'name asc',              // Alphabetical
-    additionalFields: ['productnumber', 'price'],
-  } as DropdownConfig,
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // QUEUES - Fetches real queues from your D365 (for routing)
-  // ═══════════════════════════════════════════════════════════════════════════
-  queues: {
-    entityName: 'queue',              // Queue entity
-    valueField: 'queueid',            // Primary key (GUID)
-    labelField: 'name',               // Queue name
-    filter: 'statecode eq 0',         // Active queues only
-    orderBy: 'name asc',              // Alphabetical
-  } as DropdownConfig,
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // LEADS - Fetches real leads from your D365
-  // ═══════════════════════════════════════════════════════════════════════════
-  leads: {
-    entityName: 'lead',               // Lead entity
-    valueField: 'leadid',             // Primary key (GUID)
-    labelField: 'fullname',           // Lead's full name
-    filter: 'statecode eq 0',         // Open leads only
-    orderBy: 'createdon desc',        // Newest first
-    additionalFields: ['companyname', 'emailaddress1'],
-  } as DropdownConfig,
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // BUSINESS UNITS - Fetches real BUs from your D365
-  // ═══════════════════════════════════════════════════════════════════════════
-  businessUnits: {
-    entityName: 'businessunit',       // BU entity
-    valueField: 'businessunitid',     // Primary key (GUID)
-    labelField: 'name',               // BU name
-    filter: 'isdisabled eq false',    // Active BUs only
-    orderBy: 'name asc',              // Alphabetical
-  } as DropdownConfig,
-};
+  /**
+   * Get filterable fields for an entity (for building dynamic filters)
+   */
+  async getFilterableFields(entityName: string): Promise<DataverseResult<AttributeMetadata[]>> {
+    const result = await this.getEntityMetadata(entityName);
+    
+    if (!result.success) {
+      return result;
+    }
+    
+    // Return fields that can be used in filters
+    const filterableFields = result.data.Attributes.filter(attr => 
+      attr.IsValidForRead && 
+      !['Virtual', 'Image', 'File'].includes(attr.AttributeType)
+    );
+    
+    return { success: true, data: filterableFields };
+  }
+}
 
 // =============================================================================
-// USAGE EXAMPLES - All fetch REAL data from YOUR Dataverse
+// USAGE IN PCF CONTROL
 // =============================================================================
 
-// Example 1: Load accounts from your CRM
-// const accounts = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.accounts);
-// → Returns REAL accounts from YOUR D365 environment
+/**
+ * Example: Load ANY entity dynamically with auto-discovered fields
+ */
+async function loadEntityDynamically(
+  context: IPCFContext,
+  entityName: string,        // Could come from user selection or configuration
+  customFilter?: string      // Optional filter from user
+): Promise<DropdownOption[]> {
+  
+  const discoveryService = new EntityDiscoveryService(context);
+  const dropdownService = new DynamicDropdownService(context);
+  
+  // ═══════════════════════════════════════════════════════════════════════
+  // STEP 1: Discover the config from Dataverse metadata
+  // ═══════════════════════════════════════════════════════════════════════
+  const configResult = await discoveryService.buildDynamicConfig(entityName, {
+    filter: customFilter,
+    orderDirection: 'asc',
+    top: 500,
+  });
+  
+  if (!configResult.success) {
+    console.error('Failed to discover entity:', configResult.error);
+    return [];
+  }
+  
+  console.log('Discovered config:', configResult.data);
+  // Output: { entityName: 'account', valueField: 'accountid', labelField: 'name', ... }
+  // These field names came from YOUR Dataverse, not hardcoded!
+  
+  // ═══════════════════════════════════════════════════════════════════════
+  // STEP 2: Fetch actual records using the discovered config
+  // ═══════════════════════════════════════════════════════════════════════
+  const dataResult = await dropdownService.loadOptions(configResult.data);
+  
+  if (!dataResult.success) {
+    console.error('Failed to load data:', dataResult.error);
+    return [];
+  }
+  
+  // These are REAL records from YOUR Dataverse
+  return dataResult.data;
+}
 
-// Example 2: Load only high-priority cases
-// const urgentCases = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.highPriorityCases);
-// → Returns REAL high-priority cases from YOUR D365 environment
+// =============================================================================
+// EXAMPLE: ENTITY PICKER THAT DISCOVERS AVAILABLE ENTITIES
+// =============================================================================
 
-// Example 3: Load users for assignment dropdown
-// const users = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.users);
-// → Returns REAL enabled users from YOUR D365 environment`;
+/**
+ * Get list of available entities in YOUR Dataverse
+ * Uses the Metadata API to discover what tables exist
+ */
+async function getAvailableEntities(
+  context: IPCFContext
+): Promise<{ logicalName: string; displayName: string }[]> {
+  
+  // Use WebApi to query entity definitions from YOUR Dataverse
+  const result = await context.webAPI.retrieveMultipleRecords(
+    'EntityDefinition',
+    '?$select=LogicalName,DisplayName&$filter=IsCustomizable/Value eq true'
+  );
+  
+  return result.entities.map(entity => ({
+    logicalName: entity.LogicalName,
+    displayName: entity.DisplayName?.UserLocalizedLabel?.Label || entity.LogicalName,
+  }));
+}
+
+// Usage:
+// const entities = await getAvailableEntities(context);
+// → Returns ALL customizable entities from YOUR Dataverse
+// → User can select an entity, then loadEntityDynamically() fetches its data`;
 
 const GUIDE_STEP4_DYNAMIC_ENTITY = `// =============================================================================
 // STEP 4: Load ANY entity dynamically (runtime configuration)
