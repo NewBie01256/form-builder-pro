@@ -2579,6 +2579,220 @@ const Documentation = () => {
                     experiences and collects relevant data efficiently.
                   </p>
                   
+                  {/* Branching Flow Diagram */}
+                  <div className="p-6 rounded-lg border bg-muted/30 overflow-x-auto">
+                    <h4 className="font-semibold mb-6 text-center">Conditional Branching Flow</h4>
+                    
+                    <div className="min-w-[700px]">
+                      {/* Flow Diagram */}
+                      <div className="flex flex-col items-center gap-4">
+                        
+                        {/* Step 1: User Answer */}
+                        <div className="flex items-center gap-6">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="p-4 rounded-xl border-2 border-primary bg-primary/5">
+                              <HelpCircle className="h-8 w-8 text-primary" />
+                            </div>
+                            <span className="text-sm font-medium">User Answers</span>
+                            <span className="text-xs text-muted-foreground">Trigger Question</span>
+                          </div>
+                        </div>
+                        
+                        {/* Arrow Down */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-0.5 h-6 bg-muted-foreground/40"></div>
+                          <ArrowRight className="h-5 w-5 text-muted-foreground rotate-90" />
+                        </div>
+                        
+                        {/* Step 2: Rule Evaluation */}
+                        <div className="p-5 rounded-xl border-2 border-amber-500 bg-amber-500/5 min-w-[300px]">
+                          <div className="font-bold text-amber-500 text-center mb-3">Rule Evaluation Engine</div>
+                          <div className="text-xs text-muted-foreground space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Filter className="h-3 w-3" />
+                              <span>Evaluate RuleGroup conditions</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <ArrowUpDown className="h-3 w-3" />
+                              <span>Apply AND/OR match logic</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-3 w-3" />
+                              <span>Compare against response values</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Arrow Down to Decision */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-0.5 h-6 bg-muted-foreground/40"></div>
+                          <ArrowRight className="h-5 w-5 text-muted-foreground rotate-90" />
+                        </div>
+                        
+                        {/* Decision Diamond */}
+                        <div className="relative">
+                          <div className="w-32 h-32 border-2 border-blue-500 bg-blue-500/5 rotate-45 flex items-center justify-center">
+                            <span className="font-bold text-blue-500 text-sm -rotate-45">Condition<br/>Met?</span>
+                          </div>
+                        </div>
+                        
+                        {/* Two Branches */}
+                        <div className="flex items-start gap-16 mt-2">
+                          {/* Yes Branch */}
+                          <div className="flex flex-col items-center gap-3">
+                            <Badge className="bg-green-500 text-white">YES</Badge>
+                            <div className="w-0.5 h-6 bg-green-500/50"></div>
+                            <div className="p-4 rounded-xl border-2 border-green-500 bg-green-500/5">
+                              <div className="flex items-center gap-2">
+                                <Eye className="h-5 w-5 text-green-500" />
+                                <span className="font-medium text-green-500">Show</span>
+                              </div>
+                            </div>
+                            <div className="text-xs text-muted-foreground text-center max-w-[140px]">
+                              Branch questions become visible
+                            </div>
+                          </div>
+                          
+                          {/* No Branch */}
+                          <div className="flex flex-col items-center gap-3">
+                            <Badge variant="secondary">NO</Badge>
+                            <div className="w-0.5 h-6 bg-muted-foreground/30"></div>
+                            <div className="p-4 rounded-xl border-2 border-muted-foreground/50 bg-muted/30">
+                              <div className="flex items-center gap-2">
+                                <EyeOff className="h-5 w-5 text-muted-foreground" />
+                                <span className="font-medium text-muted-foreground">Hide</span>
+                              </div>
+                            </div>
+                            <div className="text-xs text-muted-foreground text-center max-w-[140px]">
+                              Branch stays hidden, skip to next
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Rule Evaluation Logic Diagram */}
+                  <div className="p-6 rounded-lg border bg-muted/30">
+                    <h4 className="font-semibold mb-4 text-center">Rule Evaluation Logic</h4>
+                    <p className="text-xs text-muted-foreground text-center mb-6">
+                      Rules support complex nested AND/OR conditions with multiple operators
+                    </p>
+                    
+                    <div className="flex flex-col lg:flex-row gap-6 justify-center">
+                      {/* AND Logic Example */}
+                      <div className="p-4 rounded-lg border-2 border-rose-500/50 bg-rose-500/5 min-w-[250px]">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge className="bg-rose-500">AND</Badge>
+                          <span className="text-sm font-medium">All must match</span>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            <span>Department = "IT"</span>
+                          </div>
+                          <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            <span>Priority = "High"</span>
+                          </div>
+                          <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            <span>Type = "Hardware"</span>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t text-xs text-center">
+                          <span className="text-green-500 font-medium">✓ Result: TRUE</span>
+                          <span className="text-muted-foreground"> (3/3 match)</span>
+                        </div>
+                      </div>
+                      
+                      {/* OR Logic Example */}
+                      <div className="p-4 rounded-lg border-2 border-blue-500/50 bg-blue-500/5 min-w-[250px]">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge className="bg-blue-500">OR</Badge>
+                          <span className="text-sm font-medium">Any can match</span>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            <span>Role = "Admin"</span>
+                          </div>
+                          <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                            <span className="h-3 w-3 text-muted-foreground">✗</span>
+                            <span className="text-muted-foreground">Role = "Manager"</span>
+                          </div>
+                          <div className="flex items-center gap-2 p-2 rounded bg-background/50">
+                            <span className="h-3 w-3 text-muted-foreground">✗</span>
+                            <span className="text-muted-foreground">Role = "Supervisor"</span>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t text-xs text-center">
+                          <span className="text-green-500 font-medium">✓ Result: TRUE</span>
+                          <span className="text-muted-foreground"> (1/3 match)</span>
+                        </div>
+                      </div>
+                      
+                      {/* Nested Logic Example */}
+                      <div className="p-4 rounded-lg border-2 border-purple-500/50 bg-purple-500/5 min-w-[250px]">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge className="bg-purple-500">Nested</Badge>
+                          <span className="text-sm font-medium">Combined logic</span>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                          <div className="p-2 rounded border border-rose-500/30 bg-rose-500/5">
+                            <div className="flex items-center gap-1 mb-1">
+                              <Badge variant="outline" className="text-[10px] px-1">AND</Badge>
+                            </div>
+                            <div className="ml-2 space-y-1">
+                              <div className="flex items-center gap-1">
+                                <CheckCircle className="h-2.5 w-2.5 text-green-500" />
+                                <span>Type = "Software"</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <CheckCircle className="h-2.5 w-2.5 text-green-500" />
+                                <span>Urgent = true</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-center text-muted-foreground font-bold">OR</div>
+                          <div className="p-2 rounded border border-muted-foreground/30 bg-muted/30">
+                            <div className="flex items-center gap-1 mb-1">
+                              <Badge variant="outline" className="text-[10px] px-1">AND</Badge>
+                            </div>
+                            <div className="ml-2 space-y-1 text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <span className="h-2.5 w-2.5">✗</span>
+                                <span>VIP = true</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t text-xs text-center">
+                          <span className="text-green-500 font-medium">✓ Result: TRUE</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Operators Reference */}
+                  <div className="p-4 rounded-lg border bg-muted/30">
+                    <h4 className="font-semibold mb-3">Supported Operators</h4>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline">equals</Badge>
+                      <Badge variant="outline">not_equals</Badge>
+                      <Badge variant="outline">contains</Badge>
+                      <Badge variant="outline">not_contains</Badge>
+                      <Badge variant="outline">greater_than</Badge>
+                      <Badge variant="outline">less_than</Badge>
+                      <Badge variant="outline">starts_with</Badge>
+                      <Badge variant="outline">ends_with</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-3">
+                      Operators are applied to compare the user's response value against the rule's target value.
+                      Numeric comparisons work with Number, Decimal, and Rating types. Text comparisons work with all string-based types.
+                    </p>
+                  </div>
+                  
                   <Separator />
                   
                   {/* Two Levels of Branching */}
