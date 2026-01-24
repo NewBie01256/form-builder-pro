@@ -79,6 +79,9 @@ const Documentation = () => {
                 <a href="#structure" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Questionnaire Structure
                 </a>
+                <a href="#erd" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Data Model (ERD)
+                </a>
                 <a href="#adding-content" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Adding Questions & Branches
                 </a>
@@ -484,6 +487,274 @@ const Documentation = () => {
                     <p className="text-sm text-muted-foreground">
                       The sidebar displays the complete questionnaire hierarchy as an interactive tree. 
                       Click any item to select it for editing. Visual connector lines show the parent-child relationships.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Data Model (ERD) */}
+            <section id="erd">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Database className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Data Model (ERD)</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    The Questionnaire Studio uses a hierarchical data model with rich relationships between entities.
+                    This Entity-Relationship Diagram shows how all components connect.
+                  </p>
+                  
+                  {/* ERD Diagram */}
+                  <div className="p-6 rounded-lg border bg-muted/30 overflow-x-auto">
+                    <h4 className="font-semibold mb-6 text-center">Entity-Relationship Diagram</h4>
+                    
+                    {/* Main ERD Layout */}
+                    <div className="min-w-[800px]">
+                      {/* Top Level - Questionnaire */}
+                      <div className="flex justify-center mb-6">
+                        <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 min-w-[200px]">
+                          <div className="font-bold text-primary text-center mb-2">Questionnaire</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between"><span>name</span><span className="text-primary">string</span></div>
+                            <div className="flex justify-between"><span>description</span><span className="text-primary">string</span></div>
+                            <div className="flex justify-between"><span>status</span><span className="text-primary">string</span></div>
+                            <div className="flex justify-between"><span>version</span><span className="text-primary">string</span></div>
+                            <div className="flex justify-between"><span>serviceCatalog</span><span className="text-primary">string</span></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Connection Line */}
+                      <div className="flex justify-center mb-2">
+                        <div className="w-0.5 h-8 bg-muted-foreground/30"></div>
+                      </div>
+                      <div className="flex justify-center mb-6">
+                        <Badge variant="outline" className="text-xs">1:N pages[]</Badge>
+                      </div>
+                      
+                      {/* Level 2 - Page */}
+                      <div className="flex justify-center mb-6">
+                        <div className="p-4 rounded-xl border-2 border-blue-500 bg-blue-500/5 min-w-[180px]">
+                          <div className="font-bold text-blue-500 text-center mb-2">Page</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between"><span>id</span><span className="text-blue-500">string</span></div>
+                            <div className="flex justify-between"><span>name</span><span className="text-blue-500">string</span></div>
+                            <div className="flex justify-between"><span>description</span><span className="text-blue-500">string?</span></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Connection Line */}
+                      <div className="flex justify-center mb-2">
+                        <div className="w-0.5 h-8 bg-muted-foreground/30"></div>
+                      </div>
+                      <div className="flex justify-center mb-6">
+                        <Badge variant="outline" className="text-xs">1:N sections[]</Badge>
+                      </div>
+                      
+                      {/* Level 3 - Section */}
+                      <div className="flex justify-center mb-6">
+                        <div className="p-4 rounded-xl border-2 border-green-500 bg-green-500/5 min-w-[180px]">
+                          <div className="font-bold text-green-500 text-center mb-2">Section</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between"><span>id</span><span className="text-green-500">string</span></div>
+                            <div className="flex justify-between"><span>name</span><span className="text-green-500">string</span></div>
+                            <div className="flex justify-between"><span>description</span><span className="text-green-500">string?</span></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Connection Lines to Questions and Branches */}
+                      <div className="flex justify-center mb-2">
+                        <div className="flex items-end gap-24">
+                          <div className="flex flex-col items-center">
+                            <div className="w-0.5 h-8 bg-muted-foreground/30"></div>
+                            <Badge variant="outline" className="text-xs">1:N questions[]</Badge>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <div className="w-0.5 h-8 bg-muted-foreground/30"></div>
+                            <Badge variant="outline" className="text-xs">1:N branches[]</Badge>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Level 4 - Question and ConditionalBranch */}
+                      <div className="flex justify-center gap-8 mb-6 mt-4">
+                        {/* Question Entity */}
+                        <div className="p-4 rounded-xl border-2 border-orange-500 bg-orange-500/5 min-w-[220px]">
+                          <div className="font-bold text-orange-500 text-center mb-2">Question</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between gap-4"><span>id</span><span className="text-orange-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>text</span><span className="text-orange-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>type</span><span className="text-orange-500">QuestionType</span></div>
+                            <div className="flex justify-between gap-4"><span>required</span><span className="text-orange-500">boolean</span></div>
+                            <div className="flex justify-between gap-4"><span>order</span><span className="text-orange-500">number</span></div>
+                            <div className="flex justify-between gap-4"><span>readOnly</span><span className="text-orange-500">boolean?</span></div>
+                            <div className="flex justify-between gap-4"><span>hidden</span><span className="text-orange-500">boolean?</span></div>
+                          </div>
+                        </div>
+                        
+                        {/* ConditionalBranch Entity */}
+                        <div className="p-4 rounded-xl border-2 border-purple-500 bg-purple-500/5 min-w-[200px]">
+                          <div className="font-bold text-purple-500 text-center mb-2">ConditionalBranch</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between gap-4"><span>id</span><span className="text-purple-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>name</span><span className="text-purple-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>ruleGroup</span><span className="text-purple-500">RuleGroup</span></div>
+                            <div className="flex justify-between gap-4"><span>questions[]</span><span className="text-purple-500">Question[]</span></div>
+                            <div className="flex justify-between gap-4"><span>childBranches[]</span><span className="text-purple-500">self[]</span></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Question's relationships */}
+                      <div className="flex justify-center mb-2">
+                        <div className="flex items-start gap-16">
+                          <div className="flex flex-col items-center">
+                            <div className="w-0.5 h-6 bg-muted-foreground/30"></div>
+                            <Badge variant="outline" className="text-xs">1:N answerSets[]</Badge>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <div className="w-0.5 h-6 bg-muted-foreground/30"></div>
+                            <Badge variant="outline" className="text-xs">1:1 questionLevelRuleGroup</Badge>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <div className="w-0.5 h-6 bg-muted-foreground/30"></div>
+                            <Badge variant="outline" className="text-xs">1:N answerLevelRuleGroups[]</Badge>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Level 5 - AnswerSet, RuleGroup, AnswerLevelRuleGroup */}
+                      <div className="flex justify-center gap-4 mb-6 mt-4 flex-wrap">
+                        {/* AnswerSet Entity */}
+                        <div className="p-4 rounded-xl border-2 border-cyan-500 bg-cyan-500/5 min-w-[200px]">
+                          <div className="font-bold text-cyan-500 text-center mb-2">AnswerSet</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between gap-4"><span>id</span><span className="text-cyan-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>name</span><span className="text-cyan-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>tag</span><span className="text-cyan-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>isDefault</span><span className="text-cyan-500">boolean</span></div>
+                            <div className="flex justify-between gap-4"><span>answers[]</span><span className="text-cyan-500">Answer[]</span></div>
+                            <div className="flex justify-between gap-4"><span>dynamicValues</span><span className="text-cyan-500">boolean?</span></div>
+                            <div className="flex justify-between gap-4"><span>dynamicConfig</span><span className="text-cyan-500">DynamicValueConfig?</span></div>
+                          </div>
+                        </div>
+                        
+                        {/* RuleGroup Entity */}
+                        <div className="p-4 rounded-xl border-2 border-rose-500 bg-rose-500/5 min-w-[180px]">
+                          <div className="font-bold text-rose-500 text-center mb-2">RuleGroup</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between gap-4"><span>id</span><span className="text-rose-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>matchType</span><span className="text-rose-500">'AND' | 'OR'</span></div>
+                            <div className="flex justify-between gap-4"><span>children[]</span><span className="text-rose-500">Rule | self[]</span></div>
+                          </div>
+                        </div>
+                        
+                        {/* AnswerLevelRuleGroup Entity */}
+                        <div className="p-4 rounded-xl border-2 border-amber-500 bg-amber-500/5 min-w-[200px]">
+                          <div className="font-bold text-amber-500 text-center mb-2">AnswerLevelRuleGroup</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between gap-4"><span>id</span><span className="text-amber-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>matchType</span><span className="text-amber-500">'AND' | 'OR'</span></div>
+                            <div className="flex justify-between gap-4"><span>children[]</span><span className="text-amber-500">Rule | self[]</span></div>
+                            <div className="flex justify-between gap-4"><span>inlineAnswerSet</span><span className="text-amber-500">AnswerSet?</span></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Answer relationship */}
+                      <div className="flex justify-start ml-[100px] mb-2">
+                        <div className="flex flex-col items-center">
+                          <div className="w-0.5 h-6 bg-muted-foreground/30"></div>
+                          <Badge variant="outline" className="text-xs">1:N answers[]</Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Level 6 - Answer and ActionRecord */}
+                      <div className="flex justify-start gap-8 ml-[50px] mt-4">
+                        {/* Answer Entity */}
+                        <div className="p-4 rounded-xl border-2 border-indigo-500 bg-indigo-500/5 min-w-[180px]">
+                          <div className="font-bold text-indigo-500 text-center mb-2">Answer</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between gap-4"><span>id</span><span className="text-indigo-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>label</span><span className="text-indigo-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>value</span><span className="text-indigo-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>active</span><span className="text-indigo-500">boolean</span></div>
+                            <div className="flex justify-between gap-4"><span>actionRecord</span><span className="text-indigo-500">ActionRecord?</span></div>
+                          </div>
+                        </div>
+                        
+                        {/* ActionRecord Entity */}
+                        <div className="p-4 rounded-xl border-2 border-teal-500 bg-teal-500/5 min-w-[220px]">
+                          <div className="font-bold text-teal-500 text-center mb-2">ActionRecord</div>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div className="flex justify-between gap-4"><span>operationCategoryTier1</span><span className="text-teal-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>operationCategoryTier2</span><span className="text-teal-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>operationCategoryTier3</span><span className="text-teal-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>productCategoryTier1</span><span className="text-teal-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>productCategoryTier2</span><span className="text-teal-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>productCategoryTier3</span><span className="text-teal-500">string</span></div>
+                            <div className="flex justify-between gap-4"><span>impact</span><span className="text-teal-500">ImpactLevel</span></div>
+                            <div className="flex justify-between gap-4"><span>urgency</span><span className="text-teal-500">UrgencyLevel</span></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Entity Descriptions */}
+                  <div>
+                    <h4 className="font-semibold mb-4">Entity Descriptions</h4>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-primary">Questionnaire</div>
+                        <p className="text-xs text-muted-foreground mt-1">Root entity containing metadata and all pages</p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-blue-500">Page</div>
+                        <p className="text-xs text-muted-foreground mt-1">Top-level container grouping related sections</p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-green-500">Section</div>
+                        <p className="text-xs text-muted-foreground mt-1">Collapsible container for questions and branches</p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-orange-500">Question</div>
+                        <p className="text-xs text-muted-foreground mt-1">Input field with type, validation, and answer options</p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-purple-500">ConditionalBranch</div>
+                        <p className="text-xs text-muted-foreground mt-1">Dynamic path with rules, questions, and nested branches</p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-cyan-500">AnswerSet</div>
+                        <p className="text-xs text-muted-foreground mt-1">Container for answers with optional dynamic configuration</p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-rose-500">RuleGroup</div>
+                        <p className="text-xs text-muted-foreground mt-1">AND/OR logic container for question visibility rules</p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-indigo-500">Answer</div>
+                        <p className="text-xs text-muted-foreground mt-1">Atomic choice with label, value, and optional action</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50 border">
+                    <div className="text-sm font-medium mb-2">💡 Recursive Structures</div>
+                    <p className="text-sm text-muted-foreground">
+                      Note that <strong>ConditionalBranch</strong> and <strong>RuleGroup</strong> are recursive—branches can contain 
+                      child branches, and rule groups can contain nested rule groups. This enables arbitrarily complex conditional logic.
                     </p>
                   </div>
                 </CardContent>
