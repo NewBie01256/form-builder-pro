@@ -211,12 +211,25 @@ const useStyles = makeStyles({
 // -----------------------------------------------------------------------------
 
 const GUIDE_OVERVIEW = `/**
- * GOAL: Create a dropdown that loads entities from Dynamics 365 CRM
+ * ============================================================================
+ * GOAL: Fetch REAL entities from YOUR Dynamics 365 CRM at runtime
+ * ============================================================================
+ * 
+ * ⚠️  NO HARDCODED DATA - This code fetches LIVE data from Dataverse!
+ * 
+ * HOW IT WORKS:
+ * ┌─────────────────────────────────────────────────────────────────────────┐
+ * │  1. You deploy the PCF control to Dynamics 365                          │
+ * │  2. Dynamics 365 provides the 'context' object to your control          │
+ * │  3. context.webAPI connects to YOUR environment's Dataverse             │
+ * │  4. QueryService wraps webAPI with error handling                       │
+ * │  5. Your dropdown shows REAL accounts, contacts, etc. from your CRM     │
+ * └─────────────────────────────────────────────────────────────────────────┘
  * 
  * This guide shows you how to:
  * 1. Create a service file that fetches entities at runtime
  * 2. Use the existing PCF wrapper (QueryService) from this project
- * 3. Populate a dropdown with live CRM data
+ * 3. Populate a dropdown with LIVE CRM data
  * 
  * FILES YOU'LL CREATE:
  * └── src/lib/dataverse/
@@ -224,7 +237,7 @@ const GUIDE_OVERVIEW = `/**
  * 
  * EXISTING FILES YOU'LL USE:
  * └── src/lib/dataverse/pcf/
- *     ├── QueryService.ts              ← For executing queries
+ *     ├── QueryService.ts              ← Wraps context.webAPI
  *     ├── CrudService.ts               ← For CRUD operations
  *     ├── types.ts                     ← Type definitions
  *     └── index.ts                     ← All exports
@@ -236,10 +249,14 @@ const GUIDE_STEP1_CREATE_SERVICE = `// =========================================
 // 
 // CREATE FILE: src/lib/dataverse/DynamicDropdownService.ts
 // 
+// ⚠️  IMPORTANT: This service fetches REAL data from Dataverse!
+//     The 'context' parameter comes from Dynamics 365 at runtime.
+//     context.webAPI is connected to YOUR CRM environment.
+// 
 // This service will:
 // - Accept a PCF context (provided by Dynamics 365 at runtime)
-// - Use QueryService to fetch entities from the connected CRM
-// - Return formatted options for dropdowns
+// - Use QueryService to execute REAL queries against your CRM
+// - Return LIVE entities from your Dynamics 365 environment
 
 import { 
   QueryService,
@@ -249,50 +266,70 @@ import {
 } from '@/lib/dataverse/pcf';
 
 /**
- * Dropdown option structure
+ * Dropdown option structure - represents REAL CRM records
  */
 export interface DropdownOption {
-  value: string;      // What gets saved (usually GUID)
-  label: string;      // What user sees (display name)
-  metadata?: Record<string, unknown>;  // Extra data if needed
+  value: string;      // The record's GUID (e.g., accountid)
+  label: string;      // The record's name (e.g., account name)
+  metadata?: Record<string, unknown>;  // Additional fields
 }
 
 /**
- * Configuration for loading dropdown options
+ * Configuration for which entity/fields to fetch
+ * All data comes from YOUR Dataverse environment at runtime
  */
 export interface DropdownConfig {
-  /** Entity logical name (e.g., 'account', 'contact', 'incident') */
+  /** Entity logical name - must exist in YOUR CRM (e.g., 'account', 'contact') */
   entityName: string;
-  /** Field to use as option value (usually primary key) */
+  /** Primary key field (e.g., 'accountid', 'contactid') */
   valueField: string;
-  /** Field to use as display label */
+  /** Display name field (e.g., 'name', 'fullname') */
   labelField: string;
-  /** OData filter expression (optional) */
+  /** OData filter - filters REAL records (e.g., "statecode eq 0") */
   filter?: string;
-  /** Sort field (optional) */
+  /** Sort field and direction */
   orderBy?: string;
   /** Max records to fetch (default: 500) */
   top?: number;
-  /** Additional fields to retrieve as metadata */
+  /** Additional fields to retrieve */
   additionalFields?: string[];
 }
 
 /**
- * Service for loading dropdown options from Dataverse
+ * Service for loading dropdown options from YOUR Dataverse environment
+ * 
+ * RUNTIME FLOW:
+ * 1. PCF control receives 'context' from Dynamics 365
+ * 2. context.webAPI is connected to YOUR CRM instance
+ * 3. QueryService wraps webAPI with error handling
+ * 4. loadOptions() fetches REAL records from your CRM
  */
 export class DynamicDropdownService {
   private queryService: QueryService;
 
+  /**
+   * @param context - PCF context from Dynamics 365 (contains webAPI)
+   */
   constructor(context: IPCFContext) {
-    // QueryService wraps context.webAPI with error handling
+    // QueryService uses context.webAPI internally
+    // webAPI is connected to YOUR Dynamics 365 environment
     this.queryService = new QueryService(context);
   }
 
   /**
-   * Load dropdown options from any Dataverse entity
+   * Load REAL records from any Dataverse entity in your CRM
+   * 
+   * @example
+   * // This will fetch REAL accounts from your Dynamics 365:
+   * const result = await service.loadOptions({
+   *   entityName: 'account',     // Your CRM's account table
+   *   valueField: 'accountid',   // Real GUID from your records
+   *   labelField: 'name',        // Real account names
+   *   filter: 'statecode eq 0',  // Only active accounts
+   * });
    */
   async loadOptions(config: DropdownConfig): Promise<DataverseResult<DropdownOption[]>> {
-    // Build OData query options
+    // Build OData query - this becomes a REAL API call to Dataverse
     const options: ODataOptions = {
       select: [config.valueField, config.labelField, ...(config.additionalFields || [])],
       filter: config.filter,
@@ -300,22 +337,25 @@ export class DynamicDropdownService {
       top: config.top || 500,
     };
 
-    // Execute query using the wrapper
+    // ⚡ THIS IS THE REAL API CALL ⚡
+    // QueryService.retrieveMultiple() calls context.webAPI.retrieveMultipleRecords()
+    // This hits YOUR Dataverse environment and returns YOUR records
     const result = await this.queryService.retrieveMultiple<Record<string, unknown>>(
       config.entityName,
       options
     );
 
     if (!result.success) {
-      return result; // Pass through the error
+      // Error from Dataverse (e.g., entity doesn't exist, no permission)
+      return result;
     }
 
-    // Transform to dropdown options
+    // Map REAL Dataverse records to dropdown options
     const dropdownOptions: DropdownOption[] = result.data.entities.map(entity => ({
-      value: String(entity[config.valueField] || ''),
-      label: String(entity[config.labelField] || ''),
+      value: String(entity[config.valueField] || ''),  // Real GUID
+      label: String(entity[config.labelField] || ''),  // Real name
       metadata: config.additionalFields?.reduce((acc, field) => {
-        acc[field] = entity[field];
+        acc[field] = entity[field];  // Real field values
         return acc;
       }, {} as Record<string, unknown>),
     }));
@@ -324,7 +364,7 @@ export class DynamicDropdownService {
   }
 
   /**
-   * Update service context (call in PCF updateView)
+   * Update context when PCF refreshes (call in updateView)
    */
   updateContext(context: IPCFContext): void {
     this.queryService.updateContext(context);
@@ -335,8 +375,13 @@ const GUIDE_STEP2_USE_IN_PCF = `// =============================================
 // STEP 2: Use the service in your PCF Control
 // =============================================================================
 //
-// This is your main PCF control file (e.g., MyDropdownControl/index.ts)
-// The context is provided by Dynamics 365 when your PCF loads
+// ⚠️  DEPLOYMENT REQUIRED: This code only works when deployed to Dynamics 365!
+//
+// When you deploy this PCF control:
+// 1. Dynamics 365 creates an instance of your control
+// 2. D365 passes 'context' to your init() method
+// 3. context.webAPI is connected to the current D365 environment
+// 4. Your dropdown loads REAL data from that environment
 
 import { DynamicDropdownService, type DropdownConfig } from '@/lib/dataverse/DynamicDropdownService';
 import type { IInputs, IOutputs } from './generated/ManifestTypes';
@@ -349,8 +394,10 @@ export class DynamicEntityDropdown implements ComponentFramework.StandardControl
   private notifyOutputChanged!: () => void;
 
   /**
-   * PCF init - called once when control loads
-   * The 'context' is provided by Dynamics 365 CRM
+   * PCF init - called ONCE when control loads in Dynamics 365
+   * 
+   * @param context - PROVIDED BY DYNAMICS 365 (not created by you!)
+   *                  Contains webAPI connected to the current CRM environment
    */
   public init(
     context: ComponentFramework.Context<IInputs>,
@@ -361,21 +408,26 @@ export class DynamicEntityDropdown implements ComponentFramework.StandardControl
     this.container = container;
     this.notifyOutputChanged = notifyOutputChanged;
 
-    // Initialize the dropdown service with PCF context
-    // This context contains webAPI which connects to YOUR CRM instance
+    // ═══════════════════════════════════════════════════════════════════════
+    // THE MAGIC: context.webAPI is connected to YOUR CRM environment
+    // ═══════════════════════════════════════════════════════════════════════
+    // When deployed to production D365: connects to production Dataverse
+    // When deployed to dev D365: connects to dev Dataverse
+    // When in PCF test harness: uses mock/sandbox data
+    
     this.dropdownService = new DynamicDropdownService(context);
 
     // Create the dropdown UI
     this.createDropdownUI();
 
-    // Load data from CRM (async)
+    // Load REAL entities from Dataverse
     this.loadEntities();
   }
 
   private createDropdownUI(): void {
     this.selectElement = document.createElement('select');
     this.selectElement.className = 'pcf-dropdown';
-    this.selectElement.innerHTML = '<option value="">Loading...</option>';
+    this.selectElement.innerHTML = '<option value="">Loading from Dataverse...</option>';
     this.selectElement.onchange = () => {
       this.selectedValue = this.selectElement.value;
       this.notifyOutputChanged();
@@ -384,32 +436,45 @@ export class DynamicEntityDropdown implements ComponentFramework.StandardControl
   }
 
   private async loadEntities(): Promise<void> {
-    // Configure which entity and fields to load
+    // ═══════════════════════════════════════════════════════════════════════
+    // CONFIGURE: Which entity and fields to fetch from YOUR CRM
+    // ═══════════════════════════════════════════════════════════════════════
+    // These are the ACTUAL entity/field names in your Dynamics 365:
+    
     const config: DropdownConfig = {
-      entityName: 'account',           // Entity logical name in CRM
-      valueField: 'accountid',         // Primary key field
-      labelField: 'name',              // Display name field
-      filter: 'statecode eq 0',        // Only active records
-      orderBy: 'name asc',             // Sort alphabetically
-      top: 500,                        // Limit results
+      entityName: 'account',           // Real entity in your D365
+      valueField: 'accountid',         // Real primary key field
+      labelField: 'name',              // Real display field
+      filter: 'statecode eq 0',        // OData filter (active only)
+      orderBy: 'name asc',             // Sort order
+      top: 500,                        // Max records
     };
 
-    // Fetch from CRM using the wrapper
+    // ═══════════════════════════════════════════════════════════════════════
+    // FETCH: This calls YOUR Dataverse and returns YOUR real records
+    // ═══════════════════════════════════════════════════════════════════════
     const result = await this.dropdownService.loadOptions(config);
 
     if (!result.success) {
+      // Real error from Dataverse (permission denied, entity not found, etc.)
       this.showError(result.error.userMessage);
       return;
     }
 
-    // Populate dropdown with CRM data
+    // ═══════════════════════════════════════════════════════════════════════
+    // DISPLAY: Populate dropdown with REAL accounts from your CRM
+    // ═══════════════════════════════════════════════════════════════════════
     this.selectElement.innerHTML = '<option value="">-- Select Account --</option>';
+    
+    // result.data contains REAL records from your Dynamics 365
     for (const option of result.data) {
       const optionEl = document.createElement('option');
-      optionEl.value = option.value;
-      optionEl.textContent = option.label;
+      optionEl.value = option.value;      // Real accountid GUID
+      optionEl.textContent = option.label; // Real account name
       this.selectElement.appendChild(optionEl);
     }
+    
+    console.log(\`Loaded \${result.data.length} accounts from Dataverse\`);
   }
 
   private showError(message: string): void {
@@ -418,10 +483,10 @@ export class DynamicEntityDropdown implements ComponentFramework.StandardControl
   }
 
   /**
-   * PCF updateView - called when data changes
+   * PCF updateView - called when context changes
+   * IMPORTANT: Always update the service context here
    */
   public updateView(context: ComponentFramework.Context<IInputs>): void {
-    // Always update service context
     this.dropdownService.updateContext(context);
   }
 
