@@ -1,20 +1,130 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Plus, Trash2, Layers, ChevronDown, ChevronUp, GitBranch } from "lucide-react";
+  Button,
+  Card,
+  CardHeader,
+  Input,
+  Label,
+  makeStyles,
+  tokens,
+  Accordion,
+  AccordionHeader,
+  AccordionItem,
+  AccordionPanel,
+} from "@fluentui/react-components";
+import {
+  Add24Regular,
+  Delete24Regular,
+  LayerDiagonal24Regular,
+  ChevronDown24Regular,
+  ChevronUp24Regular,
+  BranchFork24Regular,
+  QuestionCircle24Regular,
+} from "@fluentui/react-icons";
 import { Section, Question, ConditionalBranch, AnswerSet } from "@/types/questionnaire";
 import QuestionEditor from "./QuestionEditor";
 import BranchEditor from "./BranchEditor";
 import { cn } from "@/lib/utils";
-import { HelpCircle } from "lucide-react";
 import { ConfirmDialog } from "@/components/fluent";
+
+const useStyles = makeStyles({
+  card: {
+    borderLeft: `4px solid ${tokens.colorBrandBackground}`,
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRadius: tokens.borderRadiusMedium,
+    marginBottom: tokens.spacingVerticalM,
+  },
+  header: {
+    padding: tokens.spacingVerticalM,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  headerLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: tokens.fontSizeBase400,
+    fontWeight: tokens.fontWeightSemibold,
+    cursor: "pointer",
+  },
+  sectionTitleHover: {
+    color: tokens.colorBrandForeground1,
+  },
+  content: {
+    padding: tokens.spacingHorizontalM,
+    paddingTop: 0,
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalM,
+  },
+  buttonRow: {
+    display: "flex",
+    gap: tokens.spacingHorizontalS,
+  },
+  questionChip: {
+    padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+    borderRadius: tokens.borderRadiusMedium,
+    fontSize: tokens.fontSizeBase200,
+    cursor: "pointer",
+    backgroundColor: tokens.colorNeutralBackground3,
+    border: `1px solid transparent`,
+  },
+  questionChipHover: {
+    backgroundColor: tokens.colorNeutralBackground3Hover,
+  },
+  questionChipSelected: {
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorBrandForeground1,
+  },
+  branchContainer: {
+    borderRadius: tokens.borderRadiusMedium,
+    padding: tokens.spacingVerticalS,
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+  branchHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+    padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+    borderRadius: tokens.borderRadiusSmall,
+    cursor: "pointer",
+    fontSize: tokens.fontSizeBase200,
+    backgroundColor: tokens.colorNeutralBackground3,
+  },
+  branchHeaderHover: {
+    backgroundColor: tokens.colorNeutralBackground3Hover,
+  },
+  branchSelected: {
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorBrandForeground1,
+  },
+  branchChildren: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: tokens.spacingHorizontalXS,
+    marginTop: tokens.spacingVerticalS,
+    paddingLeft: tokens.spacingHorizontalS,
+    borderLeft: `2px solid ${tokens.colorNeutralStroke2}`,
+    marginLeft: tokens.spacingHorizontalXS,
+  },
+  itemsContainer: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: tokens.spacingHorizontalS,
+    alignItems: "flex-start",
+  },
+  editorSection: {
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    paddingTop: tokens.spacingVerticalM,
+  },
+  nameInput: {
+    minWidth: "200px",
+  },
+});
 
 // Recursive component to render branch with nested children
 interface BranchContainerProps {
@@ -26,7 +136,7 @@ interface BranchContainerProps {
   depth?: number;
 }
 
-const BranchContainer = ({
+const BranchContainerView = ({
   branch,
   selectedBranchId,
   selectedQuestionId,
@@ -34,55 +144,50 @@ const BranchContainer = ({
   onSelectQuestion,
   depth = 0,
 }: BranchContainerProps) => {
+  const styles = useStyles();
   const hasChildren = branch.questions.length > 0 || branch.childBranches.length > 0;
-  
+
   return (
-    <div
-      className={cn(
-        "rounded-md border-2 border-dashed p-1.5",
-        depth === 0 ? "border-muted-foreground/30" : "border-muted-foreground/20",
-        "bg-muted/20"
-      )}
-    >
+    <div className={styles.branchContainer}>
       {/* Branch header */}
       <div
         onClick={() => onSelectBranch(branch.id)}
         className={cn(
-          "px-2 py-1 rounded text-xs cursor-pointer transition-colors flex items-center gap-1",
-          "bg-muted hover:bg-accent border",
-          selectedBranchId === branch.id 
-            ? "border-primary bg-primary/10 text-primary" 
-            : "border-transparent"
+          styles.branchHeader,
+          selectedBranchId === branch.id && styles.branchSelected
         )}
       >
-        <GitBranch className="h-3 w-3 shrink-0" />
-        <span className="truncate">{branch.name || 'Untitled Branch'}</span>
+        <BranchFork24Regular style={{ width: 12, height: 12 }} />
+        <span style={{ maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {branch.name || "Untitled Branch"}
+        </span>
       </div>
-      
+
       {/* Nested children */}
       {hasChildren && (
-        <div className="flex flex-wrap gap-1 mt-1.5 pl-2 border-l-2 border-muted-foreground/20 ml-1">
+        <div className={styles.branchChildren}>
           {/* Branch questions */}
-          {branch.questions.map(q => (
+          {branch.questions.map((q) => (
             <div
               key={q.id}
               onClick={() => onSelectQuestion(q.id, branch.id)}
               className={cn(
-                "px-2 py-1 rounded text-xs cursor-pointer transition-colors flex items-center gap-1",
-                "bg-background hover:bg-accent border",
-                selectedQuestionId === q.id 
-                  ? "border-primary bg-primary/10 text-primary" 
-                  : "border-transparent"
+                styles.questionChip,
+                selectedQuestionId === q.id && styles.questionChipSelected
               )}
             >
-              <HelpCircle className="h-3 w-3 shrink-0" />
-              <span className="truncate max-w-[120px]">{q.text || 'Untitled'}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <QuestionCircle24Regular style={{ width: 12, height: 12 }} />
+                <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {q.text || "Untitled"}
+                </span>
+              </div>
             </div>
           ))}
-          
+
           {/* Child branches (recursive) */}
-          {branch.childBranches.map(cb => (
-            <BranchContainer
+          {branch.childBranches.map((cb) => (
+            <BranchContainerView
               key={cb.id}
               branch={cb}
               selectedBranchId={selectedBranchId}
@@ -119,6 +224,7 @@ const SectionEditor = ({
   onSelectQuestion,
   onSelectBranch,
 }: SectionEditorProps) => {
+  const styles = useStyles();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
 
@@ -140,30 +246,30 @@ const SectionEditor = ({
   const handleAddQuestion = (branchId?: string) => {
     const defaultAnswerSet: AnswerSet = {
       id: `as-${Date.now()}`,
-      name: 'Default Answer Set',
-      tag: '',
+      name: "Default Answer Set",
+      tag: "",
       isDefault: true,
-      answers: [{ id: `ans-${Date.now()}`, label: '', value: '', active: true }]
+      answers: [{ id: `ans-${Date.now()}`, label: "", value: "", active: true }],
     };
     const newQuestion: Question = {
       id: `q-${Date.now()}`,
-      text: '',
-      type: 'Choice',
+      text: "",
+      type: "Choice",
       required: false,
       order: section.questions.length + 1,
       answerSets: [defaultAnswerSet],
       conditionGroup: {
-        type: 'group',
+        type: "group",
         id: `g-${Date.now()}`,
-        matchType: 'AND',
-        children: []
+        matchType: "AND",
+        children: [],
       },
-      answerLevelRuleGroups: []
+      answerLevelRuleGroups: [],
     };
 
     if (branchId) {
       const addQuestionToBranch = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-        branchList.map(b => {
+        branchList.map((b) => {
           if (b.id === branchId) {
             return { ...b, questions: [...b.questions, newQuestion] };
           }
@@ -180,20 +286,20 @@ const SectionEditor = ({
   const handleAddBranch = (parentId?: string) => {
     const newBranch: ConditionalBranch = {
       id: `cb-${Date.now()}`,
-      name: 'Conditional Branch',
+      name: "Conditional Branch",
       conditionGroup: {
-        type: 'group',
+        type: "group",
         id: `g-${Date.now()}`,
-        matchType: 'AND',
-        children: []
+        matchType: "AND",
+        children: [],
       },
       questions: [],
-      childBranches: []
+      childBranches: [],
     };
 
     if (parentId) {
       const addBranchToParent = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-        branchList.map(b => {
+        branchList.map((b) => {
           if (b.id === parentId) {
             return { ...b, childBranches: [...b.childBranches, newBranch] };
           }
@@ -207,46 +313,44 @@ const SectionEditor = ({
   };
 
   const updateQuestion = (id: string, updated: Partial<Question>) => {
-    // Update in section questions
-    const updatedQuestions = section.questions.map(q => 
+    const updatedQuestions = section.questions.map((q) =>
       q.id === id ? { ...q, ...updated } : q
     );
-    
-    // Update in branches recursively
+
     const updateInBranch = (branch: ConditionalBranch): ConditionalBranch => ({
       ...branch,
-      questions: branch.questions.map(q => q.id === id ? { ...q, ...updated } : q),
-      childBranches: branch.childBranches.map(updateInBranch)
+      questions: branch.questions.map((q) => (q.id === id ? { ...q, ...updated } : q)),
+      childBranches: branch.childBranches.map(updateInBranch),
     });
-    
+
     onUpdate({
       ...section,
       questions: updatedQuestions,
-      branches: section.branches.map(updateInBranch)
+      branches: section.branches.map(updateInBranch),
     });
   };
 
   const deleteQuestion = (questionId: string) => {
     const deleteFromBranch = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-      branchList.map(b => ({
+      branchList.map((b) => ({
         ...b,
-        questions: b.questions.filter(q => q.id !== questionId),
-        childBranches: deleteFromBranch(b.childBranches)
+        questions: b.questions.filter((q) => q.id !== questionId),
+        childBranches: deleteFromBranch(b.childBranches),
       }));
 
     onUpdate({
       ...section,
-      questions: section.questions.filter(q => q.id !== questionId),
-      branches: deleteFromBranch(section.branches)
+      questions: section.questions.filter((q) => q.id !== questionId),
+      branches: deleteFromBranch(section.branches),
     });
   };
 
   const updateBranch = (id: string, updated: Partial<ConditionalBranch>) => {
     const updateRecursive = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
-      branchList.map(b => ({
+      branchList.map((b) => ({
         ...b,
         ...(b.id === id ? updated : {}),
-        childBranches: updateRecursive(b.childBranches)
+        childBranches: updateRecursive(b.childBranches),
       }));
     onUpdate({ ...section, branches: updateRecursive(section.branches) });
   };
@@ -254,8 +358,8 @@ const SectionEditor = ({
   const deleteBranch = (branchId: string) => {
     const deleteRecursive = (branchList: ConditionalBranch[]): ConditionalBranch[] =>
       branchList
-        .filter(b => b.id !== branchId)
-        .map(b => ({ ...b, childBranches: deleteRecursive(b.childBranches) }));
+        .filter((b) => b.id !== branchId)
+        .map((b) => ({ ...b, childBranches: deleteRecursive(b.childBranches) }));
     onUpdate({ ...section, branches: deleteRecursive(section.branches) });
   };
 
@@ -269,13 +373,13 @@ const SectionEditor = ({
   };
 
   const selectedBranch = selectedBranchId ? findBranchById(section.branches, selectedBranchId) : null;
-  
+
   const selectedQuestion = selectedQuestionId
-    ? section.questions.find(q => q.id === selectedQuestionId) ||
+    ? section.questions.find((q) => q.id === selectedQuestionId) ||
       (() => {
         const findQuestion = (branchList: ConditionalBranch[]): Question | null => {
           for (const b of branchList) {
-            const q = b.questions.find(q => q.id === selectedQuestionId);
+            const q = b.questions.find((q) => q.id === selectedQuestionId);
             if (q) return q;
             const found = findQuestion(b.childBranches);
             if (found) return found;
@@ -287,143 +391,130 @@ const SectionEditor = ({
     : null;
 
   return (
-    <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-      <Card className="border-l-4 border-l-primary/50">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-1" onDoubleClick={handleNameDoubleClick}>
-              <Layers className="h-5 w-5 text-primary shrink-0" />
-              {isEditingName ? (
-                <Input
-                  value={section.name}
-                  onChange={(e) => onUpdate({ ...section, name: e.target.value })}
-                  onClick={(e) => e.stopPropagation()}
-                  onBlur={handleNameBlur}
-                  onKeyDown={handleNameKeyDown}
-                  className="h-8 text-base font-semibold border border-primary bg-background px-1 focus-visible:ring-1 focus-visible:ring-offset-0"
-                  placeholder="Section name"
-                  autoFocus
-                />
-              ) : (
-                <span className="text-base font-semibold cursor-pointer hover:text-primary transition-colors">
-                  {section.name || "Untitled Section"}
-                </span>
-              )}
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0">
-                  {isExpanded ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </CollapsibleTrigger>
-            </div>
-            <ConfirmDialog
-              trigger={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              }
-              title="Delete Section"
-              description={`Are you sure you want to delete "${section.name || 'Untitled Section'}"? This will remove all questions and branches within it. This action cannot be undone.`}
-              onConfirm={onDelete}
-            />
+    <Accordion
+      collapsible
+      openItems={isExpanded ? ["section"] : []}
+      onToggle={(_, data) => setIsExpanded(data.openItems.includes("section"))}
+    >
+      <AccordionItem value="section" className={styles.card}>
+        <AccordionHeader
+          expandIconPosition="end"
+          className={styles.header}
+        >
+          <div className={styles.headerLeft} onDoubleClick={handleNameDoubleClick}>
+            <LayerDiagonal24Regular style={{ color: tokens.colorBrandForeground1 }} />
+            {isEditingName ? (
+              <Input
+                value={section.name}
+                onChange={(e, data) => onUpdate({ ...section, name: data.value })}
+                onClick={(e) => e.stopPropagation()}
+                onBlur={handleNameBlur}
+                onKeyDown={handleNameKeyDown}
+                className={styles.nameInput}
+                placeholder="Section name"
+                autoFocus
+              />
+            ) : (
+              <span className={styles.sectionTitle}>
+                {section.name || "Untitled Section"}
+              </span>
+            )}
           </div>
-        </CardHeader>
-        <CollapsibleContent>
-          <CardContent className="space-y-3 pt-0">
-            <div className="flex gap-2">
-              <Button size="sm" onClick={() => handleAddQuestion()}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Question
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => handleAddBranch()}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Branch
-              </Button>
-            </div>
+          <ConfirmDialog
+            trigger={
+              <Button
+                appearance="subtle"
+                icon={<Delete24Regular />}
+                onClick={(e) => e.stopPropagation()}
+              />
+            }
+            title="Delete Section"
+            description={`Are you sure you want to delete "${section.name || "Untitled Section"}"? This will remove all questions and branches within it. This action cannot be undone.`}
+            onConfirm={onDelete}
+          />
+        </AccordionHeader>
+        <AccordionPanel className={styles.content}>
+          <div className={styles.buttonRow}>
+            <Button appearance="primary" icon={<Add24Regular />} onClick={() => handleAddQuestion()}>
+              Add Question
+            </Button>
+            <Button appearance="secondary" icon={<Add24Regular />} onClick={() => handleAddBranch()}>
+              Add Branch
+            </Button>
+          </div>
 
-            {/* Compact Questions & Branches List with Hierarchy */}
-            {(section.questions.length > 0 || section.branches.length > 0) && (
-              <div className="flex flex-wrap gap-1.5 items-start">
-                {/* Section-level Questions */}
-                {section.questions.map(q => (
-                  <div
-                    key={q.id}
-                    onClick={() => onSelectQuestion(q.id, null)}
-                    className={cn(
-                      "px-2 py-1 rounded text-xs cursor-pointer transition-colors",
-                      "bg-muted hover:bg-accent border",
-                      selectedQuestionId === q.id && !selectedBranchId 
-                        ? "border-primary bg-primary/10 text-primary" 
-                        : "border-transparent"
-                    )}
-                  >
-                    {q.text || 'Untitled Question'}
-                  </div>
-                ))}
-                
-                {/* Branches with nested content in dotted containers */}
-                {section.branches.map(b => (
-                  <BranchContainer
-                    key={b.id}
-                    branch={b}
-                    selectedBranchId={selectedBranchId}
-                    selectedQuestionId={selectedQuestionId}
-                    onSelectBranch={onSelectBranch}
-                    onSelectQuestion={onSelectQuestion}
-                  />
-                ))}
-              </div>
-            )}
+          {/* Compact Questions & Branches List */}
+          {(section.questions.length > 0 || section.branches.length > 0) && (
+            <div className={styles.itemsContainer}>
+              {/* Section-level Questions */}
+              {section.questions.map((q) => (
+                <div
+                  key={q.id}
+                  onClick={() => onSelectQuestion(q.id, null)}
+                  className={cn(
+                    styles.questionChip,
+                    selectedQuestionId === q.id && !selectedBranchId && styles.questionChipSelected
+                  )}
+                >
+                  {q.text || "Untitled Question"}
+                </div>
+              ))}
 
-            {/* Selected Branch Editor */}
-            {selectedBranch && (
-              <div className="pt-4 border-t">
-                <BranchEditor
-                  branch={selectedBranch}
-                  allQuestions={allQuestions}
+              {/* Branches with nested content */}
+              {section.branches.map((b) => (
+                <BranchContainerView
+                  key={b.id}
+                  branch={b}
+                  selectedBranchId={selectedBranchId}
                   selectedQuestionId={selectedQuestionId}
-                  onUpdateBranch={updateBranch}
-                  onAddQuestion={handleAddQuestion}
-                  onAddChildBranch={handleAddBranch}
-                  onSelectQuestion={(id) => onSelectQuestion(id, selectedBranchId)}
-                  onDeleteBranch={deleteBranch}
-                  onDeleteQuestion={deleteQuestion}
-                  questionEditor={
-                    selectedQuestion && selectedBranch.questions.some(q => q.id === selectedQuestionId) ? (
-                      <QuestionEditor
-                        question={selectedQuestion}
-                        allQuestions={allQuestions}
-                        onUpdate={updateQuestion}
-                        onDelete={deleteQuestion}
-                      />
-                    ) : undefined
-                  }
+                  onSelectBranch={onSelectBranch}
+                  onSelectQuestion={onSelectQuestion}
                 />
-              </div>
-            )}
+              ))}
+            </div>
+          )}
 
-            {/* Selected Question Editor (not in branch) */}
-            {selectedQuestion && !selectedBranch && section.questions.some(q => q.id === selectedQuestionId) && (
-              <div className="pt-4 border-t">
-                <QuestionEditor
-                  question={selectedQuestion}
-                  allQuestions={allQuestions}
-                  onUpdate={updateQuestion}
-                  onDelete={deleteQuestion}
-                />
-              </div>
-            )}
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
+          {/* Selected Branch Editor */}
+          {selectedBranch && (
+            <div className={styles.editorSection}>
+              <BranchEditor
+                branch={selectedBranch}
+                allQuestions={allQuestions}
+                selectedQuestionId={selectedQuestionId}
+                onUpdateBranch={updateBranch}
+                onAddQuestion={handleAddQuestion}
+                onAddChildBranch={handleAddBranch}
+                onSelectQuestion={(id) => onSelectQuestion(id, selectedBranchId)}
+                onDeleteBranch={deleteBranch}
+                onDeleteQuestion={deleteQuestion}
+                questionEditor={
+                  selectedQuestion && selectedBranch.questions.some((q) => q.id === selectedQuestionId) ? (
+                    <QuestionEditor
+                      question={selectedQuestion}
+                      allQuestions={allQuestions}
+                      onUpdate={updateQuestion}
+                      onDelete={deleteQuestion}
+                    />
+                  ) : undefined
+                }
+              />
+            </div>
+          )}
+
+          {/* Selected Question Editor (not in branch) */}
+          {selectedQuestion && !selectedBranch && section.questions.some((q) => q.id === selectedQuestionId) && (
+            <div className={styles.editorSection}>
+              <QuestionEditor
+                question={selectedQuestion}
+                allQuestions={allQuestions}
+                onUpdate={updateQuestion}
+                onDelete={deleteQuestion}
+              />
+            </div>
+          )}
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
   );
 };
 
