@@ -112,6 +112,9 @@ const Documentation = () => {
                 <a href="#templates" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Templates & Drafts
                 </a>
+                <a href="#preview" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Preview & Testing
+                </a>
               </nav>
             </ScrollArea>
           </aside>
@@ -3270,6 +3273,116 @@ const Documentation = () => {
                       Each card displays counts for Pages, Sections, Questions, Branches, 
                       Answer Sets, and Actions to help you quickly assess complexity.
                     </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Preview & Testing */}
+            <section id="preview">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Eye className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Preview & Testing</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    Test your questionnaire in real-time using the built-in Preview feature before exporting or publishing.
+                  </p>
+                  
+                  <div className="p-4 rounded-lg border bg-muted/30">
+                    <div className="font-medium mb-3">How to Use Preview</div>
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
+                        <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          1
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Click the <strong>"Preview"</strong> button in the builder header toolbar
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          2
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          A new browser tab opens with the Questionnaire Executor loaded with your current questionnaire data
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          3
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Navigate through pages, test conditional branches, and verify answer validation
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
+                          4
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Submit and download responses as JSON or CSV to verify the output format
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Executor Features</h4>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Page Navigation</div>
+                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                          <li>Progress bar showing completion</li>
+                          <li>Previous/Next navigation buttons</li>
+                          <li>Conditional page visibility based on answers</li>
+                        </ul>
+                      </div>
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Validation</div>
+                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                          <li>Required field enforcement</li>
+                          <li>Regex pattern validation</li>
+                          <li>Error messages for incomplete fields</li>
+                        </ul>
+                      </div>
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Conditional Logic</div>
+                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                          <li>Sections show/hide based on rules</li>
+                          <li>Branch evaluation in real-time</li>
+                          <li>Dynamic question visibility</li>
+                        </ul>
+                      </div>
+                      <div className="p-4 rounded-lg border">
+                        <div className="font-medium mb-2">Response Export</div>
+                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                          <li>Download as JSON format</li>
+                          <li>Download as CSV format</li>
+                          <li>Includes all metadata and timestamps</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-start gap-3">
+                      <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                      <div className="text-sm">
+                        <strong className="text-blue-700 dark:text-blue-300">Instant Sync:</strong>
+                        <span className="text-blue-600 dark:text-blue-400 ml-1">
+                          Preview uses session storage to instantly load your current questionnaire state. 
+                          No need to export and re-import—just click Preview to test immediately.
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
