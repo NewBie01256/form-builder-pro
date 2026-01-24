@@ -786,96 +786,229 @@ function buildODataFilter(group: DynamicValueConditionGroup): string {
 }`;
 
 const GUIDE_STEP5_FETCHXML_ADVANCED = `// =============================================================================
-// STEP 5: Advanced - Using FetchXML for complex queries
+// STEP 5: Advanced - Generate FetchXML dynamically at runtime
 // =============================================================================
 //
-// For complex queries with linked entities, aggregates, or special conditions
-// use the FetchXML generator
+// ⚠️  NO HARDCODED FETCHXML TEMPLATES!
+//     FetchXML is generated dynamically based on:
+//     - Entity metadata from YOUR Dataverse
+//     - User-configured filters
+//     - Runtime parameters
 
-import { QueryService } from '@/lib/dataverse/pcf';
-import { generateFetchXml } from '@/lib/dataverse/fetchXmlGenerator';
-import type { DynamicValueConfig } from '@/types/questionnaire';
+import { QueryService, BaseDataverseService } from '@/lib/dataverse/pcf';
+import type { IPCFContext, DataverseResult, AttributeMetadata } from '@/lib/dataverse/pcf';
 
 /**
- * Load options using FetchXML (supports more complex queries)
+ * Service to build and execute FetchXML dynamically from Dataverse metadata
  */
-async function loadWithFetchXml(
-  queryService: QueryService,
-  config: DynamicValueConfig
-): Promise<DropdownOption[]> {
-  
-  // Generate FetchXML from the configuration
-  // This handles nested conditions, link-entities, etc.
-  const fetchXml = generateFetchXml(config, { 
-    top: 500,
-    distinct: true,  // Remove duplicates if any
-  });
+export class DynamicFetchXmlService extends BaseDataverseService {
+  private queryService: QueryService;
 
-  console.log('Generated FetchXML:', fetchXml);
-
-  // Execute the FetchXML query
-  const result = await queryService.executeFetchXml<Record<string, unknown>>(
-    config.tableName,
-    { fetchXml }
-  );
-
-  if (!result.success) {
-    console.error('FetchXML query failed:', result.error);
-    return [];
+  constructor(context: IPCFContext) {
+    super(context);
+    this.queryService = new QueryService(context);
   }
 
-  // Map results to dropdown options
-  return result.data.entities.map(entity => ({
-    value: String(entity[config.valueField] || ''),
-    label: String(entity[config.labelField] || ''),
-  }));
+  /**
+   * Build FetchXML dynamically using metadata from YOUR Dataverse
+   * No hardcoded entity/field names - everything discovered at runtime
+   */
+  async buildDynamicFetchXml(
+    entityName: string,
+    options?: {
+      filter?: { field: string; operator: string; value: string }[];
+      linkedEntity?: { 
+        name: string; 
+        fromField: string; 
+        toField: string; 
+        fields: string[];
+      };
+      orderBy?: { field: string; descending?: boolean };
+      top?: number;
+    }
+  ): Promise<DataverseResult<string>> {
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // STEP 1: Get REAL metadata from YOUR Dataverse
+    // ═══════════════════════════════════════════════════════════════════════
+    const metadataResult = await this.getEntityMetadata(entityName);
+    
+    if (!metadataResult.success) {
+      return metadataResult;
+    }
+    
+    const metadata = metadataResult.data;
+    const primaryId = metadata.PrimaryIdAttribute;
+    const primaryName = metadata.PrimaryNameAttribute;
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // STEP 2: Build FetchXML using discovered field names
+    // ═══════════════════════════════════════════════════════════════════════
+    let fetchXml = \`<fetch top="\${options?.top || 500}">\`;
+    fetchXml += \`<entity name="\${entityName}">\`;
+    
+    // Add primary attributes (discovered from metadata)
+    fetchXml += \`<attribute name="\${primaryId}" />\`;
+    fetchXml += \`<attribute name="\${primaryName}" />\`;
+    
+    // Add dynamic filters (from user configuration)
+    if (options?.filter && options.filter.length > 0) {
+      fetchXml += '<filter type="and">';
+      for (const f of options.filter) {
+        fetchXml += \`<condition attribute="\${f.field}" operator="\${f.operator}" value="\${f.value}" />\`;
+      }
+      fetchXml += '</filter>';
+    }
+    
+    // Add ordering (from user configuration)
+    if (options?.orderBy) {
+      fetchXml += \`<order attribute="\${options.orderBy.field}" descending="\${options.orderBy.descending || false}" />\`;
+    } else {
+      fetchXml += \`<order attribute="\${primaryName}" />\`;
+    }
+    
+    // Add linked entity (for lookup relationships)
+    if (options?.linkedEntity) {
+      const link = options.linkedEntity;
+      fetchXml += \`<link-entity name="\${link.name}" from="\${link.fromField}" to="\${link.toField}" link-type="outer">\`;
+      for (const field of link.fields) {
+        fetchXml += \`<attribute name="\${field}" alias="\${link.name}_\${field}" />\`;
+      }
+      fetchXml += '</link-entity>';
+    }
+    
+    fetchXml += '</entity></fetch>';
+    
+    return { success: true, data: fetchXml };
+  }
+
+  /**
+   * Execute dynamically built FetchXML and return results
+   */
+  async executeDynamicQuery<T extends Record<string, unknown>>(
+    entityName: string,
+    options?: Parameters<typeof this.buildDynamicFetchXml>[1]
+  ): Promise<DataverseResult<T[]>> {
+    
+    // Build FetchXML from metadata
+    const fetchXmlResult = await this.buildDynamicFetchXml(entityName, options);
+    
+    if (!fetchXmlResult.success) {
+      return fetchXmlResult;
+    }
+    
+    console.log('Generated FetchXML:', fetchXmlResult.data);
+    
+    // Execute against YOUR Dataverse
+    const result = await this.queryService.executeFetchXml<T>(
+      entityName,
+      { fetchXml: fetchXmlResult.data }
+    );
+    
+    if (!result.success) {
+      return result;
+    }
+    
+    return { success: true, data: result.data.entities };
+  }
+
+  /**
+   * Discover lookup relationships for an entity
+   * Returns fields that link to other entities in YOUR Dataverse
+   */
+  async discoverLookupFields(entityName: string): Promise<DataverseResult<AttributeMetadata[]>> {
+    const metadataResult = await this.getEntityMetadata(entityName);
+    
+    if (!metadataResult.success) {
+      return metadataResult;
+    }
+    
+    // Filter to lookup type attributes
+    const lookupFields = metadataResult.data.Attributes.filter(attr => 
+      attr.AttributeType === 'Lookup' || 
+      attr.AttributeType === 'Customer' ||
+      attr.AttributeType === 'Owner'
+    );
+    
+    return { success: true, data: lookupFields };
+  }
 }
 
-// -----------------------------------------------------------------------------
-// CUSTOM FETCHXML TEMPLATES
-// -----------------------------------------------------------------------------
+// =============================================================================
+// USAGE: Fully dynamic FetchXML with linked entities
+// =============================================================================
 
-/**
- * Custom FetchXML for accounts with their primary contact name
- */
-const ACCOUNTS_WITH_CONTACT = \`
-<fetch top="500">
-  <entity name="account">
-    <attribute name="accountid" />
-    <attribute name="name" />
-    <filter>
-      <condition attribute="statecode" operator="eq" value="0" />
-    </filter>
-    <order attribute="name" />
-    <link-entity name="contact" from="contactid" to="primarycontactid" link-type="outer">
-      <attribute name="fullname" alias="contact_name" />
-    </link-entity>
-  </entity>
-</fetch>
-\`;
+async function loadRecordsWithRelatedData(
+  context: IPCFContext,
+  entityName: string,              // e.g., 'account' - from user selection
+  lookupField: string,             // e.g., 'primarycontactid' - discovered at runtime
+  lookupTargetEntity: string,      // e.g., 'contact' - discovered at runtime
+  lookupTargetFields: string[],    // e.g., ['fullname', 'emailaddress1'] - user selected
+  userFilters?: { field: string; operator: string; value: string }[]
+): Promise<Record<string, unknown>[]> {
+  
+  const fetchService = new DynamicFetchXmlService(context);
+  
+  // ═══════════════════════════════════════════════════════════════════════
+  // ALL PARAMETERS COME FROM RUNTIME - NO HARDCODING
+  // ═══════════════════════════════════════════════════════════════════════
+  const result = await fetchService.executeDynamicQuery(entityName, {
+    filter: userFilters,
+    linkedEntity: {
+      name: lookupTargetEntity,
+      fromField: \`\${lookupTargetEntity}id\`,  // Discovered primary key
+      toField: lookupField,
+      fields: lookupTargetFields,
+    },
+    orderBy: { field: 'createdon', descending: true },
+    top: 500,
+  });
+  
+  if (!result.success) {
+    console.error('Query failed:', result.error);
+    return [];
+  }
+  
+  // Returns REAL data from YOUR Dataverse with related entity fields
+  return result.data;
+}
 
-/**
- * Custom FetchXML for cases with customer info
- */
-const CASES_WITH_CUSTOMER = \`
-<fetch top="500">
-  <entity name="incident">
-    <attribute name="incidentid" />
-    <attribute name="title" />
-    <attribute name="ticketnumber" />
-    <filter>
-      <condition attribute="statecode" operator="eq" value="0" />
-    </filter>
-    <order attribute="createdon" descending="true" />
-    <link-entity name="account" from="accountid" to="customerid" link-type="outer">
-      <attribute name="name" alias="customer_name" />
-    </link-entity>
-  </entity>
-</fetch>
-\`;
+// =============================================================================
+// EXAMPLE: Complete dynamic workflow
+// =============================================================================
 
-// Usage:
-// const result = await queryService.executeFetchXml('account', { fetchXml: ACCOUNTS_WITH_CONTACT });`;
+async function completeExample(context: IPCFContext) {
+  const fetchService = new DynamicFetchXmlService(context);
+  
+  // 1. User selects entity (e.g., from a dropdown populated by getAvailableEntities)
+  const selectedEntity = 'account';  // This comes from user selection
+  
+  // 2. Discover lookup fields for that entity
+  const lookupsResult = await fetchService.discoverLookupFields(selectedEntity);
+  if (!lookupsResult.success) return;
+  
+  console.log('Available lookups:', lookupsResult.data);
+  // → Shows real lookup fields from YOUR account entity
+  
+  // 3. User selects a lookup to include (e.g., 'primarycontactid')
+  const selectedLookup = lookupsResult.data[0];
+  
+  // 4. Get metadata for the target entity
+  const targetEntity = selectedLookup.Targets[0];  // e.g., 'contact'
+  
+  // 5. Execute query with all runtime-discovered parameters
+  const records = await loadRecordsWithRelatedData(
+    context,
+    selectedEntity,
+    selectedLookup.LogicalName,
+    targetEntity,
+    ['fullname', 'emailaddress1'],  // User-selected fields
+    [{ field: 'statecode', operator: 'eq', value: '0' }]  // User-configured filter
+  );
+  
+  console.log('Loaded records with related data:', records);
+  // → REAL records from YOUR Dataverse with linked entity data
+}`;
 
 const GUIDE_FILE_STRUCTURE = `// =============================================================================
 // SUMMARY: Project File Structure
@@ -896,13 +1029,14 @@ src/
 │       │   ├── Logger.ts                 ← Structured logging
 │       │   └── types.ts                  ← Type definitions
 │       │
-│       ├── DynamicDropdownService.ts     ← NEW: Your dropdown loader
-│       ├── entityConfigs.ts              ← NEW: Pre-built configs
+│       ├── DynamicDropdownService.ts     ← NEW: Loads dropdown options
+│       ├── EntityDiscoveryService.ts     ← NEW: Discovers entities/fields
+│       ├── DynamicFetchXmlService.ts     ← NEW: Builds FetchXML at runtime
 │       ├── fetchXmlGenerator.ts          ← EXISTING: Query generation
 │       └── odataGenerator.ts             ← EXISTING: OData URLs
 │
 └── your-pcf-control/
-    └── index.ts                          ← Uses DynamicDropdownService
+    └── index.ts                          ← Uses the services above
 */
 
 // -----------------------------------------------------------------------------
@@ -916,66 +1050,60 @@ import {
   createLogger,
 } from '@/lib/dataverse/pcf';
 
-import { 
-  DynamicDropdownService,
-  type DropdownConfig,
-} from '@/lib/dataverse/DynamicDropdownService';
-
-import { ENTITY_DROPDOWN_CONFIGS } from '@/lib/dataverse/entityConfigs';
-
-import { generateFetchXml } from '@/lib/dataverse/fetchXmlGenerator';
-import { generateODataUrl } from '@/lib/dataverse/odataGenerator';`;
+import { DynamicDropdownService } from '@/lib/dataverse/DynamicDropdownService';
+import { EntityDiscoveryService } from '@/lib/dataverse/EntityDiscoveryService';
+import { DynamicFetchXmlService } from '@/lib/dataverse/DynamicFetchXmlService';`;
 
 const GUIDE_QUICK_REFERENCE = `// =============================================================================
-// QUICK REFERENCE: Common Operations
+// QUICK REFERENCE: Dynamic Operations (No Hardcoding)
 // =============================================================================
+//
+// ⚠️  ALL DATA AND METADATA COMES FROM YOUR DATAVERSE AT RUNTIME
 
-// 1. INITIALIZE SERVICE (in PCF init)
+// 1. INITIALIZE SERVICES (in PCF init)
+const discoveryService = new EntityDiscoveryService(context);
 const dropdownService = new DynamicDropdownService(context);
+const fetchXmlService = new DynamicFetchXmlService(context);
 
-// 2. LOAD ACCOUNTS
-const accounts = await dropdownService.loadOptions({
-  entityName: 'account',
-  valueField: 'accountid',
-  labelField: 'name',
-  filter: 'statecode eq 0',
-});
+// 2. DISCOVER AVAILABLE ENTITIES FROM YOUR DATAVERSE
+const entities = await context.webAPI.retrieveMultipleRecords(
+  'EntityDefinition',
+  '?$select=LogicalName,DisplayName&$filter=IsCustomizable/Value eq true'
+);
+// → Returns ALL entities in YOUR CRM (not hardcoded list)
 
-// 3. LOAD CONTACTS
-const contacts = await dropdownService.loadOptions({
-  entityName: 'contact',
-  valueField: 'contactid',
-  labelField: 'fullname',
-  filter: 'statecode eq 0',
-});
+// 3. BUILD CONFIG DYNAMICALLY FROM METADATA
+const config = await discoveryService.buildDynamicConfig(
+  userSelectedEntity,  // From user selection, not hardcoded
+  { filter: userDefinedFilter }
+);
+// → Config uses real field names from YOUR entity
 
-// 4. LOAD CASES (newest first)
-const cases = await dropdownService.loadOptions({
-  entityName: 'incident',
-  valueField: 'incidentid',
-  labelField: 'title',
-  filter: 'statecode eq 0',
-  orderBy: 'createdon desc',
-});
+// 4. LOAD DATA USING DYNAMIC CONFIG
+const result = await dropdownService.loadOptions(config.data);
+// → Returns REAL records from YOUR Dataverse
 
-// 5. LOAD WITH CUSTOM FILTER
-const highValueAccounts = await dropdownService.loadOptions({
-  entityName: 'account',
-  valueField: 'accountid',
-  labelField: 'name',
-  filter: 'statecode eq 0 and revenue gt 1000000',
-  orderBy: 'revenue desc',
-});
+// 5. DISCOVER LOOKUP FIELDS FOR AN ENTITY
+const lookups = await fetchXmlService.discoverLookupFields(entityName);
+// → Returns real lookup relationships from YOUR CRM
 
-// 6. USE PRE-BUILT CONFIG
-import { ENTITY_DROPDOWN_CONFIGS } from '@/lib/dataverse/entityConfigs';
-const users = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.users);
+// 6. BUILD FETCHXML DYNAMICALLY
+const fetchXml = await fetchXmlService.buildDynamicFetchXml(
+  entityName,
+  {
+    filter: userFilters,           // From user configuration
+    linkedEntity: discoveredLink,  // From metadata discovery
+    orderBy: { field: discoveredSortField, descending: false },
+  }
+);
+// → FetchXML built from runtime metadata, not templates
 
-// 7. CHECK RESULT
-if (result.success) {
-  console.log('Loaded', result.data.length, 'options');
+// 7. EXECUTE AND CHECK RESULT
+const queryResult = await fetchXmlService.executeDynamicQuery(entityName, options);
+if (queryResult.success) {
+  console.log('Loaded', queryResult.data.length, 'records from YOUR Dataverse');
 } else {
-  console.error('Error:', result.error.userMessage);
+  console.error('Error:', queryResult.error.userMessage);
 }`;
 
 // Legacy snippets for other sections (keeping for backwards compatibility)
