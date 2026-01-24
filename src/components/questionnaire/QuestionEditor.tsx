@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { HelpCircle, Plus, GitBranch, Trash2, Library } from "lucide-react";
+import { HelpCircle, Plus, GitBranch, Trash2, Library, Zap } from "lucide-react";
+import ActionRecordEditor from "./ActionRecordEditor";
 import { Question, AnswerLevelRuleGroup, AnswerSet, TextValidationType } from "@/types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";
 import AnswerLevelRuleGroupEditor from "./AnswerLevelRuleGroupEditor";
@@ -130,23 +131,34 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
             <HelpCircle className="h-5 w-5 text-primary" />
             Question Details
           </CardTitle>
-          {onDelete && (
-            <ConfirmDialog
-              trigger={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete Question
-                </Button>
-              }
-              title="Delete Question"
-              description={`Are you sure you want to delete "${question.text || 'Untitled Question'}"? This will also delete all answer sets and conditional branching rules. This action cannot be undone.`}
-              onConfirm={() => onDelete(question.id)}
-            />
-          )}
+          <div className="flex items-center gap-2">
+            {/* Question-Level Action Record */}
+            <div className="flex items-center gap-1 border rounded-md px-2 py-1 bg-muted/30">
+              <Zap className={cn("h-4 w-4", question.actionRecord ? "text-amber-500" : "text-muted-foreground")} />
+              <span className="text-xs text-muted-foreground mr-1">Action:</span>
+              <ActionRecordEditor
+                actionRecord={question.actionRecord}
+                onUpdate={(actionRecord) => onUpdate(question.id, { actionRecord })}
+              />
+            </div>
+            {onDelete && (
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete Question
+                  </Button>
+                }
+                title="Delete Question"
+                description={`Are you sure you want to delete "${question.text || 'Untitled Question'}"? This will also delete all answer sets and conditional branching rules. This action cannot be undone.`}
+                onConfirm={() => onDelete(question.id)}
+              />
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">

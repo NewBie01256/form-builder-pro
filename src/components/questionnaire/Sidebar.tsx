@@ -55,8 +55,12 @@ const Sidebar = ({
 }: SidebarProps) => {
   const [detailsOpen, setDetailsOpen] = useState(true);
 
-  // Check if a question has any action attached to its answers
+  // Check if a question has any action attached (question-level or answer-level)
   const questionHasAction = (question: Question): boolean => {
+    // Check question-level action record
+    if (question.actionRecord) return true;
+    
+    // Check answer-level action records
     for (const answerSet of question.answerSets) {
       for (const answer of answerSet.answers) {
         if (answer.actionRecord) return true;
