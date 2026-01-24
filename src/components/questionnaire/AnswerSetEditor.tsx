@@ -52,7 +52,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
       id: `ans-${Date.now()}`,
       label: '',
       value: '',
-      active: true
+      active: false
     };
     onUpdate({ ...answerSet, answers: [...answerSet.answers, newAnswer] });
   };

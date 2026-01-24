@@ -58,7 +58,7 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
       id: `ans-${Date.now()}`,
       label: '',
       value: '',
-      active: true
+      active: false
     };
     onUpdate({ ...answerSet, answers: [...answerSet.answers, newAnswer] });
   };
