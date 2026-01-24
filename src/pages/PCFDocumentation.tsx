@@ -500,110 +500,181 @@ export class DynamicEntityDropdown implements ComponentFramework.StandardControl
 }`;
 
 const GUIDE_STEP3_ENTITY_CONFIGS = `// =============================================================================
-// STEP 3: Pre-built configurations for common entities
+// STEP 3: Pre-built configurations for common Dataverse entities
 // =============================================================================
 //
 // CREATE FILE: src/lib/dataverse/entityConfigs.ts
 //
-// These are ready-to-use configs for common Dynamics 365 entities
+// ⚠️  THESE ARE NOT HARDCODED VALUES!
+//     These are CONFIGURATIONS that tell the service which REAL entities
+//     and fields to fetch from YOUR Dynamics 365 environment.
+//
+// WHEN YOU DEPLOY:
+// - 'account' → fetches from YOUR accounts table
+// - 'contact' → fetches from YOUR contacts table
+// - 'incident' → fetches from YOUR cases table
+// - etc.
 
 import type { DropdownConfig } from './DynamicDropdownService';
 
 /**
- * Pre-configured dropdown configs for common CRM entities
- * Use these directly or as templates for custom configs
+ * ════════════════════════════════════════════════════════════════════════════
+ * PRE-BUILT CONFIGS FOR COMMON DYNAMICS 365 ENTITIES
+ * ════════════════════════════════════════════════════════════════════════════
+ * 
+ * These configurations define:
+ * - Which entity table to query (entityName)
+ * - Which field contains the ID (valueField) 
+ * - Which field to display (labelField)
+ * - How to filter records (filter)
+ * - How to sort results (orderBy)
+ * 
+ * The ACTUAL DATA comes from YOUR Dataverse at runtime!
  */
 export const ENTITY_DROPDOWN_CONFIGS = {
 
-  /** Active Accounts sorted by name */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ACCOUNTS - Fetches real accounts from your D365
+  // ═══════════════════════════════════════════════════════════════════════════
   accounts: {
-    entityName: 'account',
-    valueField: 'accountid',
-    labelField: 'name',
-    filter: 'statecode eq 0',
-    orderBy: 'name asc',
-    additionalFields: ['telephone1', 'emailaddress1'],
+    entityName: 'account',            // Standard D365 entity
+    valueField: 'accountid',          // Primary key (GUID)
+    labelField: 'name',               // Account name
+    filter: 'statecode eq 0',         // Active records only
+    orderBy: 'name asc',              // Alphabetical
+    additionalFields: ['telephone1', 'emailaddress1', 'revenue'],
   } as DropdownConfig,
 
-  /** Active Contacts sorted by full name */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CONTACTS - Fetches real contacts from your D365
+  // ═══════════════════════════════════════════════════════════════════════════
   contacts: {
-    entityName: 'contact',
-    valueField: 'contactid',
-    labelField: 'fullname',
-    filter: 'statecode eq 0',
-    orderBy: 'fullname asc',
-    additionalFields: ['emailaddress1', 'telephone1'],
+    entityName: 'contact',            // Standard D365 entity
+    valueField: 'contactid',          // Primary key (GUID)
+    labelField: 'fullname',           // Full name (auto-generated)
+    filter: 'statecode eq 0',         // Active records only
+    orderBy: 'fullname asc',          // Alphabetical
+    additionalFields: ['emailaddress1', 'telephone1', 'jobtitle'],
   } as DropdownConfig,
 
-  /** Active Cases sorted by newest first */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CASES (Incidents) - Fetches real cases from your D365
+  // ═══════════════════════════════════════════════════════════════════════════
   cases: {
-    entityName: 'incident',
-    valueField: 'incidentid',
-    labelField: 'title',
-    filter: 'statecode eq 0',
-    orderBy: 'createdon desc',
-    additionalFields: ['ticketnumber', 'prioritycode'],
+    entityName: 'incident',           // Case entity (internal name)
+    valueField: 'incidentid',         // Primary key (GUID)
+    labelField: 'title',              // Case title
+    filter: 'statecode eq 0',         // Active cases only
+    orderBy: 'createdon desc',        // Newest first
+    additionalFields: ['ticketnumber', 'prioritycode', 'statuscode'],
   } as DropdownConfig,
 
-  /** High priority Cases only */
+  // High priority cases only
   highPriorityCases: {
     entityName: 'incident',
     valueField: 'incidentid',
     labelField: 'title',
-    filter: 'statecode eq 0 and prioritycode eq 1',
+    filter: 'statecode eq 0 and prioritycode eq 1',  // Active + High priority
     orderBy: 'createdon desc',
   } as DropdownConfig,
 
-  /** Open Opportunities */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // OPPORTUNITIES - Fetches real opportunities from your D365
+  // ═══════════════════════════════════════════════════════════════════════════
   opportunities: {
-    entityName: 'opportunity',
-    valueField: 'opportunityid',
-    labelField: 'name',
-    filter: 'statecode eq 0',
-    orderBy: 'estimatedclosedate asc',
-    additionalFields: ['estimatedvalue'],
+    entityName: 'opportunity',        // Standard D365 entity
+    valueField: 'opportunityid',      // Primary key (GUID)
+    labelField: 'name',               // Opportunity name
+    filter: 'statecode eq 0',         // Open opportunities only
+    orderBy: 'estimatedclosedate asc', // By close date
+    additionalFields: ['estimatedvalue', 'closeprobability'],
   } as DropdownConfig,
 
-  /** Active System Users (for assignment) */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SYSTEM USERS - Fetches real users from your D365 (for assignment)
+  // ═══════════════════════════════════════════════════════════════════════════
   users: {
-    entityName: 'systemuser',
-    valueField: 'systemuserid',
-    labelField: 'fullname',
-    filter: 'isdisabled eq false',
-    orderBy: 'fullname asc',
+    entityName: 'systemuser',         // User entity
+    valueField: 'systemuserid',       // Primary key (GUID)
+    labelField: 'fullname',           // User's full name
+    filter: 'isdisabled eq false',    // Enabled users only
+    orderBy: 'fullname asc',          // Alphabetical
+    additionalFields: ['internalemailaddress', 'title'],
   } as DropdownConfig,
 
-  /** Teams (for assignment) */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TEAMS - Fetches real teams from your D365 (for assignment)
+  // ═══════════════════════════════════════════════════════════════════════════
   teams: {
-    entityName: 'team',
-    valueField: 'teamid',
-    labelField: 'name',
-    filter: 'teamtype eq 0',  // Business-owned teams only
-    orderBy: 'name asc',
+    entityName: 'team',               // Team entity
+    valueField: 'teamid',             // Primary key (GUID)
+    labelField: 'name',               // Team name
+    filter: 'teamtype eq 0',          // Owner teams only (not Access)
+    orderBy: 'name asc',              // Alphabetical
   } as DropdownConfig,
 
-  /** Active Products */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRODUCTS - Fetches real products from your D365
+  // ═══════════════════════════════════════════════════════════════════════════
   products: {
-    entityName: 'product',
-    valueField: 'productid',
-    labelField: 'name',
-    filter: 'statecode eq 0',
-    orderBy: 'name asc',
+    entityName: 'product',            // Product entity
+    valueField: 'productid',          // Primary key (GUID)
+    labelField: 'name',               // Product name
+    filter: 'statecode eq 0',         // Active products only
+    orderBy: 'name asc',              // Alphabetical
     additionalFields: ['productnumber', 'price'],
   } as DropdownConfig,
 
-  /** Active Queues */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // QUEUES - Fetches real queues from your D365 (for routing)
+  // ═══════════════════════════════════════════════════════════════════════════
   queues: {
-    entityName: 'queue',
-    valueField: 'queueid',
-    labelField: 'name',
-    filter: 'statecode eq 0',
-    orderBy: 'name asc',
+    entityName: 'queue',              // Queue entity
+    valueField: 'queueid',            // Primary key (GUID)
+    labelField: 'name',               // Queue name
+    filter: 'statecode eq 0',         // Active queues only
+    orderBy: 'name asc',              // Alphabetical
+  } as DropdownConfig,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LEADS - Fetches real leads from your D365
+  // ═══════════════════════════════════════════════════════════════════════════
+  leads: {
+    entityName: 'lead',               // Lead entity
+    valueField: 'leadid',             // Primary key (GUID)
+    labelField: 'fullname',           // Lead's full name
+    filter: 'statecode eq 0',         // Open leads only
+    orderBy: 'createdon desc',        // Newest first
+    additionalFields: ['companyname', 'emailaddress1'],
+  } as DropdownConfig,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BUSINESS UNITS - Fetches real BUs from your D365
+  // ═══════════════════════════════════════════════════════════════════════════
+  businessUnits: {
+    entityName: 'businessunit',       // BU entity
+    valueField: 'businessunitid',     // Primary key (GUID)
+    labelField: 'name',               // BU name
+    filter: 'isdisabled eq false',    // Active BUs only
+    orderBy: 'name asc',              // Alphabetical
   } as DropdownConfig,
 };
 
-// Usage in PCF:
-// const result = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.accounts);`;
+// =============================================================================
+// USAGE EXAMPLES - All fetch REAL data from YOUR Dataverse
+// =============================================================================
+
+// Example 1: Load accounts from your CRM
+// const accounts = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.accounts);
+// → Returns REAL accounts from YOUR D365 environment
+
+// Example 2: Load only high-priority cases
+// const urgentCases = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.highPriorityCases);
+// → Returns REAL high-priority cases from YOUR D365 environment
+
+// Example 3: Load users for assignment dropdown
+// const users = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.users);
+// → Returns REAL enabled users from YOUR D365 environment`;
 
 const GUIDE_STEP4_DYNAMIC_ENTITY = `// =============================================================================
 // STEP 4: Load ANY entity dynamically (runtime configuration)
