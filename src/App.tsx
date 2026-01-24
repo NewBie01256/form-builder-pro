@@ -4,6 +4,7 @@ import {
   FluentThemeProvider, 
   Toaster,
 } from "@/components/fluent";
+import { DataverseProvider } from "@/lib/dataverse/pcf";
 import Index from "./pages/Index";
 import Documentation from "./pages/Documentation";
 import PCFDocumentation from "./pages/PCFDocumentation";
@@ -30,7 +31,9 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <FluentThemeProvider>
-        <AppContent />
+        <DataverseProvider>
+          <AppContent />
+        </DataverseProvider>
       </FluentThemeProvider>
     </QueryClientProvider>
   );
