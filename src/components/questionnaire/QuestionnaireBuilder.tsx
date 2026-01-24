@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X, Upload } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ConfirmDialog } from "@/components/fluent";
 import { exportQuestionnaire, buildExportData, parseQuestionnaireFile } from "@/lib/questionnaireExport";
 import {
   Question,

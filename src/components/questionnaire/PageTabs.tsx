@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, X, FileText } from "lucide-react";
 import { Page } from "@/types/questionnaire";
 import { cn } from "@/lib/utils";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ConfirmDialog } from "@/components/fluent";
 
 interface PageTabsProps {
   pages: Page[];

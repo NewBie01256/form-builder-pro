@@ -14,7 +14,7 @@ import QuestionEditor from "./QuestionEditor";
 import BranchEditor from "./BranchEditor";
 import { cn } from "@/lib/utils";
 import { HelpCircle } from "lucide-react";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ConfirmDialog } from "@/components/fluent";
 
 // Recursive component to render branch with nested children
 interface BranchContainerProps {

@@ -1,12 +1,19 @@
 /**
  * Fluent UI Component Exports
  * 
- * Re-exports Fluent UI components with any customizations applied.
- * This serves as the central import point for Fluent components.
+ * CENTRALIZED Fluent UI component library.
+ * Import all Fluent components from this file for consistency.
+ * 
+ * Usage:
+ * import { Button, Input, Dialog, ConfirmDialog } from '@/components/fluent';
  */
 
-// Provider
+// Custom Components
 export { FluentThemeProvider, useSystemDarkMode, customLightTheme, customDarkTheme } from './FluentThemeProvider';
+export { ConfirmDialog } from './ConfirmDialog';
+
+// Re-export icons from centralized icon file
+export * from './icons';
 
 // Re-export commonly used Fluent components
 export {
@@ -130,6 +137,12 @@ export {
   Tree,
   TreeItem,
   TreeItemLayout,
+  
+  // Styling utilities
+  makeStyles,
+  shorthands,
+  tokens,
+  mergeClasses,
   
 } from '@fluentui/react-components';
 

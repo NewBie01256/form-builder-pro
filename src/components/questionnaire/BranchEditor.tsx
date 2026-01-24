@@ -7,7 +7,7 @@ import { ConditionalBranch, Question } from "@/types/questionnaire";
 import RuleGroupEditor from "./RuleGroupEditor";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ConfirmDialog } from "@/components/fluent";
 
 interface BranchEditorProps {
   branch: ConditionalBranch;
