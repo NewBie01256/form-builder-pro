@@ -97,6 +97,9 @@ const Documentation = () => {
                 <a href="#conditional-branching" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Conditional Branching
                 </a>
+                <a href="#feature-comparison" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Feature Comparison
+                </a>
                 <a href="#rules" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Rules & Logic
                 </a>
@@ -3563,6 +3566,219 @@ const Documentation = () => {
                         <strong>Use answer-level for variants:</strong> Same question structure, different answer options
                       </div>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Feature Comparison */}
+            <section id="feature-comparison">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <LayoutGrid className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle>Feature Comparison</CardTitle>
+                      <CardDescription>
+                        Understand when to use each dynamic feature
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    The Questionnaire Builder offers three powerful mechanisms for creating dynamic, adaptive forms.
+                    Use this comparison to choose the right feature for your use case.
+                  </p>
+                  
+                  {/* Comparison Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="border-b-2">
+                          <th className="text-left p-3 font-semibold bg-muted/50">Feature</th>
+                          <th className="text-left p-3 font-semibold bg-purple-500/10">
+                            <div className="flex items-center gap-2">
+                              <GitBranch className="h-4 w-4 text-purple-500" />
+                              <span>Question-Level Branching</span>
+                            </div>
+                          </th>
+                          <th className="text-left p-3 font-semibold bg-orange-500/10">
+                            <div className="flex items-center gap-2">
+                              <ListChecks className="h-4 w-4 text-orange-500" />
+                              <span>Answer-Level Branching</span>
+                            </div>
+                          </th>
+                          <th className="text-left p-3 font-semibold bg-blue-500/10">
+                            <div className="flex items-center gap-2">
+                              <Database className="h-4 w-4 text-blue-500" />
+                              <span>Dynamic Values</span>
+                            </div>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="p-3 font-medium bg-muted/30">Purpose</td>
+                          <td className="p-3">Show/hide entire question groups based on conditions</td>
+                          <td className="p-3">Swap answer options for a single question</td>
+                          <td className="p-3">Populate answers from external data sources</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-3 font-medium bg-muted/30">Configured In</td>
+                          <td className="p-3">
+                            <Badge variant="outline">Branch Editor</Badge>
+                          </td>
+                          <td className="p-3">
+                            <Badge variant="outline">Question Editor</Badge>
+                          </td>
+                          <td className="p-3">
+                            <Badge variant="outline">Answer Set Editor</Badge>
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-3 font-medium bg-muted/30">What Changes</td>
+                          <td className="p-3">
+                            <span className="text-purple-500 font-medium">Visibility</span> of branches + nested questions
+                          </td>
+                          <td className="p-3">
+                            <span className="text-orange-500 font-medium">Answer options</span> shown to user
+                          </td>
+                          <td className="p-3">
+                            <span className="text-blue-500 font-medium">Answer data</span> fetched from tables
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-3 font-medium bg-muted/30">Trigger</td>
+                          <td className="p-3">Previous question responses</td>
+                          <td className="p-3">Previous question responses</td>
+                          <td className="p-3">Data source + filter conditions</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-3 font-medium bg-muted/30">Supports Nesting</td>
+                          <td className="p-3">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span className="ml-2 text-xs text-muted-foreground">Infinite nesting</span>
+                          </td>
+                          <td className="p-3">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span className="ml-2 text-xs text-muted-foreground">Nested rule groups</span>
+                          </td>
+                          <td className="p-3">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span className="ml-2 text-xs text-muted-foreground">Nested filter groups</span>
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-3 font-medium bg-muted/30">Logic Type</td>
+                          <td className="p-3">AND / OR rule groups</td>
+                          <td className="p-3">AND / OR rule groups</td>
+                          <td className="p-3">AND / OR filter groups</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-3 font-medium bg-muted/30">Question Types</td>
+                          <td className="p-3">All types (affects visibility)</td>
+                          <td className="p-3">Choice-based types only</td>
+                          <td className="p-3">Choice, Dropdown, Radio, MultiSelect</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-3 font-medium bg-muted/30">Data Source</td>
+                          <td className="p-3">
+                            <span className="text-muted-foreground">N/A</span>
+                            <span className="ml-2 text-xs">(uses response data)</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-muted-foreground">Inline answer sets</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-blue-500 font-medium">External tables</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="p-3 font-medium bg-muted/30">Best For</td>
+                          <td className="p-3">
+                            <div className="space-y-1 text-xs">
+                              <div>• Decision trees</div>
+                              <div>• Skip logic</div>
+                              <div>• Conditional sections</div>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="space-y-1 text-xs">
+                              <div>• Role-based options</div>
+                              <div>• Context-aware choices</div>
+                              <div>• Tiered selections</div>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="space-y-1 text-xs">
+                              <div>• Centralized data</div>
+                              <div>• Frequently updated lists</div>
+                              <div>• Large option sets</div>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Visual Summary */}
+                  <div>
+                    <h4 className="font-semibold mb-4">When to Use Each Feature</h4>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div className="p-4 rounded-lg border-2 border-purple-500/30 bg-purple-500/5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <GitBranch className="h-5 w-5 text-purple-500" />
+                          <span className="font-medium text-purple-500">Question-Level</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          "I want to show a <strong>group of questions</strong> only when the user selects a specific answer."
+                        </p>
+                        <div className="p-2 rounded bg-background text-xs">
+                          <span className="font-medium">Example:</span> Show "Hardware Details" section only if Issue Type = "Hardware"
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border-2 border-orange-500/30 bg-orange-500/5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <ListChecks className="h-5 w-5 text-orange-500" />
+                          <span className="font-medium text-orange-500">Answer-Level</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          "I want the <strong>same question</strong> to show <strong>different choices</strong> based on context."
+                        </p>
+                        <div className="p-2 rounded bg-background text-xs">
+                          <span className="font-medium">Example:</span> Show "Critical" priority only for Manager role users
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border-2 border-blue-500/30 bg-blue-500/5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Database className="h-5 w-5 text-blue-500" />
+                          <span className="font-medium text-blue-500">Dynamic Values</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          "I want answer options to come from an <strong>external database</strong> that updates independently."
+                        </p>
+                        <div className="p-2 rounded bg-background text-xs">
+                          <span className="font-medium">Example:</span> Populate "Department" dropdown from HR database
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Combination Note */}
+                  <div className="p-4 rounded-lg bg-muted/50 border">
+                    <div className="text-sm font-medium mb-2">💡 Combining Features</div>
+                    <p className="text-sm text-muted-foreground">
+                      These features can be used together! For example, you can have a <strong>conditional branch</strong> that contains
+                      questions with <strong>dynamic answer sets</strong>, where the displayed options depend on both the user's previous
+                      responses (answer-level branching) and external data (dynamic values).
+                    </p>
                   </div>
                 </CardContent>
               </Card>
