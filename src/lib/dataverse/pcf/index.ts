@@ -1,12 +1,12 @@
 /**
- * PCF Dataverse Wrapper
+ * PCF Dataverse Wrapper - Main Entry Point
  * 
- * Production-ready wrapper layer for Dataverse operations in PCF controls.
- * Uses only PCF-safe APIs (context.webAPI) and follows clean architecture patterns.
+ * Production-ready services for Dataverse integration in PCF controls.
+ * All services fetch data dynamically from Dataverse - NO hardcoded configurations.
  */
 
 // ============================================================================
-// Types
+// Core Types
 // ============================================================================
 
 export type {
@@ -101,6 +101,42 @@ export {
   QueryService,
   createQueryService,
 } from './QueryService';
+
+// ============================================================================
+// Metadata Service (Real-time entity/field discovery)
+// ============================================================================
+
+export {
+  MetadataService,
+  createMetadataService,
+  type EntityInfo,
+  type FieldInfo,
+  type EntityWithFields,
+} from './MetadataService';
+
+// ============================================================================
+// Dynamic Values Service (Real-time dropdown data)
+// ============================================================================
+
+export {
+  DynamicValuesService,
+  createDynamicValuesService,
+  type DropdownOption,
+  type ExecuteQueryOptions,
+} from './DynamicValuesService';
+
+// ============================================================================
+// React Context & Hooks
+// ============================================================================
+
+export {
+  DataverseProvider,
+  useDataverse,
+  useEntityFields,
+  useLookupTargetFields,
+  type DataverseContextValue,
+  type DataverseProviderProps,
+} from './DataverseContext';
 
 // ============================================================================
 // FetchXML Templates

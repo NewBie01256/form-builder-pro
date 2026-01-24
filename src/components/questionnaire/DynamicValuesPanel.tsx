@@ -2,7 +2,7 @@
  * DynamicValuesPanel - Fluent UI Version
  * 
  * Configures dynamic value mappings to Microsoft Dataverse tables.
- * Uses Fluent UI components for consistent Power Platform styling.
+ * Uses REAL-TIME Dataverse metadata - NO hardcoded sample data.
  */
 
 import { useState, useEffect, useMemo } from "react";
@@ -15,14 +15,11 @@ import {
   Option,
   Combobox,
   Badge,
-  CounterBadge,
   TabList,
   Tab,
-  Card,
-  CardHeader,
   Text,
-  Divider,
   Tooltip,
+  Spinner,
   makeStyles,
   tokens,
   shorthands,
@@ -38,20 +35,15 @@ import {
   Code16Regular,
   Copy16Regular,
   Checkmark16Regular,
-  ChevronUpDown16Regular,
 } from "@fluentui/react-icons";
 import { generateFormattedFetchXml } from "@/lib/dataverse/fetchXmlGenerator";
 import { generateFormattedOData } from "@/lib/dataverse/odataGenerator";
-import {
-  DATAVERSE_ENTITIES,
-  DATAVERSE_OPERATORS,
-  getEntityByLogicalName,
-  getOperatorsForFieldType,
-  isLookupField,
-  buildLookupPath,
-  parseLookupPath,
-  type DataverseField,
-} from "@/data/dataverseEntities";
+import { 
+  useDataverse, 
+  useEntityFields, 
+  useLookupTargetFields,
+  type FieldInfo,
+} from "@/lib/dataverse/pcf";
 
 // Re-export types for backward compatibility
 export type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig, DynamicValueOperator } from "@/types/questionnaire";
@@ -251,10 +243,56 @@ interface DynamicValuesPanelProps {
 // Helper Functions
 // ============================================================================
 
-const OPERATORS = DATAVERSE_OPERATORS.map(op => ({
-  value: op.value,
-  label: op.label,
-}));
+// OData operators for filter conditions
+const OPERATORS = [
+  { value: 'equals', label: 'Equals' },
+  { value: 'not_equals', label: 'Not Equals' },
+  { value: 'contains', label: 'Contains' },
+  { value: 'not_contains', label: 'Does Not Contain' },
+  { value: 'starts_with', label: 'Begins With' },
+  { value: 'ends_with', label: 'Ends With' },
+  { value: 'greater_than', label: 'Greater Than' },
+  { value: 'less_than', label: 'Less Than' },
+  { value: 'is_null', label: 'Is Null' },
+  { value: 'is_not_null', label: 'Is Not Null' },
+];
+
+// Helper to check if a field is a lookup type
+const isLookupField = (field: FieldInfo): boolean => {
+  return field.type === 'lookup';
+};
+
+// Helper to get operators for a field type
+const getOperatorsForFieldType = (fieldType: string) => {
+  const stringOps = ['equals', 'not_equals', 'contains', 'not_contains', 'starts_with', 'ends_with', 'is_null', 'is_not_null'];
+  const numberOps = ['equals', 'not_equals', 'greater_than', 'less_than', 'is_null', 'is_not_null'];
+  
+  switch (fieldType) {
+    case 'string':
+      return OPERATORS.filter(op => stringOps.includes(op.value));
+    case 'number':
+    case 'decimal':
+    case 'currency':
+    case 'datetime':
+      return OPERATORS.filter(op => numberOps.includes(op.value));
+    default:
+      return OPERATORS;
+  }
+};
+
+// Helper to build lookup path
+const buildLookupPath = (lookupField: string, targetField: string): string => {
+  return `${lookupField}/${targetField}`;
+};
+
+// Helper to parse lookup path
+const parseLookupPath = (path: string): { lookupField: string; targetField: string } | null => {
+  const parts = path.split('/');
+  if (parts.length === 2) {
+    return { lookupField: parts[0], targetField: parts[1] };
+  }
+  return null;
+};
 
 const createEmptyConditionGroup = (): DynamicValueFilterGroup => ({
   type: 'group',
@@ -277,12 +315,16 @@ const createEmptyCondition = (): DynamicValueFilter => ({
 
 interface FilterRowEditorProps {
   filter: DynamicValueFilter;
-  availableFields: DataverseField[];
+  availableFields: FieldInfo[];
+  entityName: string;
+  onUpdate: (updated: DynamicValueFilter) => void;
+  onDelete: () => void;
+}
   onUpdate: (updated: DynamicValueFilter) => void;
   onDelete: () => void;
 }
 
-const FilterRowEditor = ({ filter, availableFields, onUpdate, onDelete }: FilterRowEditorProps) => {
+const FilterRowEditor = ({ filter, availableFields, entityName, onUpdate, onDelete }: FilterRowEditorProps) => {
   const styles = useStyles();
   const [isLookupMode, setIsLookupMode] = useState(false);
   const [lookupField, setLookupField] = useState('');
@@ -297,18 +339,21 @@ const FilterRowEditor = ({ filter, availableFields, onUpdate, onDelete }: Filter
     }
   }, []);
 
+  // Use the lookup target fields hook
+  const { targetInfo } = useLookupTargetFields(
+    isLookupMode ? entityName : undefined, 
+    isLookupMode ? lookupField : undefined
+  );
+
   const selectedField = availableFields.find(f => f.logicalName === (isLookupMode ? lookupField : filter.field));
   const lookupFields = availableFields.filter(f => isLookupField(f));
-  const targetEntity = isLookupMode && lookupField 
-    ? getEntityByLogicalName(availableFields.find(f => f.logicalName === lookupField)?.lookupTarget || '')
-    : null;
-  const targetEntityFields = targetEntity?.fields || [];
+  const targetEntityFields = targetInfo?.fields || [];
 
   const applicableOperators = isLookupMode
     ? getOperatorsForFieldType('string')
     : selectedField 
       ? getOperatorsForFieldType(selectedField.type)
-      : DATAVERSE_OPERATORS;
+      : OPERATORS;
 
   const handleFieldChange = (_: unknown, data: { optionValue?: string }) => {
     const value = data.optionValue || '';
@@ -486,8 +531,12 @@ const FilterRowEditor = ({ filter, availableFields, onUpdate, onDelete }: Filter
 
 interface FilterGroupEditorProps {
   group: DynamicValueFilterGroup;
-  availableFields: DataverseField[];
+  availableFields: FieldInfo[];
+  entityName: string;
   onUpdate: (updated: DynamicValueFilterGroup) => void;
+  onDelete?: () => void;
+  isRoot?: boolean;
+}
   onDelete?: () => void;
   isRoot?: boolean;
 }
