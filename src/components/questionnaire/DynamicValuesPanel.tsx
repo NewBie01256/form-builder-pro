@@ -779,7 +779,7 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
     }
   }, [isOpen, config]);
 
-  const { entities, getEntityByName } = useDataverse();
+  const { entities, getEntityByName, isPCFEnvironment } = useDataverse();
   const { fields: availableFields, isLoading: fieldsLoading } = useEntityFields(tableName || undefined);
   const selectedEntity = getEntityByName(tableName);
 
@@ -825,13 +825,25 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
 
       {/* Content */}
       <div className={styles.content}>
-        {/* Info Banner */}
-        <div className={styles.infoCard}>
-          <Info16Regular style={{ color: tokens.colorBrandForeground1, flexShrink: 0, marginTop: 2 }} />
+        {/* Environment Indicator */}
+        <div className={styles.infoCard} style={{ 
+          backgroundColor: isPCFEnvironment ? tokens.colorPaletteGreenBackground2 : tokens.colorPaletteYellowBackground2,
+          borderColor: isPCFEnvironment ? tokens.colorPaletteGreenBorder1 : tokens.colorPaletteYellowBorder1,
+        }}>
+          <Info16Regular style={{ 
+            color: isPCFEnvironment ? tokens.colorPaletteGreenForeground1 : tokens.colorPaletteYellowForeground1, 
+            flexShrink: 0, 
+            marginTop: 2 
+          }} />
           <div>
-            <Text weight="semibold" size={300}>Dataverse Integration</Text>
+            <Text weight="semibold" size={300}>
+              {isPCFEnvironment ? '🟢 Live Dataverse Connection' : '🟡 Development Mode (Sample Data)'}
+            </Text>
             <Text size={200} style={{ display: 'block', color: tokens.colorNeutralForeground2 }}>
-              Configuration will be used by the PCF control to query Microsoft Dynamics 365 CRM tables via OData/FetchXML.
+              {isPCFEnvironment 
+                ? 'Connected to Dataverse. Entities and fields are fetched in real-time from your environment.'
+                : 'Running in preview mode with sample entities. When deployed as a PCF control, this will automatically fetch real data from Dataverse via Xrm.WebApi.'
+              }
             </Text>
           </div>
         </div>
