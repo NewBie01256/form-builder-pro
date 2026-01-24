@@ -289,21 +289,40 @@ export const DATAVERSE_ENTITIES: DataverseEntity[] = [
  * Maps to standard OData $filter operators
  */
 export const DATAVERSE_OPERATORS = [
-  { value: 'eq', label: 'Equals', odataOperator: 'eq' },
-  { value: 'ne', label: 'Not Equals', odataOperator: 'ne' },
-  { value: 'contains', label: 'Contains', odataFunction: 'contains' },
-  { value: 'not_contains', label: 'Does Not Contain', odataFunction: 'not contains' },
-  { value: 'startswith', label: 'Begins With', odataFunction: 'startswith' },
-  { value: 'endswith', label: 'Ends With', odataFunction: 'endswith' },
-  { value: 'gt', label: 'Greater Than', odataOperator: 'gt' },
-  { value: 'ge', label: 'Greater Than or Equals', odataOperator: 'ge' },
-  { value: 'lt', label: 'Less Than', odataOperator: 'lt' },
-  { value: 'le', label: 'Less Than or Equals', odataOperator: 'le' },
-  { value: 'null', label: 'Is Null', odataOperator: 'eq null' },
-  { value: 'not_null', label: 'Is Not Null', odataOperator: 'ne null' },
+  { value: 'eq', label: 'Equals', odataOperator: 'eq', applicableTo: ['string', 'number', 'decimal', 'currency', 'boolean', 'optionset', 'guid', 'lookup'] },
+  { value: 'ne', label: 'Not Equals', odataOperator: 'ne', applicableTo: ['string', 'number', 'decimal', 'currency', 'boolean', 'optionset', 'guid', 'lookup'] },
+  { value: 'contains', label: 'Contains', odataFunction: 'contains', applicableTo: ['string'] },
+  { value: 'not_contains', label: 'Does Not Contain', odataFunction: 'not contains', applicableTo: ['string'] },
+  { value: 'startswith', label: 'Begins With', odataFunction: 'startswith', applicableTo: ['string'] },
+  { value: 'endswith', label: 'Ends With', odataFunction: 'endswith', applicableTo: ['string'] },
+  { value: 'gt', label: 'Greater Than', odataOperator: 'gt', applicableTo: ['number', 'decimal', 'currency', 'datetime'] },
+  { value: 'ge', label: 'Greater Than or Equals', odataOperator: 'ge', applicableTo: ['number', 'decimal', 'currency', 'datetime'] },
+  { value: 'lt', label: 'Less Than', odataOperator: 'lt', applicableTo: ['number', 'decimal', 'currency', 'datetime'] },
+  { value: 'le', label: 'Less Than or Equals', odataOperator: 'le', applicableTo: ['number', 'decimal', 'currency', 'datetime'] },
+  { value: 'null', label: 'Is Null', odataOperator: 'eq null', applicableTo: ['string', 'number', 'decimal', 'currency', 'boolean', 'optionset', 'guid', 'lookup', 'datetime'] },
+  { value: 'not_null', label: 'Is Not Null', odataOperator: 'ne null', applicableTo: ['string', 'number', 'decimal', 'currency', 'boolean', 'optionset', 'guid', 'lookup', 'datetime'] },
+] as const;
+
+/**
+ * Lookup-specific operators for navigating related entity fields
+ */
+export const LOOKUP_OPERATORS = [
+  { value: 'lookup_eq', label: 'Related Field Equals', description: 'Filter by a field on the related entity' },
+  { value: 'lookup_ne', label: 'Related Field Not Equals', description: 'Exclude by a field on the related entity' },
+  { value: 'lookup_contains', label: 'Related Field Contains', description: 'Filter where related field contains value' },
 ] as const;
 
 export type DataverseOperator = typeof DATAVERSE_OPERATORS[number]['value'];
+export type LookupOperator = typeof LOOKUP_OPERATORS[number]['value'];
+
+/**
+ * Get operators applicable to a specific field type
+ */
+export const getOperatorsForFieldType = (fieldType: DataverseFieldType) => {
+  return DATAVERSE_OPERATORS.filter(op => 
+    (op.applicableTo as readonly string[]).includes(fieldType)
+  );
+};
 
 /**
  * Helper to get entity by logical name
@@ -338,4 +357,36 @@ export const getValueFields = (entity: DataverseEntity): DataverseField[] => {
  */
 export const getFilterableFields = (entity: DataverseEntity): DataverseField[] => {
   return entity.fields.filter(f => !f.isPrimaryKey || f.type !== 'guid');
+};
+
+/**
+ * Get lookup fields from an entity
+ */
+export const getLookupFields = (entity: DataverseEntity): DataverseField[] => {
+  return entity.fields.filter(f => f.type === 'lookup');
+};
+
+/**
+ * Check if a field is a lookup type
+ */
+export const isLookupField = (field: DataverseField): boolean => {
+  return field.type === 'lookup';
+};
+
+/**
+ * Build a lookup expression path (e.g., "primarycontactid/fullname" for OData)
+ */
+export const buildLookupPath = (lookupField: string, targetField: string): string => {
+  return `${lookupField}/${targetField}`;
+};
+
+/**
+ * Parse a lookup expression path back to components
+ */
+export const parseLookupPath = (path: string): { lookupField: string; targetField: string } | null => {
+  const parts = path.split('/');
+  if (parts.length === 2) {
+    return { lookupField: parts[0], targetField: parts[1] };
+  }
+  return null;
 };

@@ -31,8 +31,13 @@ import { generateFormattedOData } from "@/lib/dataverse/odataGenerator";
 import {
   DATAVERSE_ENTITIES,
   DATAVERSE_OPERATORS,
+  LOOKUP_OPERATORS,
   getEntityByLogicalName,
   getFilterableFields,
+  getOperatorsForFieldType,
+  isLookupField,
+  buildLookupPath,
+  parseLookupPath,
   type DataverseEntity,
   type DataverseField,
   type DataverseOperator,
@@ -55,6 +60,15 @@ const OPERATORS = DATAVERSE_OPERATORS.map(op => ({
   label: op.label,
 }));
 
+// Combined operators including lookup-specific ones
+const ALL_OPERATORS = [
+  ...OPERATORS,
+  ...LOOKUP_OPERATORS.map(op => ({
+    value: op.value,
+    label: op.label,
+  }))
+];
+
 const createEmptyConditionGroup = (): DynamicValueFilterGroup => ({
   type: 'group',
   id: `group-${Date.now()}`,
@@ -69,6 +83,270 @@ const createEmptyCondition = (): DynamicValueFilter => ({
   operator: 'equals',
   value: ''
 });
+
+// Component for rendering a single filter row with lookup support
+interface FilterRowEditorProps {
+  filter: DynamicValueFilter;
+  availableFields: DataverseField[];
+  onUpdate: (updated: DynamicValueFilter) => void;
+  onDelete: () => void;
+}
+
+const FilterRowEditor = ({ filter, availableFields, onUpdate, onDelete }: FilterRowEditorProps) => {
+  const [isLookupMode, setIsLookupMode] = useState(false);
+  const [lookupField, setLookupField] = useState('');
+  const [targetField, setTargetField] = useState('');
+
+  // Parse existing lookup path on mount
+  useEffect(() => {
+    const parsed = parseLookupPath(filter.field);
+    if (parsed) {
+      setIsLookupMode(true);
+      setLookupField(parsed.lookupField);
+      setTargetField(parsed.targetField);
+    } else if (filter.field) {
+      setIsLookupMode(false);
+      setLookupField('');
+      setTargetField('');
+    }
+  }, []);
+
+  // Get the selected field info
+  const selectedField = availableFields.find(f => f.logicalName === (isLookupMode ? lookupField : filter.field));
+  const isSelectedFieldLookup = selectedField && isLookupField(selectedField);
+
+  // Get lookup fields for the dropdown
+  const lookupFields = availableFields.filter(f => isLookupField(f));
+
+  // Get target entity fields when a lookup is selected
+  const targetEntity = isLookupMode && lookupField 
+    ? getEntityByLogicalName(availableFields.find(f => f.logicalName === lookupField)?.lookupTarget || '')
+    : null;
+  const targetEntityFields = targetEntity?.fields || [];
+
+  // Get applicable operators based on field type
+  const getApplicableOperators = () => {
+    if (isLookupMode) {
+      // For lookup expressions, show string operators (since we're querying related field)
+      return getOperatorsForFieldType('string');
+    }
+    if (selectedField) {
+      return getOperatorsForFieldType(selectedField.type);
+    }
+    return DATAVERSE_OPERATORS;
+  };
+
+  const applicableOperators = getApplicableOperators();
+
+  // Handle field selection
+  const handleFieldChange = (value: string) => {
+    if (value === '__lookup__') {
+      setIsLookupMode(true);
+      setLookupField('');
+      setTargetField('');
+      onUpdate({ ...filter, field: '' });
+    } else {
+      setIsLookupMode(false);
+      onUpdate({ ...filter, field: value === '__empty__' ? '' : value });
+    }
+  };
+
+  // Handle lookup field selection
+  const handleLookupFieldChange = (value: string) => {
+    setLookupField(value);
+    setTargetField('');
+    onUpdate({ ...filter, field: '' });
+  };
+
+  // Handle target field selection (builds the lookup path)
+  const handleTargetFieldChange = (value: string) => {
+    setTargetField(value);
+    if (lookupField && value) {
+      const path = buildLookupPath(lookupField, value);
+      onUpdate({ ...filter, field: path });
+    }
+  };
+
+  // Cancel lookup mode
+  const handleCancelLookup = () => {
+    setIsLookupMode(false);
+    setLookupField('');
+    setTargetField('');
+    onUpdate({ ...filter, field: '' });
+  };
+
+  return (
+    <>
+      {/* Filter Row */}
+      <div className="flex-1 py-2 px-2">
+        {isLookupMode ? (
+          // Lookup expression mode - two-step field selection
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs shrink-0">
+                <Database className="h-3 w-3 mr-1" />
+                Lookup
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs text-muted-foreground"
+                onClick={handleCancelLookup}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Cancel
+              </Button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {/* Lookup field selection */}
+              <Select value={lookupField || '__empty__'} onValueChange={handleLookupFieldChange}>
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="Lookup field..." />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="__empty__" disabled>Select lookup...</SelectItem>
+                  {lookupFields.map(field => (
+                    <SelectItem key={field.logicalName} value={field.logicalName}>
+                      <span className="flex items-center gap-1">
+                        <Database className="h-3 w-3 text-muted-foreground" />
+                        {field.displayName}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Target entity field selection */}
+              <Select 
+                value={targetField || '__empty__'} 
+                onValueChange={handleTargetFieldChange}
+                disabled={!lookupField || !targetEntity}
+              >
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="Related field..." />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="__empty__" disabled>
+                    {!lookupField ? 'Select lookup first...' : `${targetEntity?.displayName || 'Related'} field...`}
+                  </SelectItem>
+                  {targetEntityFields.map(field => (
+                    <SelectItem key={field.logicalName} value={field.logicalName}>
+                      {field.displayName}
+                      <span className="text-xs text-muted-foreground ml-1">({field.type})</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Operator */}
+              <Select 
+                value={filter.operator} 
+                onValueChange={(v) => onUpdate({ ...filter, operator: v as DynamicValueFilter['operator'] })}
+              >
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  {applicableOperators.map(op => (
+                    <SelectItem key={op.value} value={op.value}>
+                      {op.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Value input for lookup */}
+            {!['null', 'not_null'].includes(filter.operator) && (
+              <Input
+                placeholder="Value to compare"
+                value={filter.value}
+                onChange={(e) => onUpdate({ ...filter, value: e.target.value })}
+                className="h-8"
+              />
+            )}
+          </div>
+        ) : (
+          // Standard filter mode
+          <div className="grid grid-cols-3 gap-2">
+            {/* Field selection with lookup option */}
+            <Select 
+              value={filter.field || '__empty__'} 
+              onValueChange={handleFieldChange}
+            >
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue placeholder="Select field" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover">
+                <SelectItem value="__empty__" disabled>Select field...</SelectItem>
+                {availableFields.map(field => (
+                  <SelectItem key={field.logicalName} value={field.logicalName}>
+                    <span className="flex items-center gap-1">
+                      {isLookupField(field) && <Database className="h-3 w-3 text-muted-foreground" />}
+                      {field.displayName}
+                    </span>
+                  </SelectItem>
+                ))}
+                {lookupFields.length > 0 && (
+                  <>
+                    <div className="h-px bg-border my-1" />
+                    <SelectItem value="__lookup__">
+                      <span className="flex items-center gap-1 text-primary">
+                        <Database className="h-3 w-3" />
+                        Filter by Related Field...
+                      </span>
+                    </SelectItem>
+                  </>
+                )}
+              </SelectContent>
+            </Select>
+
+            {/* Operator */}
+            <Select 
+              value={filter.operator} 
+              onValueChange={(v) => onUpdate({ ...filter, operator: v as DynamicValueFilter['operator'] })}
+            >
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover">
+                {applicableOperators.map(op => (
+                  <SelectItem key={op.value} value={op.value}>
+                    {op.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Value */}
+            {!['null', 'not_null'].includes(filter.operator) ? (
+              <Input
+                placeholder="Value"
+                value={filter.value}
+                onChange={(e) => onUpdate({ ...filter, value: e.target.value })}
+                className="h-8"
+              />
+            ) : (
+              <div className="h-8" />
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Delete button */}
+      <div className="w-10 px-2 flex items-center justify-center">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+          onClick={onDelete}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </>
+  );
+};
 
 // Recursive component for rendering filter groups - matching the table-based layout
 interface FilterGroupEditorProps {
@@ -121,7 +399,7 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
             <SelectTrigger className="h-7 w-16 text-xs font-medium">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-popover">
               <SelectItem value="AND">AND</SelectItem>
               <SelectItem value="OR">OR</SelectItem>
             </SelectContent>
@@ -153,7 +431,7 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
             No conditions. Use buttons below to add filters.
           </div>
         ) : (
-          group.children.map((child, index) => (
+          group.children.map((child) => (
             <div key={child.id} className="relative">
               {/* Tree connector lines */}
               <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
@@ -174,66 +452,12 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
                     />
                   </div>
                 ) : (
-                  <>
-                    {/* Filter Row */}
-                    <div className="flex-1 grid grid-cols-3 gap-2 py-2 px-2">
-                      <Select 
-                        value={child.field || '__empty__'} 
-                        onValueChange={(v) => handleUpdateChild(child.id, { ...child, field: v === '__empty__' ? '' : v })}
-                      >
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue placeholder="Select field" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__empty__" disabled>Select field...</SelectItem>
-                          {availableFields.map(field => (
-                            <SelectItem key={field.logicalName} value={field.logicalName}>
-                              {field.displayName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <Select 
-                        value={child.operator} 
-                        onValueChange={(v) => handleUpdateChild(child.id, { ...child, operator: v as DynamicValueFilter['operator'] })}
-                      >
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {OPERATORS.map(op => (
-                            <SelectItem key={op.value} value={op.value}>
-                              {op.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      {!['null', 'not_null'].includes(child.operator) ? (
-                        <Input
-                          placeholder="Value"
-                          value={child.value}
-                          onChange={(e) => handleUpdateChild(child.id, { ...child, value: e.target.value })}
-                          className="h-8"
-                        />
-                      ) : (
-                        <div className="h-8" /> // Empty placeholder for alignment
-                      )}
-                    </div>
-
-                    {/* Delete button */}
-                    <div className="w-10 px-2 flex items-center justify-center">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleRemoveChild(child.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </>
+                  <FilterRowEditor
+                    filter={child}
+                    availableFields={availableFields}
+                    onUpdate={(updated) => handleUpdateChild(child.id, updated)}
+                    onDelete={() => handleRemoveChild(child.id)}
+                  />
                 )}
               </div>
             </div>
