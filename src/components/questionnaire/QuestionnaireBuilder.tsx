@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X } from "lucide-react";
+import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X, Upload } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { exportQuestionnaire, buildExportData } from "@/lib/questionnaireExport";
+import { exportQuestionnaire, buildExportData, parseQuestionnaireFile } from "@/lib/questionnaireExport";
 import {
   Question,
   ConditionalBranch,
@@ -1153,19 +1153,50 @@ const QuestionnaireBuilder = () => {
             {!questionnaire && (
               <div className="space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold">ITSM Records</h2>
-                    <p className="text-muted-foreground">Manage your IT Service Management questionnaires</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Link to="/docs">
-                      <Button variant="outline" size="lg">
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        Documentation
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold">ITSM Records</h2>
+                      <p className="text-muted-foreground">Manage your IT Service Management questionnaires</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link to="/docs">
+                        <Button variant="outline" size="lg">
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          Documentation
+                        </Button>
+                      </Link>
+                      <Button 
+                        variant="outline" 
+                        size="lg"
+                        onClick={() => document.getElementById('import-json-input')?.click()}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Import JSON
                       </Button>
-                    </Link>
-                    <Button size="lg" onClick={handleCreateQuestionnaire}>
+                      <input
+                        id="import-json-input"
+                        type="file"
+                        accept=".json"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            const parsed = await parseQuestionnaireFile(file);
+                            setQuestionnaire(parsed.questionnaire);
+                            if (parsed.questionnaire.pages.length > 0) {
+                              setActivePageId(parsed.questionnaire.pages[0].id);
+                            }
+                            setEditingDraftId(null);
+                            setEditingRecordId(null);
+                            toast.success("Questionnaire imported successfully!");
+                          } catch (error) {
+                            toast.error("Failed to import questionnaire. Please check the file format.");
+                          }
+                          e.target.value = '';
+                        }}
+                      />
+                      <Button size="lg" onClick={handleCreateQuestionnaire}>
                       <Plus className="h-4 w-4 mr-2" />
                       Create New
                     </Button>
