@@ -203,221 +203,616 @@ const useStyles = makeStyles({
 
 // Code snippets
 // ============================================================================
-// STEP-BY-STEP GUIDE CODE SNIPPETS
+// STEP-BY-STEP GUIDE CODE SNIPPETS - PRACTICAL IMPLEMENTATION
 // ============================================================================
 
-const GUIDE_STEP1_ENTITY_METADATA = `// STEP 1: Define the entity you want to query
-// In the Dynamic Values panel, select "Dataverse Entity"
+// -----------------------------------------------------------------------------
+// GUIDE: Creating a Dynamic Entity Dropdown Service
+// -----------------------------------------------------------------------------
 
-// The available entities are defined in:
-// src/data/dataverseEntities.ts
+const GUIDE_OVERVIEW = `/**
+ * GOAL: Create a dropdown that loads entities from Dynamics 365 CRM
+ * 
+ * This guide shows you how to:
+ * 1. Create a service file that fetches entities at runtime
+ * 2. Use the existing PCF wrapper (QueryService) from this project
+ * 3. Populate a dropdown with live CRM data
+ * 
+ * FILES YOU'LL CREATE:
+ * └── src/lib/dataverse/
+ *     └── DynamicDropdownService.ts    ← New service file
+ * 
+ * EXISTING FILES YOU'LL USE:
+ * └── src/lib/dataverse/pcf/
+ *     ├── QueryService.ts              ← For executing queries
+ *     ├── CrudService.ts               ← For CRUD operations
+ *     ├── types.ts                     ← Type definitions
+ *     └── index.ts                     ← All exports
+ */`;
 
-// Example: To load all Accounts into a dropdown
-const entityLogicalName = 'account';  // This is what you select in the UI
+const GUIDE_STEP1_CREATE_SERVICE = `// =============================================================================
+// STEP 1: Create a new service file
+// =============================================================================
+// 
+// CREATE FILE: src/lib/dataverse/DynamicDropdownService.ts
+// 
+// This service will:
+// - Accept a PCF context (provided by Dynamics 365 at runtime)
+// - Use QueryService to fetch entities from the connected CRM
+// - Return formatted options for dropdowns
 
-// Each entity has these key properties:
-// - logicalName: 'account' (internal name)
-// - displayName: 'Account' (shown in UI)
-// - primaryIdAttribute: 'accountid' (the GUID field)
-// - primaryNameAttribute: 'name' (the display name field)`;
+import { 
+  QueryService,
+  type IPCFContext,
+  type DataverseResult,
+  type ODataOptions,
+} from '@/lib/dataverse/pcf';
 
-const GUIDE_STEP2_FIELD_MAPPING = `// STEP 2: Map fields for Value and Label
+/**
+ * Dropdown option structure
+ */
+export interface DropdownOption {
+  value: string;      // What gets saved (usually GUID)
+  label: string;      // What user sees (display name)
+  metadata?: Record<string, unknown>;  // Extra data if needed
+}
 
-// VALUE FIELD: What gets saved when user selects an option
-// Usually the primary key (GUID)
-const valueField = 'accountid';  // e.g., "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+/**
+ * Configuration for loading dropdown options
+ */
+export interface DropdownConfig {
+  /** Entity logical name (e.g., 'account', 'contact', 'incident') */
+  entityName: string;
+  /** Field to use as option value (usually primary key) */
+  valueField: string;
+  /** Field to use as display label */
+  labelField: string;
+  /** OData filter expression (optional) */
+  filter?: string;
+  /** Sort field (optional) */
+  orderBy?: string;
+  /** Max records to fetch (default: 500) */
+  top?: number;
+  /** Additional fields to retrieve as metadata */
+  additionalFields?: string[];
+}
 
-// LABEL FIELD: What the user sees in the dropdown
-// Usually the primary name attribute
-const labelField = 'name';  // e.g., "Contoso Ltd"
+/**
+ * Service for loading dropdown options from Dataverse
+ */
+export class DynamicDropdownService {
+  private queryService: QueryService;
 
-// Complete configuration:
-const dynamicConfig = {
-  tableName: 'account',      // Entity logical name
-  valueField: 'accountid',   // What gets stored
-  labelField: 'name',        // What user sees
-};`;
-
-const GUIDE_STEP3_ADD_FILTERS = `// STEP 3: Add filter conditions (optional but recommended)
-
-// Filter to show only ACTIVE accounts:
-const configWithFilter = {
-  tableName: 'account',
-  valueField: 'accountid',
-  labelField: 'name',
-  conditionGroup: {
-    matchType: 'AND',
-    children: [
-      {
-        type: 'filter',
-        field: 'statecode',
-        operator: 'eq',        // equals
-        value: '0'             // 0 = Active in Dataverse
-      }
-    ]
+  constructor(context: IPCFContext) {
+    // QueryService wraps context.webAPI with error handling
+    this.queryService = new QueryService(context);
   }
-};
 
-// Common filter operators:
-// 'eq'       - equals
-// 'ne'       - not equals
-// 'gt'       - greater than
-// 'lt'       - less than
-// 'contains' - contains text
-// 'null'     - is null/empty
-// 'not_null' - is not null/empty`;
+  /**
+   * Load dropdown options from any Dataverse entity
+   */
+  async loadOptions(config: DropdownConfig): Promise<DataverseResult<DropdownOption[]>> {
+    // Build OData query options
+    const options: ODataOptions = {
+      select: [config.valueField, config.labelField, ...(config.additionalFields || [])],
+      filter: config.filter,
+      orderBy: config.orderBy || \`\${config.labelField} asc\`,
+      top: config.top || 500,
+    };
 
-const GUIDE_STEP4_ORDERING = `// STEP 4: Set ordering for the dropdown options
+    // Execute query using the wrapper
+    const result = await this.queryService.retrieveMultiple<Record<string, unknown>>(
+      config.entityName,
+      options
+    );
 
-const configWithOrdering = {
-  tableName: 'account',
-  valueField: 'accountid',
-  labelField: 'name',
-  orderByField: 'name',       // Sort by name
-  orderDirection: 'asc',      // 'asc' or 'desc'
-  conditionGroup: {
-    matchType: 'AND',
-    children: [
-      { type: 'filter', field: 'statecode', operator: 'eq', value: '0' }
-    ]
+    if (!result.success) {
+      return result; // Pass through the error
+    }
+
+    // Transform to dropdown options
+    const dropdownOptions: DropdownOption[] = result.data.entities.map(entity => ({
+      value: String(entity[config.valueField] || ''),
+      label: String(entity[config.labelField] || ''),
+      metadata: config.additionalFields?.reduce((acc, field) => {
+        acc[field] = entity[field];
+        return acc;
+      }, {} as Record<string, unknown>),
+    }));
+
+    return { success: true, data: dropdownOptions };
   }
-};
 
-// This generates:
-// OData:    $orderby=name asc
-// FetchXML: <order attribute="name" />`;
-
-const GUIDE_STEP5_EXECUTE_QUERY = `// STEP 5: Execute the query in your PCF control
-
-import { QueryService } from '@/lib/dataverse/pcf';
-import { generateFetchXml } from '@/lib/dataverse/fetchXmlGenerator';
-
-async function loadDropdownOptions(
-  context: ComponentFramework.Context<IInputs>,
-  config: DynamicValueConfig
-): Promise<Array<{ value: string; label: string }>> {
-  
-  // Initialize the query service
-  const queryService = new QueryService(context);
-  
-  // Generate FetchXML from your config
-  const fetchXml = generateFetchXml(config, { top: 500 });
-  
-  // Execute the query
-  const result = await queryService.executeFetchXml(
-    config.tableName,
-    { fetchXml }
-  );
-  
-  // Handle the result
-  if (!result.success) {
-    console.error('Query failed:', result.error.userMessage);
-    return [];
+  /**
+   * Update service context (call in PCF updateView)
+   */
+  updateContext(context: IPCFContext): void {
+    this.queryService.updateContext(context);
   }
-  
-  // Transform to dropdown options
-  return result.data.entities.map(entity => ({
-    value: String(entity[config.valueField]),
-    label: String(entity[config.labelField])
-  }));
 }`;
 
-const GUIDE_COMPLETE_EXAMPLE = `// COMPLETE EXAMPLE: Load Accounts into a Dropdown
+const GUIDE_STEP2_USE_IN_PCF = `// =============================================================================
+// STEP 2: Use the service in your PCF Control
+// =============================================================================
+//
+// This is your main PCF control file (e.g., MyDropdownControl/index.ts)
+// The context is provided by Dynamics 365 when your PCF loads
+
+import { DynamicDropdownService, type DropdownConfig } from '@/lib/dataverse/DynamicDropdownService';
+import type { IInputs, IOutputs } from './generated/ManifestTypes';
+
+export class DynamicEntityDropdown implements ComponentFramework.StandardControl<IInputs, IOutputs> {
+  private container!: HTMLDivElement;
+  private dropdownService!: DynamicDropdownService;
+  private selectElement!: HTMLSelectElement;
+  private selectedValue: string = '';
+  private notifyOutputChanged!: () => void;
+
+  /**
+   * PCF init - called once when control loads
+   * The 'context' is provided by Dynamics 365 CRM
+   */
+  public init(
+    context: ComponentFramework.Context<IInputs>,
+    notifyOutputChanged: () => void,
+    state: ComponentFramework.Dictionary,
+    container: HTMLDivElement
+  ): void {
+    this.container = container;
+    this.notifyOutputChanged = notifyOutputChanged;
+
+    // Initialize the dropdown service with PCF context
+    // This context contains webAPI which connects to YOUR CRM instance
+    this.dropdownService = new DynamicDropdownService(context);
+
+    // Create the dropdown UI
+    this.createDropdownUI();
+
+    // Load data from CRM (async)
+    this.loadEntities();
+  }
+
+  private createDropdownUI(): void {
+    this.selectElement = document.createElement('select');
+    this.selectElement.className = 'pcf-dropdown';
+    this.selectElement.innerHTML = '<option value="">Loading...</option>';
+    this.selectElement.onchange = () => {
+      this.selectedValue = this.selectElement.value;
+      this.notifyOutputChanged();
+    };
+    this.container.appendChild(this.selectElement);
+  }
+
+  private async loadEntities(): Promise<void> {
+    // Configure which entity and fields to load
+    const config: DropdownConfig = {
+      entityName: 'account',           // Entity logical name in CRM
+      valueField: 'accountid',         // Primary key field
+      labelField: 'name',              // Display name field
+      filter: 'statecode eq 0',        // Only active records
+      orderBy: 'name asc',             // Sort alphabetically
+      top: 500,                        // Limit results
+    };
+
+    // Fetch from CRM using the wrapper
+    const result = await this.dropdownService.loadOptions(config);
+
+    if (!result.success) {
+      this.showError(result.error.userMessage);
+      return;
+    }
+
+    // Populate dropdown with CRM data
+    this.selectElement.innerHTML = '<option value="">-- Select Account --</option>';
+    for (const option of result.data) {
+      const optionEl = document.createElement('option');
+      optionEl.value = option.value;
+      optionEl.textContent = option.label;
+      this.selectElement.appendChild(optionEl);
+    }
+  }
+
+  private showError(message: string): void {
+    this.selectElement.innerHTML = \`<option value="">Error: \${message}</option>\`;
+    this.selectElement.disabled = true;
+  }
+
+  /**
+   * PCF updateView - called when data changes
+   */
+  public updateView(context: ComponentFramework.Context<IInputs>): void {
+    // Always update service context
+    this.dropdownService.updateContext(context);
+  }
+
+  public getOutputs(): IOutputs {
+    return { selectedValue: this.selectedValue };
+  }
+
+  public destroy(): void {
+    // Cleanup
+  }
+}`;
+
+const GUIDE_STEP3_ENTITY_CONFIGS = `// =============================================================================
+// STEP 3: Pre-built configurations for common entities
+// =============================================================================
+//
+// CREATE FILE: src/lib/dataverse/entityConfigs.ts
+//
+// These are ready-to-use configs for common Dynamics 365 entities
+
+import type { DropdownConfig } from './DynamicDropdownService';
+
+/**
+ * Pre-configured dropdown configs for common CRM entities
+ * Use these directly or as templates for custom configs
+ */
+export const ENTITY_DROPDOWN_CONFIGS = {
+
+  /** Active Accounts sorted by name */
+  accounts: {
+    entityName: 'account',
+    valueField: 'accountid',
+    labelField: 'name',
+    filter: 'statecode eq 0',
+    orderBy: 'name asc',
+    additionalFields: ['telephone1', 'emailaddress1'],
+  } as DropdownConfig,
+
+  /** Active Contacts sorted by full name */
+  contacts: {
+    entityName: 'contact',
+    valueField: 'contactid',
+    labelField: 'fullname',
+    filter: 'statecode eq 0',
+    orderBy: 'fullname asc',
+    additionalFields: ['emailaddress1', 'telephone1'],
+  } as DropdownConfig,
+
+  /** Active Cases sorted by newest first */
+  cases: {
+    entityName: 'incident',
+    valueField: 'incidentid',
+    labelField: 'title',
+    filter: 'statecode eq 0',
+    orderBy: 'createdon desc',
+    additionalFields: ['ticketnumber', 'prioritycode'],
+  } as DropdownConfig,
+
+  /** High priority Cases only */
+  highPriorityCases: {
+    entityName: 'incident',
+    valueField: 'incidentid',
+    labelField: 'title',
+    filter: 'statecode eq 0 and prioritycode eq 1',
+    orderBy: 'createdon desc',
+  } as DropdownConfig,
+
+  /** Open Opportunities */
+  opportunities: {
+    entityName: 'opportunity',
+    valueField: 'opportunityid',
+    labelField: 'name',
+    filter: 'statecode eq 0',
+    orderBy: 'estimatedclosedate asc',
+    additionalFields: ['estimatedvalue'],
+  } as DropdownConfig,
+
+  /** Active System Users (for assignment) */
+  users: {
+    entityName: 'systemuser',
+    valueField: 'systemuserid',
+    labelField: 'fullname',
+    filter: 'isdisabled eq false',
+    orderBy: 'fullname asc',
+  } as DropdownConfig,
+
+  /** Teams (for assignment) */
+  teams: {
+    entityName: 'team',
+    valueField: 'teamid',
+    labelField: 'name',
+    filter: 'teamtype eq 0',  // Business-owned teams only
+    orderBy: 'name asc',
+  } as DropdownConfig,
+
+  /** Active Products */
+  products: {
+    entityName: 'product',
+    valueField: 'productid',
+    labelField: 'name',
+    filter: 'statecode eq 0',
+    orderBy: 'name asc',
+    additionalFields: ['productnumber', 'price'],
+  } as DropdownConfig,
+
+  /** Active Queues */
+  queues: {
+    entityName: 'queue',
+    valueField: 'queueid',
+    labelField: 'name',
+    filter: 'statecode eq 0',
+    orderBy: 'name asc',
+  } as DropdownConfig,
+};
+
+// Usage in PCF:
+// const result = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.accounts);`;
+
+const GUIDE_STEP4_DYNAMIC_ENTITY = `// =============================================================================
+// STEP 4: Load ANY entity dynamically (runtime configuration)
+// =============================================================================
+//
+// Sometimes you need to load entities based on user configuration
+// or form metadata, not hardcoded values
+
+/**
+ * Load entities dynamically based on form configuration
+ */
+async function loadDynamicEntity(
+  dropdownService: DynamicDropdownService,
+  entityName: string,      // From configuration/UI
+  displayField: string,    // From configuration/UI
+  filterExpression?: string
+): Promise<DropdownOption[]> {
+  
+  // Build config from runtime parameters
+  const config: DropdownConfig = {
+    entityName: entityName,
+    valueField: \`\${entityName}id\`,    // Standard naming convention
+    labelField: displayField,
+    filter: filterExpression || 'statecode eq 0',
+    orderBy: \`\${displayField} asc\`,
+    top: 500,
+  };
+
+  const result = await dropdownService.loadOptions(config);
+  
+  if (!result.success) {
+    console.error(\`Failed to load \${entityName}:\`, result.error);
+    return [];
+  }
+
+  return result.data;
+}
+
+// Example usage with DynamicValueConfig from questionnaire:
+async function loadFromQuestionnaireConfig(
+  dropdownService: DynamicDropdownService,
+  dynamicConfig: DynamicValueConfig
+): Promise<DropdownOption[]> {
+  
+  // Convert DynamicValueConfig to DropdownConfig
+  const config: DropdownConfig = {
+    entityName: dynamicConfig.tableName,
+    valueField: dynamicConfig.valueField,
+    labelField: dynamicConfig.labelField,
+    orderBy: dynamicConfig.orderByField 
+      ? \`\${dynamicConfig.orderByField} \${dynamicConfig.orderDirection || 'asc'}\`
+      : undefined,
+    top: 500,
+  };
+
+  // If conditionGroup exists, convert to OData filter
+  if (dynamicConfig.conditionGroup?.children?.length) {
+    config.filter = buildODataFilter(dynamicConfig.conditionGroup);
+  }
+
+  return (await dropdownService.loadOptions(config)).success 
+    ? (await dropdownService.loadOptions(config)).data 
+    : [];
+}
+
+// Helper to convert condition group to OData filter
+function buildODataFilter(group: DynamicValueConditionGroup): string {
+  const conditions = group.children
+    .filter(c => c.type === 'filter' && c.field)
+    .map(c => {
+      const filter = c as DynamicValueCondition;
+      const value = isNaN(Number(filter.value)) 
+        ? \`'\${filter.value}'\` 
+        : filter.value;
+      return \`\${filter.field} eq \${value}\`;
+    });
+  
+  return conditions.join(group.matchType === 'AND' ? ' and ' : ' or ');
+}`;
+
+const GUIDE_STEP5_FETCHXML_ADVANCED = `// =============================================================================
+// STEP 5: Advanced - Using FetchXML for complex queries
+// =============================================================================
+//
+// For complex queries with linked entities, aggregates, or special conditions
+// use the FetchXML generator
 
 import { QueryService } from '@/lib/dataverse/pcf';
 import { generateFetchXml } from '@/lib/dataverse/fetchXmlGenerator';
 import type { DynamicValueConfig } from '@/types/questionnaire';
 
-class AccountDropdownControl {
-  private queryService!: QueryService;
-  private container!: HTMLDivElement;
+/**
+ * Load options using FetchXML (supports more complex queries)
+ */
+async function loadWithFetchXml(
+  queryService: QueryService,
+  config: DynamicValueConfig
+): Promise<DropdownOption[]> {
   
-  public init(
-    context: ComponentFramework.Context<IInputs>,
-    container: HTMLDivElement
-  ): void {
-    this.queryService = new QueryService(context);
-    this.container = container;
-    
-    // Load and render the dropdown
-    this.loadAccounts();
-  }
-  
-  private async loadAccounts(): Promise<void> {
-    // 1. Define the Dynamic Value configuration
-    const config: DynamicValueConfig = {
-      tableName: 'account',           // Dataverse Entity
-      valueField: 'accountid',        // Value Attribute
-      labelField: 'name',             // Label Attribute
-      orderByField: 'name',           // Sort Field
-      orderDirection: 'asc',          // Sort Direction
-      conditionGroup: {               // Filters
-        matchType: 'AND',
-        children: [
-          {
-            type: 'filter',
-            field: 'statecode',       // Only active records
-            operator: 'eq',
-            value: '0'
-          }
-        ]
-      }
-    };
-    
-    // 2. Generate FetchXML query
-    const fetchXml = generateFetchXml(config, { top: 500 });
-    
-    // 3. Execute the query
-    const result = await this.queryService.executeFetchXml<{
-      accountid: string;
-      name: string;
-    }>('account', { fetchXml });
-    
-    if (!result.success) {
-      this.showError(result.error.userMessage);
-      return;
-    }
-    
-    // 4. Build the dropdown HTML
-    const select = document.createElement('select');
-    select.innerHTML = '<option value="">-- Select Account --</option>';
-    
-    for (const account of result.data.entities) {
-      const option = document.createElement('option');
-      option.value = account.accountid;
-      option.textContent = account.name;
-      select.appendChild(option);
-    }
-    
-    this.container.appendChild(select);
-  }
-  
-  private showError(message: string): void {
-    const error = document.createElement('div');
-    error.style.color = 'red';
-    error.textContent = message;
-    this.container.appendChild(error);
-  }
-}`;
+  // Generate FetchXML from the configuration
+  // This handles nested conditions, link-entities, etc.
+  const fetchXml = generateFetchXml(config, { 
+    top: 500,
+    distinct: true,  // Remove duplicates if any
+  });
 
-const GUIDE_INCIDENT_EXAMPLE = `// EXAMPLE: Load Open Cases (Incidents) with Priority
+  console.log('Generated FetchXML:', fetchXml);
 
-const incidentConfig: DynamicValueConfig = {
-  tableName: 'incident',           // Cases/Incidents table
+  // Execute the FetchXML query
+  const result = await queryService.executeFetchXml<Record<string, unknown>>(
+    config.tableName,
+    { fetchXml }
+  );
+
+  if (!result.success) {
+    console.error('FetchXML query failed:', result.error);
+    return [];
+  }
+
+  // Map results to dropdown options
+  return result.data.entities.map(entity => ({
+    value: String(entity[config.valueField] || ''),
+    label: String(entity[config.labelField] || ''),
+  }));
+}
+
+// -----------------------------------------------------------------------------
+// CUSTOM FETCHXML TEMPLATES
+// -----------------------------------------------------------------------------
+
+/**
+ * Custom FetchXML for accounts with their primary contact name
+ */
+const ACCOUNTS_WITH_CONTACT = \`
+<fetch top="500">
+  <entity name="account">
+    <attribute name="accountid" />
+    <attribute name="name" />
+    <filter>
+      <condition attribute="statecode" operator="eq" value="0" />
+    </filter>
+    <order attribute="name" />
+    <link-entity name="contact" from="contactid" to="primarycontactid" link-type="outer">
+      <attribute name="fullname" alias="contact_name" />
+    </link-entity>
+  </entity>
+</fetch>
+\`;
+
+/**
+ * Custom FetchXML for cases with customer info
+ */
+const CASES_WITH_CUSTOMER = \`
+<fetch top="500">
+  <entity name="incident">
+    <attribute name="incidentid" />
+    <attribute name="title" />
+    <attribute name="ticketnumber" />
+    <filter>
+      <condition attribute="statecode" operator="eq" value="0" />
+    </filter>
+    <order attribute="createdon" descending="true" />
+    <link-entity name="account" from="accountid" to="customerid" link-type="outer">
+      <attribute name="name" alias="customer_name" />
+    </link-entity>
+  </entity>
+</fetch>
+\`;
+
+// Usage:
+// const result = await queryService.executeFetchXml('account', { fetchXml: ACCOUNTS_WITH_CONTACT });`;
+
+const GUIDE_FILE_STRUCTURE = `// =============================================================================
+// SUMMARY: Project File Structure
+// =============================================================================
+//
+// After following this guide, your project structure should look like:
+
+/*
+src/
+├── lib/
+│   └── dataverse/
+│       ├── pcf/                          ← EXISTING (don't modify)
+│       │   ├── index.ts                  ← Exports all services
+│       │   ├── QueryService.ts           ← OData & FetchXML queries
+│       │   ├── CrudService.ts            ← Create/Update/Delete
+│       │   ├── BaseDataverseService.ts   ← Shared functionality
+│       │   ├── ErrorHandler.ts           ← Error normalization
+│       │   ├── Logger.ts                 ← Structured logging
+│       │   └── types.ts                  ← Type definitions
+│       │
+│       ├── DynamicDropdownService.ts     ← NEW: Your dropdown loader
+│       ├── entityConfigs.ts              ← NEW: Pre-built configs
+│       ├── fetchXmlGenerator.ts          ← EXISTING: Query generation
+│       └── odataGenerator.ts             ← EXISTING: OData URLs
+│
+└── your-pcf-control/
+    └── index.ts                          ← Uses DynamicDropdownService
+*/
+
+// -----------------------------------------------------------------------------
+// IMPORT PATHS REFERENCE
+// -----------------------------------------------------------------------------
+
+// From your PCF control, import like this:
+import { 
+  QueryService,
+  CrudService,
+  createLogger,
+} from '@/lib/dataverse/pcf';
+
+import { 
+  DynamicDropdownService,
+  type DropdownConfig,
+} from '@/lib/dataverse/DynamicDropdownService';
+
+import { ENTITY_DROPDOWN_CONFIGS } from '@/lib/dataverse/entityConfigs';
+
+import { generateFetchXml } from '@/lib/dataverse/fetchXmlGenerator';
+import { generateODataUrl } from '@/lib/dataverse/odataGenerator';`;
+
+const GUIDE_QUICK_REFERENCE = `// =============================================================================
+// QUICK REFERENCE: Common Operations
+// =============================================================================
+
+// 1. INITIALIZE SERVICE (in PCF init)
+const dropdownService = new DynamicDropdownService(context);
+
+// 2. LOAD ACCOUNTS
+const accounts = await dropdownService.loadOptions({
+  entityName: 'account',
+  valueField: 'accountid',
+  labelField: 'name',
+  filter: 'statecode eq 0',
+});
+
+// 3. LOAD CONTACTS
+const contacts = await dropdownService.loadOptions({
+  entityName: 'contact',
+  valueField: 'contactid',
+  labelField: 'fullname',
+  filter: 'statecode eq 0',
+});
+
+// 4. LOAD CASES (newest first)
+const cases = await dropdownService.loadOptions({
+  entityName: 'incident',
   valueField: 'incidentid',
   labelField: 'title',
-  orderByField: 'createdon',
-  orderDirection: 'desc',          // Newest first
-  conditionGroup: {
-    matchType: 'AND',
-    children: [
-      // Only active cases
-      { type: 'filter', field: 'statecode', operator: 'eq', value: '0' },
-      // Only high priority
-      { type: 'filter', field: 'prioritycode', operator: 'eq', value: '1' }
-    ]
-  }
-};
+  filter: 'statecode eq 0',
+  orderBy: 'createdon desc',
+});
+
+// 5. LOAD WITH CUSTOM FILTER
+const highValueAccounts = await dropdownService.loadOptions({
+  entityName: 'account',
+  valueField: 'accountid',
+  labelField: 'name',
+  filter: 'statecode eq 0 and revenue gt 1000000',
+  orderBy: 'revenue desc',
+});
+
+// 6. USE PRE-BUILT CONFIG
+import { ENTITY_DROPDOWN_CONFIGS } from '@/lib/dataverse/entityConfigs';
+const users = await dropdownService.loadOptions(ENTITY_DROPDOWN_CONFIGS.users);
+
+// 7. CHECK RESULT
+if (result.success) {
+  console.log('Loaded', result.data.length, 'options');
+} else {
+  console.error('Error:', result.error.userMessage);
+}`;
+
+// Legacy snippets for other sections (keeping for backwards compatibility)
 
 // This generates FetchXML:
 // <fetch top="500">
@@ -1451,110 +1846,77 @@ const PCFDocumentation = () => {
         {/* Guide: Dynamic Dropdown */}
         <section id="guide-dropdown" className={styles.section}>
           <div className={styles.sectionHeader}>
-            <Title2>📖 Step-by-Step: Load Data into Dynamic Dropdown</Title2>
+            <Title2>📖 Step-by-Step: Create Dynamic Entity Dropdown</Title2>
           </div>
           <Body1>
-            This guide shows exactly how to populate a questionnaire Choice field
-            with live Dataverse data using the Dynamic Values configuration.
+            This guide shows how to create a service that loads entities from YOUR Dynamics 365 CRM 
+            at runtime and populates dropdowns with live data.
           </Body1>
 
           <div className={styles.successBox}>
             <Checkmark24Regular />
             <Body1>
-              <strong>Use Case:</strong> You want a dropdown that shows all active Accounts
-              from Dataverse instead of hardcoded options.
+              <strong>Goal:</strong> Create a reusable service that fetches entities using the 
+              existing PCF wrapper services in this project.
             </Body1>
           </div>
 
-          <Title3>Step 1: Select the Dataverse Entity</Title3>
-          <Body1>
-            In the "Configure Dynamic Values" panel, select which Dataverse table to query.
-          </Body1>
-          <CodeBlock code={GUIDE_STEP1_ENTITY_METADATA} language="typescript" />
+          <Title3>Overview: What You'll Build</Title3>
+          <CodeBlock code={GUIDE_OVERVIEW} language="typescript" />
 
-          <Title3>Step 2: Map Value and Label Fields</Title3>
+          <Title3>Step 1: Create the DynamicDropdownService</Title3>
           <Body1>
-            Define what gets stored (value) and what users see (label).
+            Create a new service file that wraps the QueryService for dropdown-specific operations.
           </Body1>
-          <CodeBlock code={GUIDE_STEP2_FIELD_MAPPING} language="typescript" />
+          <CodeBlock code={GUIDE_STEP1_CREATE_SERVICE} language="typescript" />
 
-          <Title3>Step 3: Add Filter Conditions</Title3>
+          <Title3>Step 2: Use in Your PCF Control</Title3>
           <Body1>
-            Filter records to show only relevant options (e.g., active records only).
+            The PCF context (with webAPI) is provided by Dynamics 365 when your control loads.
           </Body1>
-          <CodeBlock code={GUIDE_STEP3_ADD_FILTERS} language="typescript" />
-
-          <Title3>Step 4: Set Ordering</Title3>
-          <Body1>
-            Define how options should be sorted in the dropdown.
-          </Body1>
-          <CodeBlock code={GUIDE_STEP4_ORDERING} language="typescript" />
-
-          <Title3>Step 5: Execute the Query</Title3>
-          <Body1>
-            Load the data in your PCF control using the QueryService.
-          </Body1>
-          <CodeBlock code={GUIDE_STEP5_EXECUTE_QUERY} language="typescript" />
-
-          <Title3>UI Field Mapping Reference</Title3>
-          <Body1>
-            Quick reference showing how UI fields map to configuration properties.
-          </Body1>
-          <CodeBlock code={GUIDE_UI_MAPPING} language="text" />
+          <CodeBlock code={GUIDE_STEP2_USE_IN_PCF} language="typescript" />
         </section>
 
         <Divider />
 
-        {/* Guide: Adding Filters */}
+        {/* Guide: Entity Configurations */}
         <section id="guide-filters" className={styles.section}>
           <div className={styles.sectionHeader}>
-            <Title2>📖 Step-by-Step: Complex Filtering</Title2>
+            <Title2>📖 Step-by-Step: Pre-built Entity Configs</Title2>
           </div>
           <Body1>
-            Learn how to add complex filter conditions including lookup field filtering.
+            Create ready-to-use configurations for common Dataverse entities.
           </Body1>
 
-          <Title3>Filter by Lookup Field (Related Entity)</Title3>
+          <Title3>Step 3: Pre-built Entity Configurations</Title3>
+          <CodeBlock code={GUIDE_STEP3_ENTITY_CONFIGS} language="typescript" />
+
+          <Title3>Step 4: Dynamic Entity Loading</Title3>
           <Body1>
-            Filter accounts by their primary contact's city - this requires a lookup expression.
+            Load any entity dynamically based on runtime configuration.
           </Body1>
-          <CodeBlock code={GUIDE_CONTACT_LOOKUP_EXAMPLE} language="typescript" />
-
-          <div className={styles.warningBox}>
-            <Warning24Regular />
-            <div>
-              <Body1 style={{ fontWeight: 600 }}>Lookup Path Syntax</Body1>
-              <Body1>
-                Use <code className={styles.inlineCode}>lookupfield/targetfield</code> format.
-                The lookup field must exist on the source entity and point to the target entity
-                containing the field you want to filter on.
-              </Body1>
-            </div>
-          </div>
+          <CodeBlock code={GUIDE_STEP4_DYNAMIC_ENTITY} language="typescript" />
         </section>
 
         <Divider />
 
-        {/* Guide: Real Examples */}
+        {/* Guide: Advanced & Reference */}
         <section id="guide-examples" className={styles.section}>
           <div className={styles.sectionHeader}>
-            <Title2>📖 Real-World Examples</Title2>
+            <Title2>📖 Advanced: FetchXML & Quick Reference</Title2>
           </div>
           <Body1>
-            Copy-paste ready configurations for common Dataverse entities.
+            Advanced patterns using FetchXML for complex queries with linked entities.
           </Body1>
 
-          <Title3>Complete Example: Account Dropdown Control</Title3>
-          <CodeBlock code={GUIDE_COMPLETE_EXAMPLE} language="typescript" />
+          <Title3>Step 5: Advanced FetchXML Queries</Title3>
+          <CodeBlock code={GUIDE_STEP5_FETCHXML_ADVANCED} language="typescript" />
 
-          <Title3>Example: Open Cases (Incidents) by Priority</Title3>
-          <CodeBlock code={GUIDE_INCIDENT_EXAMPLE} language="typescript" />
+          <Title3>Project File Structure</Title3>
+          <CodeBlock code={GUIDE_FILE_STRUCTURE} language="typescript" />
 
-          <Title3>Example: Teams for Assignment</Title3>
-          <CodeBlock code={GUIDE_TEAM_EXAMPLE} language="typescript" />
-
-          <Title3>Example: Active Products with Price</Title3>
-          <CodeBlock code={GUIDE_PRODUCT_EXAMPLE} language="typescript" />
+          <Title3>Quick Reference: Common Operations</Title3>
+          <CodeBlock code={GUIDE_QUICK_REFERENCE} language="typescript" />
         </section>
 
         <Divider />
