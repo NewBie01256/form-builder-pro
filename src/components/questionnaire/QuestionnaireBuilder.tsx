@@ -195,6 +195,14 @@ const savePublishedRecords = (records: Record<string, PublishedRecord>) => {
   }
 };
 
+// Categorized validation errors for publish
+interface ValidationErrors {
+  pages: string[];
+  sections: string[];
+  branches: string[];
+  questions: string[];
+}
+
 const QuestionnaireBuilder = () => {
   const styles = useStyles();
   const toast = useFluentToast();
@@ -207,7 +215,7 @@ const QuestionnaireBuilder = () => {
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [publishedRecords, setPublishedRecords] = useState<Record<string, PublishedRecord>>(loadPublishedRecords());
-  const [publishValidationError, setPublishValidationError] = useState<string | null>(null);
+  const [publishValidationErrors, setPublishValidationErrors] = useState<ValidationErrors | null>(null);
 
   // Load drafts from localStorage on mount
   useEffect(() => {
@@ -224,10 +232,10 @@ const QuestionnaireBuilder = () => {
     savePublishedRecords(publishedRecords);
   }, [publishedRecords]);
 
-  // Clear publish validation error when questionnaire changes
+  // Clear publish validation errors when questionnaire changes
   useEffect(() => {
-    if (publishValidationError) {
-      setPublishValidationError(null);
+    if (publishValidationErrors) {
+      setPublishValidationErrors(null);
     }
   }, [questionnaire]);
 
@@ -694,7 +702,13 @@ const QuestionnaireBuilder = () => {
   const handlePublish = () => {
     if (!questionnaire) return;
     
-    const validationErrors: string[] = [];
+    // Categorized validation errors
+    const errors: ValidationErrors = {
+      pages: [],
+      sections: [],
+      branches: [],
+      questions: [],
+    };
     
     // Helper to check if a rule group has rules
     const hasRules = (ruleGroup: { children: unknown[] }): boolean => {
@@ -705,20 +719,20 @@ const QuestionnaireBuilder = () => {
     const validateBranch = (branch: ConditionalBranch, path: string): void => {
       // Check if branch has no questions
       if (branch.questions.length === 0 && branch.childBranches.length === 0) {
-        validationErrors.push(`Branch "${branch.name || 'Untitled Branch'}" in ${path} has no questions`);
+        errors.branches.push(`"${branch.name || 'Untitled Branch'}" has no questions`);
       }
       
       // Check if branch is missing conditions
       const branchConditionGroup = branch.conditionGroup || branch.ruleGroup;
       if (!branchConditionGroup || !hasRules(branchConditionGroup)) {
-        validationErrors.push(`Branch "${branch.name || 'Untitled Branch'}" in ${path} is missing conditions`);
+        errors.branches.push(`"${branch.name || 'Untitled Branch'}" is missing conditions`);
       }
       
       // Check answer-level rule groups in branch questions
       branch.questions.forEach(q => {
         q.answerLevelRuleGroups.forEach((rg, rgIndex) => {
           if (!hasRules(rg)) {
-            validationErrors.push(`Answer Set ${rgIndex + 1} in question "${q.text || 'Untitled Question'}" (${path}) is missing rules`);
+            errors.questions.push(`Answer Set ${rgIndex + 1} in "${q.text || 'Untitled Question'}" is missing rules`);
           }
         });
       });
@@ -740,7 +754,7 @@ const QuestionnaireBuilder = () => {
       });
       
       if (!pageHasContent) {
-        validationErrors.push(`Page "${pageName}" is missing Configurations`);
+        errors.pages.push(`"${pageName}" is missing content`);
       }
       
       // Validate sections
@@ -750,14 +764,14 @@ const QuestionnaireBuilder = () => {
         
         // Check empty sections
         if (section.questions.length === 0 && section.branches.length === 0) {
-          validationErrors.push(`Section "${sectionName}" in Page "${pageName}" is empty`);
+          errors.sections.push(`"${sectionName}" in "${pageName}" is empty`);
         }
         
         // Check answer-level rule groups in section questions
         section.questions.forEach(q => {
           q.answerLevelRuleGroups.forEach((rg, rgIndex) => {
             if (!hasRules(rg)) {
-              validationErrors.push(`Answer Set ${rgIndex + 1} in question "${q.text || 'Untitled Question'}" (${sectionPath}) is missing rules`);
+              errors.questions.push(`Answer Set ${rgIndex + 1} in "${q.text || 'Untitled Question'}" is missing rules`);
             }
           });
         });
@@ -767,13 +781,17 @@ const QuestionnaireBuilder = () => {
       });
     });
     
-    if (validationErrors.length > 0) {
-      setPublishValidationError(validationErrors.join(' | '));
+    // Check if any category has errors
+    const hasErrors = errors.pages.length > 0 || errors.sections.length > 0 || 
+                      errors.branches.length > 0 || errors.questions.length > 0;
+    
+    if (hasErrors) {
+      setPublishValidationErrors(errors);
       return;
     }
     
-    // Clear any previous error
-    setPublishValidationError(null);
+    // Clear any previous errors
+    setPublishValidationErrors(null);
     const stats = getQuestionnaireStats(questionnaire);
     
     // Count answer sets
@@ -1213,17 +1231,66 @@ const QuestionnaireBuilder = () => {
           <div style={{ padding: tokens.spacingVerticalL, display: "flex", flexDirection: "column", gap: tokens.spacingVerticalL }}>
             {questionnaire && activePage && (
               <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM }}>
-                {/* Publish Validation Error */}
-                {publishValidationError && (
-                  <div className={styles.errorBanner}>
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    <span style={{ flex: 1, fontSize: tokens.fontSizeBase200, fontWeight: tokens.fontWeightMedium }}>{publishValidationError}</span>
-                    <Button
-                      appearance="subtle"
-                      size="small"
-                      icon={<X className="h-4 w-4" />}
-                      onClick={() => setPublishValidationError(null)}
-                    />
+                {/* Publish Validation Errors */}
+                {publishValidationErrors && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: tokens.fontSizeBase300, fontWeight: tokens.fontWeightSemibold, color: tokens.colorPaletteRedForeground1 }}>
+                        Please fix the following issues before publishing:
+                      </span>
+                      <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<X className="h-4 w-4" />}
+                        onClick={() => setPublishValidationErrors(null)}
+                      />
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: tokens.spacingHorizontalS }}>
+                      {publishValidationErrors.pages.length > 0 && (
+                        <div className={styles.errorBanner}>
+                          <Files className="h-4 w-4 shrink-0" />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: tokens.fontWeightSemibold, fontSize: tokens.fontSizeBase200, marginBottom: "4px" }}>Pages ({publishValidationErrors.pages.length})</div>
+                            {publishValidationErrors.pages.map((err, i) => (
+                              <div key={i} style={{ fontSize: tokens.fontSizeBase100 }}>• {err}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {publishValidationErrors.sections.length > 0 && (
+                        <div className={styles.errorBanner}>
+                          <Layers className="h-4 w-4 shrink-0" />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: tokens.fontWeightSemibold, fontSize: tokens.fontSizeBase200, marginBottom: "4px" }}>Sections ({publishValidationErrors.sections.length})</div>
+                            {publishValidationErrors.sections.map((err, i) => (
+                              <div key={i} style={{ fontSize: tokens.fontSizeBase100 }}>• {err}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {publishValidationErrors.branches.length > 0 && (
+                        <div className={styles.errorBanner}>
+                          <GitBranch className="h-4 w-4 shrink-0" />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: tokens.fontWeightSemibold, fontSize: tokens.fontSizeBase200, marginBottom: "4px" }}>Branches ({publishValidationErrors.branches.length})</div>
+                            {publishValidationErrors.branches.map((err, i) => (
+                              <div key={i} style={{ fontSize: tokens.fontSizeBase100 }}>• {err}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {publishValidationErrors.questions.length > 0 && (
+                        <div className={styles.errorBanner}>
+                          <HelpCircle className="h-4 w-4 shrink-0" />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: tokens.fontWeightSemibold, fontSize: tokens.fontSizeBase200, marginBottom: "4px" }}>Questions ({publishValidationErrors.questions.length})</div>
+                            {publishValidationErrors.questions.map((err, i) => (
+                              <div key={i} style={{ fontSize: tokens.fontSizeBase100 }}>• {err}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
