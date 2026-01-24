@@ -73,11 +73,11 @@ const BranchEditor = ({
         </div>
 
         <div className="space-y-4">
-          <Label className="text-base font-semibold">Branch Rules (Question-Level)</Label>
+          <Label className="text-base font-semibold">Branch Conditions</Label>
           <RuleGroupEditor
-            group={branch.ruleGroup}
+            group={branch.conditionGroup || branch.ruleGroup}
             allQuestions={allQuestions}
-            onUpdate={(updated) => onUpdateBranch(branch.id, { ruleGroup: updated })}
+            onUpdate={(updated) => onUpdateBranch(branch.id, { conditionGroup: updated })}
           />
         </div>
 
