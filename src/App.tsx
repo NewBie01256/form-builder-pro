@@ -2,9 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { 
   FluentThemeProvider, 
-  useSystemDarkMode,
   Toaster,
-  useToastController,
 } from "@/components/fluent";
 import Index from "./pages/Index";
 import Documentation from "./pages/Documentation";
@@ -27,11 +25,9 @@ const AppContent = () => (
 );
 
 const App = () => {
-  const isDarkMode = useSystemDarkMode();
-  
   return (
     <QueryClientProvider client={queryClient}>
-      <FluentThemeProvider dark={isDarkMode}>
+      <FluentThemeProvider>
         <AppContent />
       </FluentThemeProvider>
     </QueryClientProvider>
