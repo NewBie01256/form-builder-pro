@@ -1,51 +1,244 @@
+/**
+ * DynamicValuesPanel - Fluent UI Version
+ * 
+ * Configures dynamic value mappings to Microsoft Dataverse tables.
+ * Uses Fluent UI components for consistent Power Platform styling.
+ */
+
 import { useState, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Button,
+  Input,
+  Label,
+  Field,
+  Dropdown,
+  Option,
+  Combobox,
+  Badge,
+  CounterBadge,
+  TabList,
+  Tab,
+  Card,
+  CardHeader,
+  Text,
+  Divider,
+  Tooltip,
+  makeStyles,
+  tokens,
+  shorthands,
+  mergeClasses,
+} from "@fluentui/react-components";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, Plus, Trash2, FolderPlus, Check, ChevronsUpDown, Database, Info, Code, Copy, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+  Dismiss24Regular,
+  Add16Regular,
+  Delete16Regular,
+  FolderAdd16Regular,
+  DatabaseRegular,
+  Info16Regular,
+  Code16Regular,
+  Copy16Regular,
+  Checkmark16Regular,
+  ChevronUpDown16Regular,
+} from "@fluentui/react-icons";
 import { generateFormattedFetchXml } from "@/lib/dataverse/fetchXmlGenerator";
 import { generateFormattedOData } from "@/lib/dataverse/odataGenerator";
 import {
   DATAVERSE_ENTITIES,
   DATAVERSE_OPERATORS,
-  LOOKUP_OPERATORS,
   getEntityByLogicalName,
-  getFilterableFields,
   getOperatorsForFieldType,
   isLookupField,
   buildLookupPath,
   parseLookupPath,
-  type DataverseEntity,
   type DataverseField,
-  type DataverseOperator,
 } from "@/data/dataverseEntities";
 
-// Re-export types from questionnaire.ts for backward compatibility
+// Re-export types for backward compatibility
 export type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig, DynamicValueOperator } from "@/types/questionnaire";
 import type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig } from "@/types/questionnaire";
+
+// ============================================================================
+// Fluent UI Styles
+// ============================================================================
+
+const useStyles = makeStyles({
+  panel: {
+    position: "fixed",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: "40%",
+    minWidth: "450px",
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderLeft: `1px solid ${tokens.colorNeutralStroke1}`,
+    boxShadow: tokens.shadow64,
+    zIndex: 1000,
+    display: "flex",
+    flexDirection: "column",
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    ...shorthands.padding(tokens.spacingVerticalL, tokens.spacingHorizontalL),
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+  headerTitle: {
+    display: "flex",
+    flexDirection: "column",
+    ...shorthands.gap(tokens.spacingVerticalXS),
+  },
+  content: {
+    flex: 1,
+    overflowY: "auto",
+    ...shorthands.padding(tokens.spacingVerticalL),
+    display: "flex",
+    flexDirection: "column",
+    ...shorthands.gap(tokens.spacingVerticalL),
+  },
+  footer: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    ...shorthands.gap(tokens.spacingHorizontalM),
+    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalL),
+    borderTop: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+  infoCard: {
+    display: "flex",
+    alignItems: "flex-start",
+    ...shorthands.gap(tokens.spacingHorizontalM),
+    ...shorthands.padding(tokens.spacingVerticalM),
+    backgroundColor: tokens.colorBrandBackground2,
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.border("1px", "solid", tokens.colorBrandStroke1),
+  },
+  section: {
+    display: "flex",
+    flexDirection: "column",
+    ...shorthands.gap(tokens.spacingVerticalS),
+  },
+  sectionCard: {
+    ...shorthands.padding(tokens.spacingVerticalM),
+    backgroundColor: tokens.colorNeutralBackground3,
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke1),
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    ...shorthands.gap(tokens.spacingHorizontalM),
+  },
+  grid3: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    ...shorthands.gap(tokens.spacingHorizontalS),
+  },
+  filterGroup: {
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke1),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  filterGroupHeader: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalM),
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground3,
+  },
+  filterGroupContent: {
+    position: "relative",
+  },
+  filterRow: {
+    display: "flex",
+    alignItems: "stretch",
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    "&:last-child": {
+      borderBottom: "none",
+    },
+  },
+  filterRowConnector: {
+    width: "32px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  filterRowFields: {
+    flex: 1,
+    ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalS),
+  },
+  filterRowActions: {
+    width: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  filterGroupFooter: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap(tokens.spacingHorizontalS),
+    ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalM),
+    borderTop: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+  emptyState: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    ...shorthands.padding(tokens.spacingVerticalXL),
+    color: tokens.colorNeutralForeground3,
+  },
+  codePreview: {
+    ...shorthands.padding(tokens.spacingVerticalM),
+    backgroundColor: tokens.colorNeutralBackground3,
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke1),
+    fontFamily: tokens.fontFamilyMonospace,
+    fontSize: tokens.fontSizeBase200,
+    overflowX: "auto",
+    whiteSpace: "pre",
+    maxHeight: "200px",
+    overflowY: "auto",
+    position: "relative",
+  },
+  copyButton: {
+    position: "absolute",
+    top: tokens.spacingVerticalS,
+    right: tokens.spacingHorizontalS,
+  },
+  lookupBadge: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap(tokens.spacingHorizontalXS),
+  },
+  entityBadge: {
+    fontFamily: tokens.fontFamilyMonospace,
+    fontSize: tokens.fontSizeBase200,
+  },
+  connectorLine: {
+    position: "absolute",
+    left: "16px",
+    top: 0,
+    bottom: 0,
+    width: "1px",
+    backgroundColor: tokens.colorNeutralStroke1,
+  },
+  connectorBranch: {
+    position: "absolute",
+    left: "16px",
+    top: "50%",
+    width: "16px",
+    height: "1px",
+    backgroundColor: tokens.colorNeutralStroke1,
+  },
+});
+
+// ============================================================================
+// Interfaces
+// ============================================================================
 
 interface DynamicValuesPanelProps {
   isOpen: boolean;
@@ -54,20 +247,14 @@ interface DynamicValuesPanelProps {
   onSave: (config: DynamicValueConfig) => void;
 }
 
-// Map internal operators to Dataverse operators for display
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
 const OPERATORS = DATAVERSE_OPERATORS.map(op => ({
   value: op.value,
   label: op.label,
 }));
-
-// Combined operators including lookup-specific ones
-const ALL_OPERATORS = [
-  ...OPERATORS,
-  ...LOOKUP_OPERATORS.map(op => ({
-    value: op.value,
-    label: op.label,
-  }))
-];
 
 const createEmptyConditionGroup = (): DynamicValueFilterGroup => ({
   type: 'group',
@@ -84,7 +271,10 @@ const createEmptyCondition = (): DynamicValueFilter => ({
   value: ''
 });
 
-// Component for rendering a single filter row with lookup support
+// ============================================================================
+// Filter Row Editor Component
+// ============================================================================
+
 interface FilterRowEditorProps {
   filter: DynamicValueFilter;
   availableFields: DataverseField[];
@@ -93,53 +283,35 @@ interface FilterRowEditorProps {
 }
 
 const FilterRowEditor = ({ filter, availableFields, onUpdate, onDelete }: FilterRowEditorProps) => {
+  const styles = useStyles();
   const [isLookupMode, setIsLookupMode] = useState(false);
   const [lookupField, setLookupField] = useState('');
   const [targetField, setTargetField] = useState('');
 
-  // Parse existing lookup path on mount
   useEffect(() => {
     const parsed = parseLookupPath(filter.field);
     if (parsed) {
       setIsLookupMode(true);
       setLookupField(parsed.lookupField);
       setTargetField(parsed.targetField);
-    } else if (filter.field) {
-      setIsLookupMode(false);
-      setLookupField('');
-      setTargetField('');
     }
   }, []);
 
-  // Get the selected field info
   const selectedField = availableFields.find(f => f.logicalName === (isLookupMode ? lookupField : filter.field));
-  const isSelectedFieldLookup = selectedField && isLookupField(selectedField);
-
-  // Get lookup fields for the dropdown
   const lookupFields = availableFields.filter(f => isLookupField(f));
-
-  // Get target entity fields when a lookup is selected
   const targetEntity = isLookupMode && lookupField 
     ? getEntityByLogicalName(availableFields.find(f => f.logicalName === lookupField)?.lookupTarget || '')
     : null;
   const targetEntityFields = targetEntity?.fields || [];
 
-  // Get applicable operators based on field type
-  const getApplicableOperators = () => {
-    if (isLookupMode) {
-      // For lookup expressions, show string operators (since we're querying related field)
-      return getOperatorsForFieldType('string');
-    }
-    if (selectedField) {
-      return getOperatorsForFieldType(selectedField.type);
-    }
-    return DATAVERSE_OPERATORS;
-  };
+  const applicableOperators = isLookupMode
+    ? getOperatorsForFieldType('string')
+    : selectedField 
+      ? getOperatorsForFieldType(selectedField.type)
+      : DATAVERSE_OPERATORS;
 
-  const applicableOperators = getApplicableOperators();
-
-  // Handle field selection
-  const handleFieldChange = (value: string) => {
+  const handleFieldChange = (_: unknown, data: { optionValue?: string }) => {
+    const value = data.optionValue || '';
     if (value === '__lookup__') {
       setIsLookupMode(true);
       setLookupField('');
@@ -147,19 +319,19 @@ const FilterRowEditor = ({ filter, availableFields, onUpdate, onDelete }: Filter
       onUpdate({ ...filter, field: '' });
     } else {
       setIsLookupMode(false);
-      onUpdate({ ...filter, field: value === '__empty__' ? '' : value });
+      onUpdate({ ...filter, field: value });
     }
   };
 
-  // Handle lookup field selection
-  const handleLookupFieldChange = (value: string) => {
+  const handleLookupFieldChange = (_: unknown, data: { optionValue?: string }) => {
+    const value = data.optionValue || '';
     setLookupField(value);
     setTargetField('');
     onUpdate({ ...filter, field: '' });
   };
 
-  // Handle target field selection (builds the lookup path)
-  const handleTargetFieldChange = (value: string) => {
+  const handleTargetFieldChange = (_: unknown, data: { optionValue?: string }) => {
+    const value = data.optionValue || '';
     setTargetField(value);
     if (lookupField && value) {
       const path = buildLookupPath(lookupField, value);
@@ -167,7 +339,10 @@ const FilterRowEditor = ({ filter, availableFields, onUpdate, onDelete }: Filter
     }
   };
 
-  // Cancel lookup mode
+  const handleOperatorChange = (_: unknown, data: { optionValue?: string }) => {
+    onUpdate({ ...filter, operator: (data.optionValue || 'equals') as DynamicValueFilter['operator'] });
+  };
+
   const handleCancelLookup = () => {
     setIsLookupMode(false);
     setLookupField('');
@@ -177,178 +352,138 @@ const FilterRowEditor = ({ filter, availableFields, onUpdate, onDelete }: Filter
 
   return (
     <>
-      {/* Filter Row */}
-      <div className="flex-1 py-2 px-2">
+      <div className={styles.filterRowFields}>
         {isLookupMode ? (
-          // Lookup expression mode - two-step field selection
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs shrink-0">
-                <Database className="h-3 w-3 mr-1" />
-                Lookup
-              </Badge>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalS }}>
+            <div className={styles.lookupBadge}>
+              <Badge appearance="tint" color="brand" icon={<DatabaseRegular />}>Lookup</Badge>
               <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs text-muted-foreground"
+                appearance="subtle"
+                size="small"
+                icon={<Dismiss24Regular />}
                 onClick={handleCancelLookup}
               >
-                <X className="h-3 w-3 mr-1" />
                 Cancel
               </Button>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              {/* Lookup field selection */}
-              <Select value={lookupField || '__empty__'} onValueChange={handleLookupFieldChange}>
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue placeholder="Lookup field..." />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  <SelectItem value="__empty__" disabled>Select lookup...</SelectItem>
-                  {lookupFields.map(field => (
-                    <SelectItem key={field.logicalName} value={field.logicalName}>
-                      <span className="flex items-center gap-1">
-                        <Database className="h-3 w-3 text-muted-foreground" />
-                        {field.displayName}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className={styles.grid3}>
+              <Dropdown
+                placeholder="Lookup field..."
+                value={lookupFields.find(f => f.logicalName === lookupField)?.displayName || ''}
+                selectedOptions={lookupField ? [lookupField] : []}
+                onOptionSelect={handleLookupFieldChange}
+              >
+                {lookupFields.map(field => (
+                  <Option key={field.logicalName} value={field.logicalName} text={field.displayName}>
+                    <DatabaseRegular style={{ marginRight: 8 }} />
+                    {field.displayName}
+                  </Option>
+                ))}
+              </Dropdown>
 
-              {/* Target entity field selection */}
-              <Select 
-                value={targetField || '__empty__'} 
-                onValueChange={handleTargetFieldChange}
+              <Dropdown
+                placeholder="Related field..."
+                value={targetEntityFields.find(f => f.logicalName === targetField)?.displayName || ''}
+                selectedOptions={targetField ? [targetField] : []}
+                onOptionSelect={handleTargetFieldChange}
                 disabled={!lookupField || !targetEntity}
               >
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue placeholder="Related field..." />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  <SelectItem value="__empty__" disabled>
-                    {!lookupField ? 'Select lookup first...' : `${targetEntity?.displayName || 'Related'} field...`}
-                  </SelectItem>
-                  {targetEntityFields.map(field => (
-                    <SelectItem key={field.logicalName} value={field.logicalName}>
-                      {field.displayName}
-                      <span className="text-xs text-muted-foreground ml-1">({field.type})</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {targetEntityFields.map(field => (
+                  <Option key={field.logicalName} value={field.logicalName} text={field.displayName}>
+                    {field.displayName}
+                    <Text size={200} style={{ marginLeft: 8, color: tokens.colorNeutralForeground3 }}>
+                      ({field.type})
+                    </Text>
+                  </Option>
+                ))}
+              </Dropdown>
 
-              {/* Operator */}
-              <Select 
-                value={filter.operator} 
-                onValueChange={(v) => onUpdate({ ...filter, operator: v as DynamicValueFilter['operator'] })}
+              <Dropdown
+                placeholder="Operator"
+                value={applicableOperators.find(op => op.value === filter.operator)?.label || ''}
+                selectedOptions={[filter.operator]}
+                onOptionSelect={handleOperatorChange}
               >
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  {applicableOperators.map(op => (
-                    <SelectItem key={op.value} value={op.value}>
-                      {op.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {applicableOperators.map(op => (
+                  <Option key={op.value} value={op.value} text={op.label}>
+                    {op.label}
+                  </Option>
+                ))}
+              </Dropdown>
             </div>
-            
-            {/* Value input for lookup */}
             {!['null', 'not_null'].includes(filter.operator) && (
               <Input
                 placeholder="Value to compare"
                 value={filter.value}
-                onChange={(e) => onUpdate({ ...filter, value: e.target.value })}
-                className="h-8"
+                onChange={(_, data) => onUpdate({ ...filter, value: data.value })}
               />
             )}
           </div>
         ) : (
-          // Standard filter mode
-          <div className="grid grid-cols-3 gap-2">
-            {/* Field selection with lookup option */}
-            <Select 
-              value={filter.field || '__empty__'} 
-              onValueChange={handleFieldChange}
+          <div className={styles.grid3}>
+            <Dropdown
+              placeholder="Select field..."
+              value={availableFields.find(f => f.logicalName === filter.field)?.displayName || ''}
+              selectedOptions={filter.field ? [filter.field] : []}
+              onOptionSelect={handleFieldChange}
             >
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Select field" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover">
-                <SelectItem value="__empty__" disabled>Select field...</SelectItem>
-                {availableFields.map(field => (
-                  <SelectItem key={field.logicalName} value={field.logicalName}>
-                    <span className="flex items-center gap-1">
-                      {isLookupField(field) && <Database className="h-3 w-3 text-muted-foreground" />}
-                      {field.displayName}
-                    </span>
-                  </SelectItem>
-                ))}
-                {lookupFields.length > 0 && (
-                  <>
-                    <div className="h-px bg-border my-1" />
-                    <SelectItem value="__lookup__">
-                      <span className="flex items-center gap-1 text-primary">
-                        <Database className="h-3 w-3" />
-                        Filter by Related Field...
-                      </span>
-                    </SelectItem>
-                  </>
-                )}
-              </SelectContent>
-            </Select>
+              {availableFields.map(field => (
+                <Option key={field.logicalName} value={field.logicalName} text={field.displayName}>
+                  {isLookupField(field) && <DatabaseRegular style={{ marginRight: 4 }} />}
+                  {field.displayName}
+                </Option>
+              ))}
+              {lookupFields.length > 0 && (
+                <Option key="__lookup__" value="__lookup__" text="Filter by Related Field...">
+                  <DatabaseRegular style={{ marginRight: 4, color: tokens.colorBrandForeground1 }} />
+                  <Text style={{ color: tokens.colorBrandForeground1 }}>Filter by Related Field...</Text>
+                </Option>
+              )}
+            </Dropdown>
 
-            {/* Operator */}
-            <Select 
-              value={filter.operator} 
-              onValueChange={(v) => onUpdate({ ...filter, operator: v as DynamicValueFilter['operator'] })}
+            <Dropdown
+              placeholder="Operator"
+              value={applicableOperators.find(op => op.value === filter.operator)?.label || ''}
+              selectedOptions={[filter.operator]}
+              onOptionSelect={handleOperatorChange}
             >
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-popover">
-                {applicableOperators.map(op => (
-                  <SelectItem key={op.value} value={op.value}>
-                    {op.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {applicableOperators.map(op => (
+                <Option key={op.value} value={op.value} text={op.label}>
+                  {op.label}
+                </Option>
+              ))}
+            </Dropdown>
 
-            {/* Value */}
             {!['null', 'not_null'].includes(filter.operator) ? (
               <Input
                 placeholder="Value"
                 value={filter.value}
-                onChange={(e) => onUpdate({ ...filter, value: e.target.value })}
-                className="h-8"
+                onChange={(_, data) => onUpdate({ ...filter, value: data.value })}
               />
             ) : (
-              <div className="h-8" />
+              <div />
             )}
           </div>
         )}
       </div>
 
-      {/* Delete button */}
-      <div className="w-10 px-2 flex items-center justify-center">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-          onClick={onDelete}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+      <div className={styles.filterRowActions}>
+        <Tooltip content="Delete filter" relationship="label">
+          <Button
+            appearance="subtle"
+            icon={<Delete16Regular />}
+            onClick={onDelete}
+          />
+        </Tooltip>
       </div>
     </>
   );
 };
 
-// Recursive component for rendering filter groups - matching the table-based layout
+// ============================================================================
+// Filter Group Editor Component
+// ============================================================================
+
 interface FilterGroupEditorProps {
   group: DynamicValueFilterGroup;
   availableFields: DataverseField[];
@@ -358,6 +493,8 @@ interface FilterGroupEditorProps {
 }
 
 const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot = true }: FilterGroupEditorProps) => {
+  const styles = useStyles();
+
   const handleAddFilter = () => {
     onUpdate({
       ...group,
@@ -386,93 +523,98 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
     });
   };
 
-  const handleMatchTypeChange = (matchType: 'AND' | 'OR') => {
-    onUpdate({ ...group, matchType });
+  const handleMatchTypeChange = (_: unknown, data: { optionValue?: string }) => {
+    onUpdate({ ...group, matchType: (data.optionValue || 'AND') as 'AND' | 'OR' });
   };
 
   return (
-    <div className="border border-border bg-card">
-      {/* Header Row with AND/OR and Column Labels */}
-      <div className="flex items-center border-b border-border bg-muted/30">
-        <div className="flex items-center gap-2 px-3 py-2 min-w-[80px] border-r border-border">
-          <Select value={group.matchType} onValueChange={(v) => handleMatchTypeChange(v as 'AND' | 'OR')}>
-            <SelectTrigger className="h-7 w-16 text-xs font-medium">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-popover">
-              <SelectItem value="AND">AND</SelectItem>
-              <SelectItem value="OR">OR</SelectItem>
-            </SelectContent>
-          </Select>
+    <div className={styles.filterGroup}>
+      {/* Header */}
+      <div className={styles.filterGroupHeader}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS, flex: 1 }}>
+          <Dropdown
+            value={group.matchType}
+            selectedOptions={[group.matchType]}
+            onOptionSelect={handleMatchTypeChange}
+            style={{ minWidth: 80 }}
+          >
+            <Option value="AND">AND</Option>
+            <Option value="OR">OR</Option>
+          </Dropdown>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+            Field
+          </Text>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3, marginLeft: 'auto' }}>
+            Operator
+          </Text>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3, marginLeft: 'auto' }}>
+            Value
+          </Text>
         </div>
-        <div className="flex-1 grid grid-cols-3 gap-2 px-3 py-2">
-          <span className="text-xs font-medium text-muted-foreground">Field</span>
-          <span className="text-xs font-medium text-muted-foreground">Operator</span>
-          <span className="text-xs font-medium text-muted-foreground">Value</span>
-        </div>
-        <div className="w-10 px-2 flex items-center justify-center">
-          {!isRoot && onDelete && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+        {!isRoot && onDelete && (
+          <Tooltip content="Delete group" relationship="label">
+            <Button
+              appearance="subtle"
+              icon={<Delete16Regular />}
               onClick={onDelete}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+            />
+          </Tooltip>
+        )}
       </div>
 
-      {/* Rules and Nested Groups */}
-      <div className="relative">
+      {/* Content */}
+      <div className={styles.filterGroupContent}>
         {group.children.length === 0 ? (
-          <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-            No conditions. Use buttons below to add filters.
+          <div className={styles.emptyState}>
+            <Text>No conditions. Use buttons below to add filters.</Text>
           </div>
         ) : (
           group.children.map((child) => (
-            <div key={child.id} className="relative">
-              {/* Tree connector lines */}
-              <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
-              <div className="absolute left-4 top-1/2 w-4 h-px bg-border" />
-              
-              <div className="flex items-stretch border-b border-border last:border-b-0">
-                {/* Left connector area */}
-                <div className="w-8 flex items-center justify-center relative" />
+            <div key={child.id} className={styles.filterRow}>
+              <div className={styles.filterRowConnector}>
+                <div className={styles.connectorLine} />
+                <div className={styles.connectorBranch} />
+              </div>
 
-                {child.type === 'group' ? (
-                  <div className="flex-1 py-2 pr-2">
-                    <FilterGroupEditor
-                      group={child}
-                      availableFields={availableFields}
-                      onUpdate={(updated) => handleUpdateChild(child.id, updated)}
-                      onDelete={() => handleRemoveChild(child.id)}
-                      isRoot={false}
-                    />
-                  </div>
-                ) : (
-                  <FilterRowEditor
-                    filter={child}
+              {child.type === 'group' ? (
+                <div style={{ flex: 1, padding: tokens.spacingVerticalS }}>
+                  <FilterGroupEditor
+                    group={child}
                     availableFields={availableFields}
                     onUpdate={(updated) => handleUpdateChild(child.id, updated)}
                     onDelete={() => handleRemoveChild(child.id)}
+                    isRoot={false}
                   />
-                )}
-              </div>
+                </div>
+              ) : (
+                <FilterRowEditor
+                  filter={child}
+                  availableFields={availableFields}
+                  onUpdate={(updated) => handleUpdateChild(child.id, updated)}
+                  onDelete={() => handleRemoveChild(child.id)}
+                />
+              )}
             </div>
           ))
         )}
       </div>
 
-      {/* Add buttons footer */}
-      <div className="flex items-center gap-2 px-3 py-2 border-t border-border bg-muted/20">
-        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleAddFilter}>
-          <Plus className="h-3 w-3 mr-1" />
+      {/* Footer */}
+      <div className={styles.filterGroupFooter}>
+        <Button
+          appearance="subtle"
+          size="small"
+          icon={<Add16Regular />}
+          onClick={handleAddFilter}
+        >
           Add Filter
         </Button>
-        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleAddGroup}>
-          <FolderPlus className="h-3 w-3 mr-1" />
+        <Button
+          appearance="subtle"
+          size="small"
+          icon={<FolderAdd16Regular />}
+          onClick={handleAddGroup}
+        >
           Add Group
         </Button>
       </div>
@@ -480,17 +622,107 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
   );
 };
 
+// ============================================================================
+// Query Preview Component
+// ============================================================================
+
+interface QueryPreviewProps {
+  config: {
+    tableName: string;
+    labelField: string;
+    valueField: string;
+    conditionGroup: DynamicValueFilterGroup;
+    orderByField?: string;
+    orderDirection: 'asc' | 'desc';
+  };
+}
+
+const QueryPreview = ({ config }: QueryPreviewProps) => {
+  const styles = useStyles();
+  const [selectedTab, setSelectedTab] = useState<string>('odata');
+  const [copied, setCopied] = useState(false);
+
+  const odataQuery = useMemo(() => {
+    try {
+      return generateFormattedOData(config);
+    } catch {
+      return '// Error generating OData query';
+    }
+  }, [config]);
+
+  const fetchXmlQuery = useMemo(() => {
+    try {
+      return generateFormattedFetchXml(config, { top: 5000 });
+    } catch {
+      return '<!-- Error generating FetchXML query -->';
+    }
+  }, [config]);
+
+  const handleCopy = async () => {
+    const text = selectedTab === 'odata' ? odataQuery : fetchXmlQuery;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  return (
+    <div className={styles.section}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
+        <Code16Regular />
+        <Label weight="semibold">Query Preview</Label>
+      </div>
+
+      <TabList
+        selectedValue={selectedTab}
+        onTabSelect={(_, data) => setSelectedTab(data.value as string)}
+      >
+        <Tab value="odata">OData</Tab>
+        <Tab value="fetchxml">FetchXML</Tab>
+      </TabList>
+
+      <div style={{ position: 'relative' }}>
+        <pre className={styles.codePreview}>
+          {selectedTab === 'odata' ? odataQuery : fetchXmlQuery}
+        </pre>
+        <div className={styles.copyButton}>
+          <Tooltip content={copied ? "Copied!" : "Copy to clipboard"} relationship="label">
+            <Button
+              appearance="subtle"
+              size="small"
+              icon={copied ? <Checkmark16Regular /> : <Copy16Regular />}
+              onClick={handleCopy}
+            />
+          </Tooltip>
+        </div>
+      </div>
+
+      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+        {selectedTab === 'odata' 
+          ? 'Use with Dataverse Web API: Xrm.WebApi.retrieveMultipleRecords()'
+          : 'Use with FetchXML API: Xrm.WebApi.retrieveMultipleRecords(entityName, "?fetchXml=" + encodedXml)'
+        }
+      </Text>
+    </div>
+  );
+};
+
+// ============================================================================
+// Main Panel Component
+// ============================================================================
+
 const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPanelProps) => {
+  const styles = useStyles();
   const [tableName, setTableName] = useState('');
   const [labelField, setLabelField] = useState('');
   const [valueField, setValueField] = useState('');
   const [conditionGroup, setConditionGroup] = useState<DynamicValueFilterGroup>(createEmptyConditionGroup());
   const [orderByField, setOrderByField] = useState('');
   const [orderDirection, setOrderDirection] = useState<'asc' | 'desc'>('asc');
-  const [tableSearchOpen, setTableSearchOpen] = useState(false);
 
-  // Sync state with config prop when panel opens or config changes
-  // Support both 'conditionGroup' (new) and 'filterGroup' (legacy) for backward compatibility
   useEffect(() => {
     if (isOpen) {
       setTableName(config?.tableName || '');
@@ -517,9 +749,9 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
     onClose();
   };
 
-  const handleTableChange = (newTable: string) => {
+  const handleTableChange = (_: unknown, data: { optionValue?: string; optionText?: string }) => {
+    const newTable = data.optionValue || '';
     setTableName(newTable);
-    // Reset field selections when table changes
     setLabelField('');
     setValueField('');
     setOrderByField('');
@@ -529,147 +761,107 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-[40%] min-w-[400px] bg-background border-l border-border shadow-xl z-50 flex flex-col">
+    <div className={styles.panel}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border bg-muted/30">
-        <div>
-          <h2 className="text-lg font-semibold">Configure Dynamic Values</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Map to Dataverse tables for PCF control integration</p>
+      <div className={styles.header}>
+        <div className={styles.headerTitle}>
+          <Text size={500} weight="semibold">Configure Dynamic Values</Text>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+            Map to Dataverse tables for PCF control integration
+          </Text>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-5 w-5" />
-        </Button>
+        <Button
+          appearance="subtle"
+          icon={<Dismiss24Regular />}
+          onClick={onClose}
+        />
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Dataverse Info Banner */}
-        <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
-          <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-          <div className="text-xs text-muted-foreground">
-            <p className="font-medium text-foreground mb-1">Dataverse Integration</p>
-            <p>Configuration will be used by the PCF control to query Microsoft Dynamics 365 CRM tables via OData/FetchXML.</p>
+      <div className={styles.content}>
+        {/* Info Banner */}
+        <div className={styles.infoCard}>
+          <Info16Regular style={{ color: tokens.colorBrandForeground1, flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <Text weight="semibold" size={300}>Dataverse Integration</Text>
+            <Text size={200} style={{ display: 'block', color: tokens.colorNeutralForeground2 }}>
+              Configuration will be used by the PCF control to query Microsoft Dynamics 365 CRM tables via OData/FetchXML.
+            </Text>
           </div>
         </div>
 
-        {/* Entity Selection - Searchable Lookup */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold">Dataverse Entity</Label>
-          <Popover open={tableSearchOpen} onOpenChange={setTableSearchOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={tableSearchOpen}
-                className="w-full justify-between font-normal"
-              >
-                {tableName ? (
-                  <span className="flex items-center gap-2">
-                    <Database className="h-4 w-4 text-muted-foreground" />
-                    <span>{selectedEntity?.displayName}</span>
-                    <Badge variant="outline" className="text-xs font-mono">{tableName}</Badge>
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground">Search entities...</span>
-                )}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search entities..." />
-                <CommandList>
-                  <CommandEmpty>No entity found.</CommandEmpty>
-                  <CommandGroup>
-                    {DATAVERSE_ENTITIES.map((entity) => (
-                      <CommandItem
-                        key={entity.logicalName}
-                        value={`${entity.logicalName} ${entity.displayName}`}
-                        onSelect={() => {
-                          handleTableChange(entity.logicalName);
-                          setTableSearchOpen(false);
-                        }}
-                      >
-                        <Database className="mr-2 h-4 w-4 text-muted-foreground" />
-                        <span className="flex-1">{entity.displayName}</span>
-                        <Badge variant="outline" className="ml-2 text-xs font-mono">
-                          {entity.logicalName}
-                        </Badge>
-                        <Check
-                          className={cn(
-                            "ml-2 h-4 w-4",
-                            tableName === entity.logicalName ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <p className="text-xs text-muted-foreground">
-            Select the Dataverse entity (table) from which dynamic values will be fetched.
-          </p>
+        {/* Entity Selection */}
+        <div className={styles.section}>
+          <Field label="Dataverse Entity" hint="Select the Dataverse entity (table) from which dynamic values will be fetched.">
+            <Combobox
+              placeholder="Search entities..."
+              value={selectedEntity?.displayName || ''}
+              selectedOptions={tableName ? [tableName] : []}
+              onOptionSelect={handleTableChange}
+            >
+              {DATAVERSE_ENTITIES.map((entity) => (
+                <Option key={entity.logicalName} value={entity.logicalName} text={entity.displayName}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS, width: '100%' }}>
+                    <DatabaseRegular />
+                    <span style={{ flex: 1 }}>{entity.displayName}</span>
+                    <Badge appearance="outline" className={styles.entityBadge}>
+                      {entity.logicalName}
+                    </Badge>
+                  </div>
+                </Option>
+              ))}
+            </Combobox>
+          </Field>
         </div>
 
         {/* Attribute Mappings */}
         {tableName && (
-          <div className="space-y-4 border border-border rounded-lg p-4 bg-muted/20">
-            <Label className="text-sm font-semibold">Attribute Mappings</Label>
-            
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-xs">Label Attribute (Display Name)</Label>
-                <Select value={labelField} onValueChange={setLabelField}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select field for label..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableFields.map(field => (
-                      <SelectItem key={field.logicalName} value={field.logicalName}>
-                        <span className="flex items-center gap-2">
-                          {field.displayName}
-                          <span className="text-xs text-muted-foreground font-mono">({field.logicalName})</span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Displayed to the user
-                </p>
-              </div>
+          <div className={styles.section}>
+            <Label weight="semibold">Attribute Mappings</Label>
+            <div className={mergeClasses(styles.sectionCard, styles.grid2)}>
+              <Field label="Label Attribute (Display Name)" hint="Displayed to the user">
+                <Dropdown
+                  placeholder="Select field for label..."
+                  value={availableFields.find(f => f.logicalName === labelField)?.displayName || ''}
+                  selectedOptions={labelField ? [labelField] : []}
+                  onOptionSelect={(_, data) => setLabelField(data.optionValue || '')}
+                >
+                  {availableFields.map(field => (
+                    <Option key={field.logicalName} value={field.logicalName} text={field.displayName}>
+                      {field.displayName}
+                      <Text size={200} style={{ marginLeft: 8, color: tokens.colorNeutralForeground3 }}>
+                        ({field.logicalName})
+                      </Text>
+                    </Option>
+                  ))}
+                </Dropdown>
+              </Field>
 
-              <div className="space-y-2">
-                <Label className="text-xs">Value Attribute (Primary Key)</Label>
-                <Select value={valueField} onValueChange={setValueField}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select field for value..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableFields.map(field => (
-                      <SelectItem key={field.logicalName} value={field.logicalName}>
-                        <span className="flex items-center gap-2">
-                          {field.displayName}
-                          <span className="text-xs text-muted-foreground font-mono">({field.logicalName})</span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Stored as the answer
-                </p>
-              </div>
+              <Field label="Value Attribute (Primary Key)" hint="Stored as the answer">
+                <Dropdown
+                  placeholder="Select field for value..."
+                  value={availableFields.find(f => f.logicalName === valueField)?.displayName || ''}
+                  selectedOptions={valueField ? [valueField] : []}
+                  onOptionSelect={(_, data) => setValueField(data.optionValue || '')}
+                >
+                  {availableFields.map(field => (
+                    <Option key={field.logicalName} value={field.logicalName} text={field.displayName}>
+                      {field.displayName}
+                      <Text size={200} style={{ marginLeft: 8, color: tokens.colorNeutralForeground3 }}>
+                        ({field.logicalName})
+                      </Text>
+                    </Option>
+                  ))}
+                </Dropdown>
+              </Field>
             </div>
           </div>
         )}
 
-        {/* Filter Conditions (OData $filter) */}
+        {/* Filter Conditions */}
         {tableName && (
-          <div className="space-y-4">
-            <Label className="text-sm font-semibold">Filter Conditions (OData $filter)</Label>
+          <div className={styles.section}>
+            <Label weight="semibold">Filter Conditions (OData $filter)</Label>
             <FilterGroupEditor
               group={conditionGroup}
               availableFields={availableFields}
@@ -678,44 +870,37 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
           </div>
         )}
 
-        {/* Ordering (OData $orderby) */}
+        {/* Ordering */}
         {tableName && (
-          <div className="space-y-4 border border-border rounded-lg p-4 bg-muted/20">
-            <Label className="text-sm font-semibold">Ordering (OData $orderby)</Label>
-            
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-xs">Order By Field</Label>
-                <Select 
-                  value={orderByField || '__none__'} 
-                  onValueChange={(v) => setOrderByField(v === '__none__' ? '' : v)}
+          <div className={styles.section}>
+            <Label weight="semibold">Ordering (OData $orderby)</Label>
+            <div className={mergeClasses(styles.sectionCard, styles.grid2)}>
+              <Field label="Order By Field">
+                <Dropdown
+                  placeholder="Select field..."
+                  value={availableFields.find(f => f.logicalName === orderByField)?.displayName || 'None'}
+                  selectedOptions={orderByField ? [orderByField] : []}
+                  onOptionSelect={(_, data) => setOrderByField(data.optionValue || '')}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select field..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
-                    {availableFields.map(field => (
-                      <SelectItem key={field.logicalName} value={field.logicalName}>
-                        {field.displayName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <Option value="" text="None">None</Option>
+                  {availableFields.map(field => (
+                    <Option key={field.logicalName} value={field.logicalName} text={field.displayName}>
+                      {field.displayName}
+                    </Option>
+                  ))}
+                </Dropdown>
+              </Field>
 
-              <div className="space-y-2">
-                <Label className="text-xs">Direction</Label>
-                <Select value={orderDirection} onValueChange={(v) => setOrderDirection(v as 'asc' | 'desc')}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="asc">Ascending (A → Z)</SelectItem>
-                    <SelectItem value="desc">Descending (Z → A)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Field label="Direction">
+                <Dropdown
+                  value={orderDirection === 'asc' ? 'Ascending (A → Z)' : 'Descending (Z → A)'}
+                  selectedOptions={[orderDirection]}
+                  onOptionSelect={(_, data) => setOrderDirection((data.optionValue || 'asc') as 'asc' | 'desc')}
+                >
+                  <Option value="asc">Ascending (A → Z)</Option>
+                  <Option value="desc">Descending (Z → A)</Option>
+                </Dropdown>
+              </Field>
             </div>
           </div>
         )}
@@ -736,121 +921,18 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-end gap-3 p-4 border-t border-border bg-muted/30">
-        <Button variant="outline" onClick={onClose}>
+      <div className={styles.footer}>
+        <Button appearance="secondary" onClick={onClose}>
           Cancel
         </Button>
-        <Button 
+        <Button
+          appearance="primary"
           onClick={handleSave}
           disabled={!tableName || !labelField || !valueField}
         >
           Save Configuration
         </Button>
       </div>
-    </div>
-  );
-};
-
-// Query Preview Component with OData and FetchXML tabs
-interface QueryPreviewProps {
-  config: {
-    tableName: string;
-    labelField: string;
-    valueField: string;
-    conditionGroup: DynamicValueFilterGroup;
-    orderByField?: string;
-    orderDirection: 'asc' | 'desc';
-  };
-}
-
-const QueryPreview = ({ config }: QueryPreviewProps) => {
-  const [copiedTab, setCopiedTab] = useState<string | null>(null);
-
-  const odataQuery = useMemo(() => {
-    try {
-      return generateFormattedOData(config);
-    } catch {
-      return '// Error generating OData query';
-    }
-  }, [config]);
-
-  const fetchXmlQuery = useMemo(() => {
-    try {
-      return generateFormattedFetchXml(config, { top: 5000 });
-    } catch {
-      return '<!-- Error generating FetchXML query -->';
-    }
-  }, [config]);
-
-  const handleCopy = async (text: string, tab: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedTab(tab);
-      setTimeout(() => setCopiedTab(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Code className="h-4 w-4 text-muted-foreground" />
-        <Label className="text-sm font-semibold">Query Preview</Label>
-      </div>
-      
-      <Tabs defaultValue="odata" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="odata" className="text-xs">OData</TabsTrigger>
-          <TabsTrigger value="fetchxml" className="text-xs">FetchXML</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="odata" className="mt-2">
-          <div className="relative group">
-            <pre className="p-3 rounded-lg bg-muted/50 border border-border text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all max-h-[200px] overflow-y-auto">
-              {odataQuery}
-            </pre>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => handleCopy(odataQuery, 'odata')}
-            >
-              {copiedTab === 'odata' ? (
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Use with Dataverse Web API: <code className="px-1 py-0.5 bg-muted rounded">Xrm.WebApi.retrieveMultipleRecords()</code>
-          </p>
-        </TabsContent>
-        
-        <TabsContent value="fetchxml" className="mt-2">
-          <div className="relative group">
-            <pre className="p-3 rounded-lg bg-muted/50 border border-border text-xs font-mono overflow-x-auto whitespace-pre max-h-[200px] overflow-y-auto">
-              {fetchXmlQuery}
-            </pre>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => handleCopy(fetchXmlQuery, 'fetchxml')}
-            >
-              {copiedTab === 'fetchxml' ? (
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Use with FetchXML API: <code className="px-1 py-0.5 bg-muted rounded">Xrm.WebApi.retrieveMultipleRecords(entityName, "?fetchXml=" + encodedXml)</code>
-          </p>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 };
