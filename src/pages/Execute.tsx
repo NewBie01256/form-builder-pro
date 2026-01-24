@@ -32,7 +32,7 @@ import {
   exportResponseAsCSV,
 } from "@/types/questionnaireResponse";
 import QuestionRenderer from "@/components/executor/QuestionRenderer";
-import { toast } from "sonner";
+import { useFluentToast } from "@/hooks/useFluentToast";
 import { isQuestionVisible, isBranchVisible, getActiveAnswerSetForQuestion } from "@/lib/conditionEvaluator";
 
 const useStyles = makeStyles({
@@ -166,6 +166,7 @@ type ResponseMap = Record<string, ResponseValue>;
 
 const Execute = () => {
   const styles = useStyles();
+  const toast = useFluentToast();
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [exportedData, setExportedData] = useState<ExportedQuestionnaire | null>(null);
   const [activePageIndex, setActivePageIndex] = useState(0);
