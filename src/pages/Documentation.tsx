@@ -3295,6 +3295,75 @@ const Documentation = () => {
                     The Preview opens a fully functional Questionnaire Executor that simulates the end-user experience.
                   </p>
                   
+                  {/* Preview Workflow Diagram */}
+                  <div className="p-6 rounded-lg border bg-muted/30">
+                    <h4 className="font-semibold mb-4 text-center">Preview Workflow</h4>
+                    <div className="flex flex-col items-center gap-4">
+                      {/* Flow diagram using flexbox */}
+                      <div className="flex flex-wrap items-center justify-center gap-3">
+                        {/* Step 1: Builder */}
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="p-4 rounded-xl bg-primary/10 border-2 border-primary/30">
+                            <Pencil className="h-8 w-8 text-primary" />
+                          </div>
+                          <span className="text-sm font-medium">Builder</span>
+                          <span className="text-xs text-muted-foreground text-center max-w-[100px]">Design questionnaire</span>
+                        </div>
+                        
+                        {/* Arrow 1 */}
+                        <div className="flex flex-col items-center gap-1">
+                          <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">Click Preview</span>
+                        </div>
+                        
+                        {/* Step 2: Session Storage */}
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="p-4 rounded-xl bg-blue-500/10 border-2 border-blue-500/30">
+                            <Database className="h-8 w-8 text-blue-500" />
+                          </div>
+                          <span className="text-sm font-medium">Session Storage</span>
+                          <span className="text-xs text-muted-foreground text-center max-w-[100px]">JSON data transfer</span>
+                        </div>
+                        
+                        {/* Arrow 2 */}
+                        <div className="flex flex-col items-center gap-1">
+                          <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">Auto-load</span>
+                        </div>
+                        
+                        {/* Step 3: Executor */}
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="p-4 rounded-xl bg-green-500/10 border-2 border-green-500/30">
+                            <Eye className="h-8 w-8 text-green-500" />
+                          </div>
+                          <span className="text-sm font-medium">Executor</span>
+                          <span className="text-xs text-muted-foreground text-center max-w-[100px]">Fill & validate</span>
+                        </div>
+                        
+                        {/* Arrow 3 */}
+                        <div className="flex flex-col items-center gap-1">
+                          <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">Submit</span>
+                        </div>
+                        
+                        {/* Step 4: Response Export */}
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="p-4 rounded-xl bg-orange-500/10 border-2 border-orange-500/30">
+                            <FileText className="h-8 w-8 text-orange-500" />
+                          </div>
+                          <span className="text-sm font-medium">Response Export</span>
+                          <span className="text-xs text-muted-foreground text-center max-w-[100px]">JSON or CSV</span>
+                        </div>
+                      </div>
+                      
+                      {/* Description */}
+                      <p className="text-xs text-muted-foreground text-center max-w-xl mt-2">
+                        The Preview button stores your current questionnaire in session storage, opens the Executor in a new tab,
+                        which automatically loads the data, renders all pages with validation, and allows response export upon submission.
+                      </p>
+                    </div>
+                  </div>
+                  
                   <div className="p-4 rounded-lg border bg-muted/30">
                     <div className="font-medium mb-3">How to Use Preview</div>
                     <div className="space-y-3">
