@@ -5,6 +5,7 @@
  */
 
 export * from './use-mobile';
+export * from './useFluentToast';
 export * from './use-toast';
 export * from './useFileUpload';
 export * from './useConfirmation';

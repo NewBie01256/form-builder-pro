@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X, Upload } from "lucide-react";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { ConfirmDialog } from "@/components/fluent";
+import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X, Upload, GripVertical } from "lucide-react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { 
+  ConfirmDialog, 
+  Button, 
+  Card, 
+  CardHeader, 
+  Badge,
+  makeStyles,
+  tokens,
+  mergeClasses,
+} from "@/components/fluent";
 import { exportQuestionnaire, buildExportData, parseQuestionnaireFile } from "@/lib/questionnaireExport";
 import {
   Question,
@@ -20,7 +25,121 @@ import PageTabs from "./PageTabs";
 import SectionEditor from "./SectionEditor";
 import { sampleITSMRecords, ITSMRecord } from "@/data/sampleITSMRecords";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { useFluentToast } from "@/hooks/useFluentToast";
+
+const useStyles = makeStyles({
+  container: {
+    display: "flex",
+    height: "100vh",
+    width: "100%",
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+  resizeHandle: {
+    position: "relative",
+    display: "flex",
+    width: "4px",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: tokens.colorNeutralStroke1,
+    cursor: "col-resize",
+    transition: "background-color 0.2s",
+    "&:hover": {
+      backgroundColor: tokens.colorBrandStroke1,
+    },
+  },
+  handleIcon: {
+    zIndex: 10,
+    display: "flex",
+    height: "16px",
+    width: "12px",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: tokens.borderRadiusSmall,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  scrollContainer: {
+    flex: 1,
+    overflowY: "auto",
+    overflowX: "hidden",
+  },
+  mainContent: {
+    height: "100%",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+  },
+  card: {
+    borderRadius: tokens.borderRadiusMedium,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground1,
+    boxShadow: tokens.shadow4,
+    transition: "box-shadow 0.2s",
+    "&:hover": {
+      boxShadow: tokens.shadow8,
+    },
+  },
+  cardDashed: {},
+  cardContent: {
+    padding: tokens.spacingVerticalM,
+  },
+  errorBanner: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    padding: tokens.spacingVerticalS,
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorPaletteRedBackground2,
+    border: `1px solid ${tokens.colorPaletteRedBorder2}`,
+    color: tokens.colorPaletteRedForeground2,
+  },
+  emptyState: {
+    padding: `${tokens.spacingVerticalXXL} 0`,
+    textAlign: "center" as const,
+  },
+  statsRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalM,
+    flexWrap: "wrap" as const,
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground3,
+  },
+  statItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+  },
+  categoryIcon: {
+    height: "40px",
+    width: "40px",
+    borderRadius: tokens.borderRadiusMedium,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  incident: {
+    backgroundColor: tokens.colorPaletteRedBackground2,
+    color: tokens.colorPaletteRedForeground2,
+  },
+  serviceRequest: {
+    backgroundColor: tokens.colorPaletteBlueBorderActive,
+    color: tokens.colorPaletteBlueForeground2,
+  },
+  change: {
+    backgroundColor: tokens.colorPaletteYellowBackground2,
+    color: tokens.colorPaletteYellowForeground2,
+  },
+  problem: {
+    backgroundColor: tokens.colorPalettePurpleBackground2,
+    color: tokens.colorPalettePurpleForeground2,
+  },
+  draft: {
+    backgroundColor: tokens.colorBrandBackgroundInverted,
+    color: tokens.colorBrandForeground1,
+  },
+});
 
 const DRAFTS_STORAGE_KEY = 'questionnaire-drafts';
 
@@ -77,6 +196,8 @@ const savePublishedRecords = (records: Record<string, PublishedRecord>) => {
 };
 
 const QuestionnaireBuilder = () => {
+  const styles = useStyles();
+  const toast = useFluentToast();
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [activePageId, setActivePageId] = useState<string | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
@@ -701,51 +822,48 @@ const QuestionnaireBuilder = () => {
       });
     });
     
-    // Use existing record ID or create a new one
-    const recordId = editingRecordId || `published-${Date.now()}`;
-    
-    const updatedMetadata: ITSMRecord = {
-      id: recordId,
+    // Create metadata for the published record
+    const publishedMetadata: ITSMRecord = {
+      id: editingRecordId || `record-${Date.now()}`,
       name: questionnaire.name || 'Untitled Questionnaire',
       description: questionnaire.description || '',
-      category: 'Service Request', // Default for new records
+      category: 'Service Request',
       status: 'Active',
       priority: 'Medium',
-      createdAt: publishedRecords[recordId]?.metadata.createdAt || new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
-      questionCount: stats.questionCount,
       serviceCatalog: questionnaire.serviceCatalog || 'General',
-      pageCount: stats.pageCount,
-      sectionCount: stats.sectionCount,
-      branchCount: stats.branchCount,
+      ...stats,
+      answerSetCount,
       actionCount,
-      answerSetCount
+      createdAt: new Date().toLocaleDateString(),
+      updatedAt: new Date().toLocaleDateString()
     };
     
-    const publishedRecord: PublishedRecord = {
-      metadata: updatedMetadata,
-      questionnaire: { ...questionnaire, status: 'Active' }
-    };
-    
+    // Store the full questionnaire
     setPublishedRecords(prev => ({
       ...prev,
-      [recordId]: publishedRecord
+      [publishedMetadata.id]: {
+        metadata: publishedMetadata,
+        questionnaire: { ...questionnaire, status: 'Active' }
+      }
     }));
     
-    // Remove draft if publishing from a draft
+    // If this was a draft, remove it
     if (editingDraftId) {
       setSavedDrafts(prev => prev.filter(d => d.id !== editingDraftId));
-      setEditingDraftId(null);
     }
     
-    // If this was a new questionnaire, set the editing record ID for future updates
-    if (!editingRecordId) {
-      setEditingRecordId(recordId);
-    }
-    
-    setQuestionnaire({ ...questionnaire, status: 'Active' });
     toast.success("Questionnaire published successfully!");
+    
+    // Return to list view
+    setQuestionnaire(null);
+    setActivePageId(null);
+    setSelectedSectionId(null);
+    setSelectedQuestionId(null);
+    setSelectedBranchId(null);
+    setEditingDraftId(null);
+    setEditingRecordId(null);
   };
+
   const countQuestionsInBranch = (branch: ConditionalBranch): number => {
     let count = branch.questions.length;
     branch.childBranches.forEach(cb => {
@@ -992,9 +1110,15 @@ const QuestionnaireBuilder = () => {
 
   const allQuestions = getAllQuestions();
 
-  const handleSelectQuestion = (questionId: string, branchId: string | null) => {
+  const handleSelectSection = (sectionId: string) => {
+    setSelectedSectionId(sectionId);
+    setSelectedQuestionId(null);
+    setSelectedBranchId(null);
+  };
+
+  const handleSelectQuestion = (questionId: string, branchId?: string) => {
     setSelectedQuestionId(questionId);
-    setSelectedBranchId(branchId);
+    setSelectedBranchId(branchId || null);
   };
 
   const handleSelectBranch = (branchId: string) => {
@@ -1002,15 +1126,39 @@ const QuestionnaireBuilder = () => {
     setSelectedQuestionId(null);
   };
 
-  const handleSelectSection = (sectionId: string) => {
-    setSelectedSectionId(sectionId);
-    setSelectedQuestionId(null);
-    setSelectedBranchId(null);
+  const getCategoryStyles = (category: string) => {
+    switch (category) {
+      case 'Incident':
+        return styles.incident;
+      case 'Service Request':
+        return styles.serviceRequest;
+      case 'Change':
+        return styles.change;
+      case 'Problem':
+        return styles.problem;
+      default:
+        return styles.serviceRequest;
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'Incident':
+        return <AlertCircle className="h-5 w-5" />;
+      case 'Service Request':
+        return <FileText className="h-5 w-5" />;
+      case 'Change':
+        return <Settings className="h-5 w-5" />;
+      case 'Problem':
+        return <HelpCircle className="h-5 w-5" />;
+      default:
+        return <FileText className="h-5 w-5" />;
+    }
   };
 
   return (
-    <ResizablePanelGroup direction="horizontal" className="h-screen w-full bg-background">
-      <ResizablePanel defaultSize={25} minSize={15} maxSize={40}>
+    <PanelGroup direction="horizontal" className={styles.container}>
+      <Panel defaultSize={25} minSize={15} maxSize={40}>
         <Sidebar
           questionnaire={questionnaire}
           activePageId={activePageId}
@@ -1035,12 +1183,16 @@ const QuestionnaireBuilder = () => {
           onPublish={handlePublish}
           canPublish={!!editingRecordId}
         />
-      </ResizablePanel>
+      </Panel>
 
-      <ResizableHandle withHandle />
+      <PanelResizeHandle className={styles.resizeHandle}>
+        <div className={styles.handleIcon}>
+          <GripVertical className="h-2.5 w-2.5" />
+        </div>
+      </PanelResizeHandle>
 
-      <ResizablePanel defaultSize={75} minSize={50}>
-        <div className="h-full overflow-hidden flex flex-col">
+      <Panel defaultSize={75} minSize={50}>
+        <div className={styles.mainContent}>
         {questionnaire && (
           <PageTabs
             pages={questionnaire.pages}
@@ -1057,40 +1209,38 @@ const QuestionnaireBuilder = () => {
           />
         )}
 
-        <ScrollArea className="flex-1">
-          <div className="p-6 space-y-6">
+        <div className={styles.scrollContainer}>
+          <div style={{ padding: tokens.spacingVerticalL, display: "flex", flexDirection: "column", gap: tokens.spacingVerticalL }}>
             {questionnaire && activePage && (
-              <div className="space-y-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM }}>
                 {/* Publish Validation Error */}
                 {publishValidationError && (
-                  <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 border border-destructive text-destructive">
+                  <div className={styles.errorBanner}>
                     <AlertCircle className="h-4 w-4 shrink-0" />
-                    <span className="text-sm font-medium flex-1">{publishValidationError}</span>
+                    <span style={{ flex: 1, fontSize: tokens.fontSizeBase200, fontWeight: tokens.fontWeightMedium }}>{publishValidationError}</span>
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/20"
+                      appearance="subtle"
+                      size="small"
+                      icon={<X className="h-4 w-4" />}
                       onClick={() => setPublishValidationError(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    />
                   </div>
                 )}
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">{activePage.name || 'Untitled Page'}</h2>
-                  <div className="flex items-center gap-2">
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <h2 style={{ fontSize: tokens.fontSizeBase500, fontWeight: tokens.fontWeightSemibold }}>{activePage.name || 'Untitled Page'}</h2>
+                  <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS }}>
                     <Button 
-                      variant="outline" 
+                      appearance="secondary"
                       onClick={() => {
                         exportQuestionnaire(questionnaire);
                         toast.success("Questionnaire exported successfully!");
                       }}
+                      icon={<Download className="h-4 w-4" />}
                     >
-                      <Download className="h-4 w-4 mr-2" />
                       Export JSON
                     </Button>
                     <Button 
-                      variant="outline"
+                      appearance="secondary"
                       onClick={() => {
                         if (questionnaire) {
                           const exportData = buildExportData(questionnaire);
@@ -1098,34 +1248,31 @@ const QuestionnaireBuilder = () => {
                           window.open('/execute', '_blank');
                         }
                       }}
+                      icon={<Play className="h-4 w-4" />}
                     >
-                      <Play className="h-4 w-4 mr-2" />
                       Preview
                     </Button>
-                    <Button variant="outline" onClick={handleSaveAsDraft}>
-                      <Save className="h-4 w-4 mr-2" />
+                    <Button appearance="secondary" onClick={handleSaveAsDraft} icon={<Save className="h-4 w-4" />}>
                       Save as Draft
                     </Button>
-                    <Button onClick={handleAddSection}>
-                      <Plus className="h-4 w-4 mr-2" />
+                    <Button appearance="primary" onClick={handleAddSection} icon={<Plus className="h-4 w-4" />}>
                       Add Section
                     </Button>
                   </div>
                 </div>
 
                 {activePage.sections.length === 0 && (
-                  <Card className="border-dashed">
-                    <CardContent className="py-12 text-center">
-                      <Layers className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="font-medium mb-2">No sections yet</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
+                  <Card className={mergeClasses(styles.card, styles.cardDashed)}>
+                    <div className={styles.emptyState}>
+                      <Layers style={{ height: "48px", width: "48px", color: tokens.colorNeutralForeground3, margin: "0 auto 16px" }} />
+                      <h3 style={{ fontWeight: tokens.fontWeightMedium, marginBottom: tokens.spacingVerticalS }}>No sections yet</h3>
+                      <p style={{ fontSize: tokens.fontSizeBase200, color: tokens.colorNeutralForeground3, marginBottom: tokens.spacingVerticalM }}>
                         Add a section to start adding questions and conditional branches.
                       </p>
-                      <Button onClick={handleAddSection}>
-                        <Plus className="h-4 w-4 mr-2" />
+                      <Button appearance="primary" onClick={handleAddSection} icon={<Plus className="h-4 w-4" />}>
                         Add Section
                       </Button>
-                    </CardContent>
+                    </div>
                   </Card>
                 )}
 
@@ -1152,33 +1299,32 @@ const QuestionnaireBuilder = () => {
             )}
 
             {!questionnaire && (
-              <div className="space-y-6">
+              <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalL }}>
                 {/* Header */}
-                  <div className="flex items-center justify-between">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div>
-                      <h2 className="text-2xl font-bold">ITSM Records</h2>
-                      <p className="text-muted-foreground">Manage your IT Service Management questionnaires</p>
+                      <h2 style={{ fontSize: tokens.fontSizeBase600, fontWeight: tokens.fontWeightBold }}>ITSM Records</h2>
+                      <p style={{ color: tokens.colorNeutralForeground3 }}>Manage your IT Service Management questionnaires</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS }}>
                       <Link to="/docs">
-                        <Button variant="outline" size="lg">
-                          <BookOpen className="h-4 w-4 mr-2" />
+                        <Button appearance="secondary" size="large" icon={<BookOpen className="h-4 w-4" />}>
                           Documentation
                         </Button>
                       </Link>
                       <Button 
-                        variant="outline" 
-                        size="lg"
+                        appearance="secondary"
+                        size="large"
+                        icon={<Upload className="h-4 w-4" />}
                         onClick={() => document.getElementById('import-json-input')?.click()}
                       >
-                        <Upload className="h-4 w-4 mr-2" />
                         Import JSON
                       </Button>
                       <input
                         id="import-json-input"
                         type="file"
                         accept=".json"
-                        className="hidden"
+                        style={{ display: "none" }}
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
@@ -1197,87 +1343,85 @@ const QuestionnaireBuilder = () => {
                           e.target.value = '';
                         }}
                       />
-                      <Button size="lg" onClick={handleCreateQuestionnaire}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create New
-                    </Button>
+                      <Button size="large" appearance="primary" onClick={handleCreateQuestionnaire} icon={<Plus className="h-4 w-4" />}>
+                        Create New
+                      </Button>
+                    </div>
                   </div>
-                </div>
 
                 {/* Saved Drafts */}
                 {savedDrafts.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Save className="h-5 w-5 text-muted-foreground" />
+                  <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
+                    <h3 style={{ fontSize: tokens.fontSizeBase500, fontWeight: tokens.fontWeightSemibold, display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS }}>
+                      <Save className="h-5 w-5" style={{ color: tokens.colorNeutralForeground3 }} />
                       Saved Drafts
                     </h3>
-                    <div className="grid gap-3">
+                    <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
                       {savedDrafts.map((draft) => (
                         <Card 
                           key={draft.id} 
-                          className="hover:shadow-md transition-shadow cursor-pointer group border-dashed border-primary/30"
+                          className={mergeClasses(styles.card, styles.cardDashed)}
+                          style={{ cursor: "pointer" }}
                         >
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex items-start gap-3 flex-1 min-w-0">
-                                <div className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+                          <div className={styles.cardContent}>
+                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: tokens.spacingHorizontalM }}>
+                              <div style={{ display: "flex", alignItems: "flex-start", gap: tokens.spacingHorizontalM, flex: 1, minWidth: 0 }}>
+                                <div className={mergeClasses(styles.categoryIcon, styles.draft)}>
                                   <FileText className="h-5 w-5" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <h3 className="font-semibold truncate">
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS, flexWrap: "wrap" }}>
+                                    <h3 style={{ fontWeight: tokens.fontWeightSemibold, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                       {draft.questionnaire.name || 'Untitled Questionnaire'}
                                     </h3>
-                                    <Badge variant="secondary" className="text-xs">
+                                    <Badge appearance="tint" color="informative" size="small">
                                       Draft
                                     </Badge>
                                   </div>
-                                  <p className="text-sm text-muted-foreground mt-1 truncate">
+                                  <p style={{ fontSize: tokens.fontSizeBase200, color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalXS, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                     {draft.questionnaire.description || 'No description'}
                                   </p>
-                                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
-                                    <span className="flex items-center gap-1" title="Pages">
+                                  <div className={styles.statsRow} style={{ marginTop: tokens.spacingVerticalS }}>
+                                    <span className={styles.statItem} title="Pages">
                                       <Files className="h-3 w-3" />
                                       {draft.pageCount}
                                     </span>
-                                    <span className="flex items-center gap-1" title="Sections">
+                                    <span className={styles.statItem} title="Sections">
                                       <Layers className="h-3 w-3" />
                                       {draft.sectionCount}
                                     </span>
-                                    <span className="flex items-center gap-1" title="Questions">
+                                    <span className={styles.statItem} title="Questions">
                                       <HelpCircle className="h-3 w-3" />
                                       {draft.questionCount}
                                     </span>
-                                    <span className="flex items-center gap-1" title="Branches">
+                                    <span className={styles.statItem} title="Branches">
                                       <GitBranch className="h-3 w-3" />
                                       {draft.branchCount}
                                     </span>
-                                    <span className="text-muted-foreground/60">|</span>
-                                    <span className="flex items-center gap-1">
+                                    <span style={{ opacity: 0.5 }}>|</span>
+                                    <span className={styles.statItem}>
                                       <Clock className="h-3 w-3" />
                                       Saved {draft.savedAt}
                                     </span>
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                              <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalXS, flexShrink: 0 }}>
                                 <Button 
-                                  variant="ghost" 
-                                  size="sm"
+                                  appearance="subtle"
+                                  size="small"
+                                  icon={<Edit className="h-4 w-4" />}
                                   onClick={() => handleEditDraft(draft)}
                                 >
-                                  <Edit className="h-4 w-4 mr-1" />
                                   Edit
                                 </Button>
                                 <ConfirmDialog
                                   trigger={
                                     <Button 
-                                      variant="ghost" 
-                                      size="sm"
-                                      className="text-destructive hover:text-destructive"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                      appearance="subtle"
+                                      size="small"
+                                      icon={<Trash2 className="h-4 w-4" />}
+                                    />
                                   }
                                   title="Delete Draft"
                                   description={`Are you sure you want to delete the draft "${draft.questionnaire.name || 'Untitled Questionnaire'}"? This action cannot be undone.`}
@@ -1285,7 +1429,7 @@ const QuestionnaireBuilder = () => {
                                 />
                               </div>
                             </div>
-                          </CardContent>
+                          </div>
                         </Card>
                       ))}
                     </div>
@@ -1294,76 +1438,79 @@ const QuestionnaireBuilder = () => {
 
                 {/* Published Records (user-created) */}
                 {Object.values(publishedRecords).filter(r => !sampleITSMRecords.some(s => s.id === r.metadata.id)).length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
+                  <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
+                    <h3 style={{ fontSize: tokens.fontSizeBase500, fontWeight: tokens.fontWeightSemibold, display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS }}>
+                      <FileText className="h-5 w-5" style={{ color: tokens.colorNeutralForeground3 }} />
                       Published Records
                     </h3>
-                    <div className="grid gap-3">
+                    <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
                       {Object.values(publishedRecords)
                         .filter(r => !sampleITSMRecords.some(s => s.id === r.metadata.id))
                         .map((publishedRecord) => (
                         <Card 
                           key={publishedRecord.metadata.id} 
-                          className="hover:shadow-md transition-shadow cursor-pointer group border-primary/30"
+                          className={styles.card}
+                          style={{ cursor: "pointer" }}
                         >
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex items-start gap-3 flex-1 min-w-0">
-                                <div className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+                          <div className={styles.cardContent}>
+                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: tokens.spacingHorizontalM }}>
+                              <div style={{ display: "flex", alignItems: "flex-start", gap: tokens.spacingHorizontalM, flex: 1, minWidth: 0 }}>
+                                <div className={mergeClasses(styles.categoryIcon, styles.draft)}>
                                   <FileText className="h-5 w-5" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <h3 className="font-semibold truncate">{publishedRecord.metadata.name}</h3>
-                                    <Badge variant="default" className="text-xs">
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS, flexWrap: "wrap" }}>
+                                    <h3 style={{ fontWeight: tokens.fontWeightSemibold, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{publishedRecord.metadata.name}</h3>
+                                    <Badge 
+                                      appearance="filled" 
+                                      color={publishedRecord.metadata.status === 'Active' ? 'success' : publishedRecord.metadata.status === 'Draft' ? 'informative' : 'subtle'}
+                                      size="small"
+                                    >
                                       {publishedRecord.metadata.status}
                                     </Badge>
                                   </div>
-                                  <p className="text-sm text-muted-foreground mt-1 truncate">{publishedRecord.metadata.description || 'No description'}</p>
-                                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
-                                    <span className="flex items-center gap-1" title="Pages">
+                                  <p style={{ fontSize: tokens.fontSizeBase200, color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalXS, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{publishedRecord.metadata.description || 'No description'}</p>
+                                  <div className={styles.statsRow} style={{ marginTop: tokens.spacingVerticalS }}>
+                                    <span className={styles.statItem} title="Pages">
                                       <Files className="h-3 w-3" />
                                       {publishedRecord.metadata.pageCount}
                                     </span>
-                                    <span className="flex items-center gap-1" title="Sections">
+                                    <span className={styles.statItem} title="Sections">
                                       <Layers className="h-3 w-3" />
                                       {publishedRecord.metadata.sectionCount}
                                     </span>
-                                    <span className="flex items-center gap-1" title="Questions">
+                                    <span className={styles.statItem} title="Questions">
                                       <HelpCircle className="h-3 w-3" />
                                       {publishedRecord.metadata.questionCount}
                                     </span>
-                                    <span className="flex items-center gap-1" title="Branches">
+                                    <span className={styles.statItem} title="Branches">
                                       <GitBranch className="h-3 w-3" />
                                       {publishedRecord.metadata.branchCount}
                                     </span>
-                                    <span className="text-muted-foreground/60">|</span>
-                                    <span className="flex items-center gap-1">
+                                    <span style={{ opacity: 0.5 }}>|</span>
+                                    <span className={styles.statItem}>
                                       <Clock className="h-3 w-3" />
                                       {publishedRecord.metadata.updatedAt}
                                     </span>
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                              <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalXS, flexShrink: 0 }}>
                                 <Button 
-                                  variant="ghost" 
-                                  size="sm"
+                                  appearance="subtle"
+                                  size="small"
+                                  icon={<Edit className="h-4 w-4" />}
                                   onClick={() => handleEditPublishedRecord(publishedRecord)}
                                 >
-                                  <Edit className="h-4 w-4 mr-1" />
                                   Edit
                                 </Button>
                                 <ConfirmDialog
                                   trigger={
                                     <Button 
-                                      variant="ghost" 
-                                      size="sm"
-                                      className="text-destructive hover:text-destructive"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                      appearance="subtle"
+                                      size="small"
+                                      icon={<Trash2 className="h-4 w-4" />}
+                                    />
                                   }
                                   title="Delete Published Record"
                                   description={`Are you sure you want to delete "${publishedRecord.metadata.name}"? This action cannot be undone.`}
@@ -1371,7 +1518,7 @@ const QuestionnaireBuilder = () => {
                                 />
                               </div>
                             </div>
-                          </CardContent>
+                          </div>
                         </Card>
                       ))}
                     </div>
@@ -1379,84 +1526,72 @@ const QuestionnaireBuilder = () => {
                 )}
 
                 {/* ITSM Templates Header */}
-                <h3 className="text-lg font-semibold">Templates</h3>
+                <h3 style={{ fontSize: tokens.fontSizeBase500, fontWeight: tokens.fontWeightSemibold }}>Templates</h3>
 
                 {/* ITSM Records List */}
-                <div className="grid gap-3">
+                <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
                   {sampleITSMRecords.map((baseRecord) => {
                     // Use published version's metadata if available, otherwise use the base record
                     const record = publishedRecords[baseRecord.id]?.metadata || baseRecord;
                     return (
                     <Card 
                       key={record.id} 
-                      className="hover:shadow-md transition-shadow cursor-pointer group"
+                      className={styles.card}
+                      style={{ cursor: "pointer" }}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-3 flex-1 min-w-0">
-                            <div className={cn(
-                              "h-10 w-10 rounded-lg flex items-center justify-center shrink-0",
-                              record.category === 'Incident' && "bg-red-100 text-red-600",
-                              record.category === 'Service Request' && "bg-blue-100 text-blue-600",
-                              record.category === 'Change' && "bg-amber-100 text-amber-600",
-                              record.category === 'Problem' && "bg-purple-100 text-purple-600"
-                            )}>
-                              {record.category === 'Incident' && <AlertCircle className="h-5 w-5" />}
-                              {record.category === 'Service Request' && <FileText className="h-5 w-5" />}
-                              {record.category === 'Change' && <Settings className="h-5 w-5" />}
-                              {record.category === 'Problem' && <HelpCircle className="h-5 w-5" />}
+                      <div className={styles.cardContent}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: tokens.spacingHorizontalM }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: tokens.spacingHorizontalM, flex: 1, minWidth: 0 }}>
+                            <div className={mergeClasses(styles.categoryIcon, getCategoryStyles(record.category))}>
+                              {getCategoryIcon(record.category)}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="font-semibold truncate">{record.name}</h3>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS, flexWrap: "wrap" }}>
+                                <h3 style={{ fontWeight: tokens.fontWeightSemibold, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{record.name}</h3>
                                 <Badge 
-                                  variant={record.status === 'Active' ? 'default' : record.status === 'Draft' ? 'secondary' : 'outline'}
-                                  className="text-xs"
+                                  appearance="filled" 
+                                  color={record.status === 'Active' ? 'success' : record.status === 'Draft' ? 'informative' : 'subtle'}
+                                  size="small"
                                 >
                                   {record.status}
                                 </Badge>
                                 <Badge 
-                                  variant="outline"
-                                  className={cn(
-                                    "text-xs",
-                                    record.priority === 'Critical' && "border-red-300 text-red-600",
-                                    record.priority === 'High' && "border-orange-300 text-orange-600",
-                                    record.priority === 'Medium' && "border-yellow-300 text-yellow-600",
-                                    record.priority === 'Low' && "border-green-300 text-green-600"
-                                  )}
+                                  appearance="outline"
+                                  color={record.priority === 'Critical' ? 'danger' : record.priority === 'High' ? 'warning' : record.priority === 'Medium' ? 'warning' : 'success'}
+                                  size="small"
                                 >
                                   {record.priority}
                                 </Badge>
                               </div>
-                              <p className="text-sm text-muted-foreground mt-1 truncate">{record.description}</p>
-                              <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
-                                <span className="flex items-center gap-1" title="Pages">
+                              <p style={{ fontSize: tokens.fontSizeBase200, color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalXS, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{record.description}</p>
+                              <div className={styles.statsRow} style={{ marginTop: tokens.spacingVerticalS }}>
+                                <span className={styles.statItem} title="Pages">
                                   <Files className="h-3 w-3" />
                                   {record.pageCount}
                                 </span>
-                                <span className="flex items-center gap-1" title="Sections">
+                                <span className={styles.statItem} title="Sections">
                                   <Layers className="h-3 w-3" />
                                   {record.sectionCount}
                                 </span>
-                                <span className="flex items-center gap-1" title="Questions">
+                                <span className={styles.statItem} title="Questions">
                                   <HelpCircle className="h-3 w-3" />
                                   {record.questionCount}
                                 </span>
-                                <span className="flex items-center gap-1" title="Branches">
+                                <span className={styles.statItem} title="Branches">
                                   <GitBranch className="h-3 w-3" />
                                   {record.branchCount}
                                 </span>
-                                <span className="flex items-center gap-1" title="Answer Sets">
+                                <span className={styles.statItem} title="Answer Sets">
                                   <ListChecks className="h-3 w-3" />
                                   {record.answerSetCount}
                                 </span>
-                                <span className="flex items-center gap-1" title="Actions">
+                                <span className={styles.statItem} title="Actions">
                                   <Zap className="h-3 w-3" />
                                   {record.actionCount}
                                 </span>
-                                <span className="text-muted-foreground/60">|</span>
+                                <span style={{ opacity: 0.5 }}>|</span>
                                 <span>{record.serviceCatalog}</span>
-                                <span className="flex items-center gap-1">
+                                <span className={styles.statItem}>
                                   <Clock className="h-3 w-3" />
                                   {record.updatedAt}
                                 </span>
@@ -1464,9 +1599,9 @@ const QuestionnaireBuilder = () => {
                             </div>
                           </div>
                           <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                            appearance="subtle"
+                            size="small"
+                            icon={<Edit className="h-4 w-4" />}
                             onClick={() => {
                               // If we have a published version with full questionnaire, use it
                               if (publishedRecords[baseRecord.id]) {
@@ -1476,11 +1611,10 @@ const QuestionnaireBuilder = () => {
                               }
                             }}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
                             Edit
                           </Button>
                         </div>
-                      </CardContent>
+                      </div>
                     </Card>
                   );
                   })}
@@ -1488,10 +1622,10 @@ const QuestionnaireBuilder = () => {
               </div>
             )}
           </div>
-        </ScrollArea>
         </div>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+        </div>
+      </Panel>
+    </PanelGroup>
   );
 };
 
