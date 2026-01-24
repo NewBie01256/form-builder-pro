@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X, Upload, GripVertical } from "lucide-react";
+import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X, Upload, GripVertical, Code } from "lucide-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { 
   ConfirmDialog, 
@@ -1377,6 +1377,11 @@ const QuestionnaireBuilder = () => {
                       <Link to="/docs">
                         <Button appearance="secondary" size="large" icon={<BookOpen className="h-4 w-4" />}>
                           Documentation
+                        </Button>
+                      </Link>
+                      <Link to="/docs/pcf">
+                        <Button appearance="secondary" size="large" icon={<Code className="h-4 w-4" />}>
+                          PCF Technical Docs
                         </Button>
                       </Link>
                       <Button 
