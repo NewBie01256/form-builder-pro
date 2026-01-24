@@ -152,7 +152,7 @@ const SectionEditor = ({
       required: false,
       order: section.questions.length + 1,
       answerSets: [defaultAnswerSet],
-      questionLevelRuleGroup: {
+      conditionGroup: {
         type: 'group',
         id: `g-${Date.now()}`,
         matchType: 'AND',
@@ -181,7 +181,7 @@ const SectionEditor = ({
     const newBranch: ConditionalBranch = {
       id: `cb-${Date.now()}`,
       name: 'Conditional Branch',
-      ruleGroup: {
+      conditionGroup: {
         type: 'group',
         id: `g-${Date.now()}`,
         matchType: 'AND',

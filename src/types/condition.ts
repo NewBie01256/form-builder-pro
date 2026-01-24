@@ -197,6 +197,46 @@ export const createEmptyAnswerSetCondition = (): AnswerSetCondition => ({
   selectedAnswerSetId: ''
 });
 
+/**
+ * Normalizes a question to use 'conditionGroup' instead of deprecated 'questionLevelRuleGroup'
+ * For backward compatibility with existing data
+ */
+export const normalizeQuestionConditionGroup = <T extends { conditionGroup?: QuestionConditionGroup; questionLevelRuleGroup?: QuestionConditionGroup }>(
+  question: T
+): T => {
+  if (!question.conditionGroup && question.questionLevelRuleGroup) {
+    return { ...question, conditionGroup: question.questionLevelRuleGroup };
+  }
+  return question;
+};
+
+/**
+ * Normalizes a branch to use 'conditionGroup' instead of deprecated 'ruleGroup'
+ * For backward compatibility with existing data
+ */
+export const normalizeBranchConditionGroup = <T extends { conditionGroup?: QuestionConditionGroup; ruleGroup?: QuestionConditionGroup }>(
+  branch: T
+): T => {
+  if (!branch.conditionGroup && branch.ruleGroup) {
+    return { ...branch, conditionGroup: branch.ruleGroup };
+  }
+  return branch;
+};
+
+/**
+ * Gets the condition group from a question, supporting both new and legacy field names
+ */
+export const getQuestionConditionGroup = (question: { conditionGroup?: QuestionConditionGroup; questionLevelRuleGroup?: QuestionConditionGroup }): QuestionConditionGroup | undefined => {
+  return question.conditionGroup || question.questionLevelRuleGroup;
+};
+
+/**
+ * Gets the condition group from a branch, supporting both new and legacy field names
+ */
+export const getBranchConditionGroup = (branch: { conditionGroup?: QuestionConditionGroup; ruleGroup?: QuestionConditionGroup }): QuestionConditionGroup | undefined => {
+  return branch.conditionGroup || branch.ruleGroup;
+};
+
 // ============================================================================
 // Type Aliases for Backward Compatibility
 // These aliases map the old naming to the new unified naming

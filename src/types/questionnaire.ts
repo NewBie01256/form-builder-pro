@@ -15,6 +15,8 @@ import {
   QuestionLevelRule,
   AnswerLevelRule,
   RuleGroup,
+  getQuestionConditionGroup,
+  getBranchConditionGroup,
 } from './condition';
 
 // Re-export all condition types for convenience
@@ -36,6 +38,9 @@ export type {
   AnswerLevelRule,
   RuleGroup,
 };
+
+// Re-export helper functions
+export { getQuestionConditionGroup, getBranchConditionGroup };
 
 export type ImpactLevel = '1' | '2' | '3' | '4';
 export type UrgencyLevel = '1' | '2' | '3' | '4';
@@ -152,7 +157,10 @@ export interface Question {
   hidden?: boolean;
   order: number;
   answerSets: AnswerSet[];
-  questionLevelRuleGroup: RuleGroup;
+  /** @deprecated Use conditionGroup instead */
+  questionLevelRuleGroup?: RuleGroup;
+  /** Condition group for showing/hiding this question */
+  conditionGroup: RuleGroup;
   answerLevelRuleGroups: AnswerLevelRuleGroup[];
   textConfig?: TextConfig;
   numberConfig?: NumberConfig;
@@ -165,7 +173,10 @@ export interface Question {
 export interface ConditionalBranch {
   id: string;
   name: string;
-  ruleGroup: RuleGroup;
+  /** @deprecated Use conditionGroup instead */
+  ruleGroup?: RuleGroup;
+  /** Condition group for showing/hiding this branch */
+  conditionGroup: RuleGroup;
   questions: Question[];
   childBranches: ConditionalBranch[];
 }

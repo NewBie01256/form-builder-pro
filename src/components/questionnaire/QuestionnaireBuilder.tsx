@@ -161,7 +161,7 @@ const QuestionnaireBuilder = () => {
                   { id: `a-${ts}-1e`, label: 'Sales', value: 'sales', active: true }
                 ]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-1`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-1`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             },
             {
@@ -181,7 +181,7 @@ const QuestionnaireBuilder = () => {
                   { id: `a-${ts}-2c`, label: 'Teams/Slack', value: 'chat', active: true }
                 ]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-2`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-2`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             }
           ],
@@ -210,7 +210,7 @@ const QuestionnaireBuilder = () => {
                   { id: `a-${ts}-3d`, label: 'Access/Permissions', value: 'access', active: true }
                 ]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-3`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-3`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             },
             {
@@ -231,7 +231,7 @@ const QuestionnaireBuilder = () => {
                   { id: `a-${ts}-4d`, label: 'Low - Minor Impact', value: 'low', active: true }
                 ]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-4`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-4`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             }
           ],
@@ -239,7 +239,7 @@ const QuestionnaireBuilder = () => {
             {
               id: `branch-${ts}-1`,
               name: 'Hardware Issues',
-              ruleGroup: { type: 'group', id: `brg-${ts}-1`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `brg-${ts}-1`, matchType: 'AND', children: [] },
               questions: [
                 {
                   id: `q-${ts}-5`,
@@ -259,7 +259,7 @@ const QuestionnaireBuilder = () => {
                       { id: `a-${ts}-5d`, label: 'Keyboard/Mouse', value: 'peripheral', active: true }
                     ]
                   }],
-                  questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-5`, matchType: 'AND', children: [] },
+                  conditionGroup: { type: 'group', id: `rg-${ts}-5`, matchType: 'AND', children: [] },
                   answerLevelRuleGroups: []
                 },
                 {
@@ -279,7 +279,7 @@ const QuestionnaireBuilder = () => {
                       { id: `a-${ts}-6c`, label: 'Not Sure', value: 'unknown', active: true }
                     ]
                   }],
-                  questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-6`, matchType: 'AND', children: [] },
+                  conditionGroup: { type: 'group', id: `rg-${ts}-6`, matchType: 'AND', children: [] },
                   answerLevelRuleGroups: []
                 }
               ],
@@ -288,7 +288,7 @@ const QuestionnaireBuilder = () => {
             {
               id: `branch-${ts}-2`,
               name: 'Software Issues',
-              ruleGroup: { type: 'group', id: `brg-${ts}-2`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `brg-${ts}-2`, matchType: 'AND', children: [] },
               questions: [
                 {
                   id: `q-${ts}-7`,
@@ -303,7 +303,7 @@ const QuestionnaireBuilder = () => {
                     isDefault: false,
                     answers: [{ id: `a-${ts}-7a`, label: '', value: '', active: true }]
                   }],
-                  questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-7`, matchType: 'AND', children: [] },
+                  conditionGroup: { type: 'group', id: `rg-${ts}-7`, matchType: 'AND', children: [] },
                   answerLevelRuleGroups: []
                 }
               ],
@@ -311,7 +311,7 @@ const QuestionnaireBuilder = () => {
                 {
                   id: `branch-${ts}-2-1`,
                   name: 'Installation Issues',
-                  ruleGroup: { type: 'group', id: `brg-${ts}-2-1`, matchType: 'AND', children: [] },
+                  conditionGroup: { type: 'group', id: `brg-${ts}-2-1`, matchType: 'AND', children: [] },
                   questions: [
                     {
                       id: `q-${ts}-8`,
@@ -326,7 +326,7 @@ const QuestionnaireBuilder = () => {
                         isDefault: false,
                         answers: [{ id: `a-${ts}-8a`, label: '', value: '', active: true }]
                       }],
-                      questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-8`, matchType: 'AND', children: [] },
+                      conditionGroup: { type: 'group', id: `rg-${ts}-8`, matchType: 'AND', children: [] },
                       answerLevelRuleGroups: []
                     }
                   ],
@@ -363,7 +363,7 @@ const QuestionnaireBuilder = () => {
                 isDefault: false,
                 answers: [{ id: `a-${ts}-9a`, label: '', value: '', active: true }]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-9`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-9`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             },
             {
@@ -379,7 +379,7 @@ const QuestionnaireBuilder = () => {
                 isDefault: false,
                 answers: [{ id: `a-${ts}-10a`, label: '', value: '', active: true }]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-10`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-10`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             },
             {
@@ -395,7 +395,7 @@ const QuestionnaireBuilder = () => {
                 isDefault: false,
                 answers: [{ id: `a-${ts}-11a`, label: '', value: '', active: true }]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-11`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-11`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: [],
               numberConfig: { min: 1, max: 1000, step: 1 }
             }
@@ -424,7 +424,7 @@ const QuestionnaireBuilder = () => {
                   { id: `a-${ts}-12c`, label: 'No, minor inconvenience', value: 'minor', active: true }
                 ]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-12`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-12`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             },
             {
@@ -440,7 +440,7 @@ const QuestionnaireBuilder = () => {
                 isDefault: false,
                 answers: [{ id: `a-${ts}-13a`, label: '', value: '', active: true }]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-13`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-13`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: [],
               ratingConfig: { minValue: 1, maxValue: 5, minLabel: 'Low', maxLabel: 'Critical' }
             }
@@ -449,7 +449,7 @@ const QuestionnaireBuilder = () => {
             {
               id: `branch-${ts}-3`,
               name: 'Critical Impact Follow-up',
-              ruleGroup: { type: 'group', id: `brg-${ts}-3`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `brg-${ts}-3`, matchType: 'AND', children: [] },
               questions: [
                 {
                   id: `q-${ts}-14`,
@@ -464,7 +464,7 @@ const QuestionnaireBuilder = () => {
                     isDefault: false,
                     answers: [{ id: `a-${ts}-14a`, label: '', value: '', active: true }]
                   }],
-                  questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-14`, matchType: 'AND', children: [] },
+                  conditionGroup: { type: 'group', id: `rg-${ts}-14`, matchType: 'AND', children: [] },
                   answerLevelRuleGroups: []
                 }
               ],
@@ -504,7 +504,7 @@ const QuestionnaireBuilder = () => {
                   { id: `a-${ts}-15d`, label: 'Email Instructions', value: 'email', active: true }
                 ]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-15`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-15`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             },
             {
@@ -524,7 +524,7 @@ const QuestionnaireBuilder = () => {
                   { id: `a-${ts}-16c`, label: 'Anytime', value: 'anytime', active: true }
                 ]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-16`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-16`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             }
           ],
@@ -548,7 +548,7 @@ const QuestionnaireBuilder = () => {
                 isDefault: false,
                 answers: [{ id: `a-${ts}-17a`, label: '', value: '', active: true }]
               }],
-              questionLevelRuleGroup: { type: 'group', id: `rg-${ts}-17`, matchType: 'AND', children: [] },
+              conditionGroup: { type: 'group', id: `rg-${ts}-17`, matchType: 'AND', children: [] },
               answerLevelRuleGroups: []
             }
           ],
@@ -587,9 +587,10 @@ const QuestionnaireBuilder = () => {
         validationErrors.push(`Branch "${branch.name || 'Untitled Branch'}" in ${path} has no questions`);
       }
       
-      // Check if branch is missing rules
-      if (!hasRules(branch.ruleGroup)) {
-        validationErrors.push(`Branch "${branch.name || 'Untitled Branch'}" in ${path} is missing rules`);
+      // Check if branch is missing conditions
+      const branchConditionGroup = branch.conditionGroup || branch.ruleGroup;
+      if (!branchConditionGroup || !hasRules(branchConditionGroup)) {
+        validationErrors.push(`Branch "${branch.name || 'Untitled Branch'}" in ${path} is missing conditions`);
       }
       
       // Check answer-level rule groups in branch questions

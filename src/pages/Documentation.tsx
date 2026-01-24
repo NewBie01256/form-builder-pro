@@ -615,7 +615,7 @@ const Documentation = () => {
                           <div className="text-xs text-muted-foreground space-y-1">
                             <div className="flex justify-between gap-4"><span>id</span><span className="text-purple-500">string</span></div>
                             <div className="flex justify-between gap-4"><span>name</span><span className="text-purple-500">string</span></div>
-                            <div className="flex justify-between gap-4"><span>ruleGroup</span><span className="text-purple-500">RuleGroup</span></div>
+                            <div className="flex justify-between gap-4"><span>conditionGroup</span><span className="text-purple-500">ConditionGroup</span></div>
                             <div className="flex justify-between gap-4"><span>questions[]</span><span className="text-purple-500">Question[]</span></div>
                             <div className="flex justify-between gap-4"><span>childBranches[]</span><span className="text-purple-500">self[]</span></div>
                           </div>
@@ -631,7 +631,7 @@ const Documentation = () => {
                           </div>
                           <div className="flex flex-col items-center">
                             <div className="w-0.5 h-6 bg-muted-foreground/30"></div>
-                            <Badge variant="outline" className="text-xs">1:1 questionLevelRuleGroup</Badge>
+                            <Badge variant="outline" className="text-xs">1:1 conditionGroup</Badge>
                           </div>
                           <div className="flex flex-col items-center">
                             <div className="w-0.5 h-6 bg-muted-foreground/30"></div>

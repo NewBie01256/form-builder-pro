@@ -8,6 +8,7 @@ import {
   AnswerLevelRule,
   AnswerSet
 } from "@/types/questionnaire";
+import { getQuestionConditionGroup, getBranchConditionGroup } from "@/types/condition";
 
 type ResponseValue = string | string[] | number | boolean | null;
 type ResponseMap = Record<string, ResponseValue>;
@@ -221,7 +222,7 @@ export const getActiveAnswerSetForQuestion = (
 };
 
 /**
- * Determines if a question should be visible based on its questionLevelRuleGroup
+ * Determines if a question should be visible based on its conditionGroup
  */
 export const isQuestionVisible = (
   question: Question,
@@ -231,32 +232,38 @@ export const isQuestionVisible = (
   // If question is explicitly hidden, don't show
   if (question.hidden) return false;
 
-  // If no rule group or empty, show the question
-  if (!question.questionLevelRuleGroup || 
-      !question.questionLevelRuleGroup.children || 
-      question.questionLevelRuleGroup.children.length === 0) {
+  // Get condition group (supports both new 'conditionGroup' and legacy 'questionLevelRuleGroup')
+  const conditionGroup = getQuestionConditionGroup(question);
+
+  // If no condition group or empty, show the question
+  if (!conditionGroup || 
+      !conditionGroup.children || 
+      conditionGroup.children.length === 0) {
     return true;
   }
 
-  return evaluateRuleGroup(question.questionLevelRuleGroup, responses, allQuestions);
+  return evaluateRuleGroup(conditionGroup, responses, allQuestions);
 };
 
 /**
- * Determines if a branch should be visible based on its ruleGroup
+ * Determines if a branch should be visible based on its conditionGroup
  */
 export const isBranchVisible = (
   branch: ConditionalBranch,
   responses: ResponseMap,
   allQuestions: Question[]
 ): boolean => {
-  // If no rule group or empty, show the branch
-  if (!branch.ruleGroup || 
-      !branch.ruleGroup.children || 
-      branch.ruleGroup.children.length === 0) {
+  // Get condition group (supports both new 'conditionGroup' and legacy 'ruleGroup')
+  const conditionGroup = getBranchConditionGroup(branch);
+
+  // If no condition group or empty, show the branch
+  if (!conditionGroup || 
+      !conditionGroup.children || 
+      conditionGroup.children.length === 0) {
     return true;
   }
 
-  return evaluateRuleGroup(branch.ruleGroup, responses, allQuestions);
+  return evaluateRuleGroup(conditionGroup, responses, allQuestions);
 };
 
 /**
