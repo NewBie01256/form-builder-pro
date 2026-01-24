@@ -248,35 +248,106 @@ const fetchResult = await queryService.executeFetchXml<Account>('account', {
 `;
 
 const CODE_STEP4_ERROR = `// ═══════════════════════════════════════════════════════════════════════════
-// STEP 4: Handle Errors with Result Pattern
+// STEP 4: Handle Errors with ErrorHandler Wrapper Class
 // ═══════════════════════════════════════════════════════════════════════════
 
-// All operations return DataverseResult<T> - never throws!
+import { 
+  createCrudService,
+  errorHandler,           // Singleton instance
+  withRetry,              // Auto-retry wrapper
+  withSafeExecution,      // Result pattern wrapper
+  withSafeRetry,          // Combined retry + safe execution
+  handleError,            // Declarative error handlers
+} from '@/lib/dataverse/pcf';
+
+const crudService = createCrudService(context, { entityLogicalName: 'account' });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATTERN 1: Basic Error Handling with errorHandler
+// ─────────────────────────────────────────────────────────────────────────────
+
 const result = await crudService.retrieve(accountId);
 
-// Type-safe error handling
 if (result.success) {
-  // ✅ TypeScript knows result.data exists and is typed
   console.log('Account name:', result.data.name);
 } else {
-  // ❌ TypeScript knows result.error exists
-  console.error('Error code:', result.error.code);
-  console.error('Message:', result.error.message);
+  // Use errorHandler for consistent, typed error handling
+  const code = errorHandler.getErrorCode(result.error);
+  const userMessage = errorHandler.getUserMessage(result.error);
   
-  // Handle specific error types
-  switch (result.error.code) {
-    case 'NOT_FOUND':
-      showToast('Account not found');
-      break;
-    case 'PERMISSION_DENIED':
-      showToast('You do not have access to this record');
-      break;
-    case 'NETWORK_ERROR':
-      showToast('Please check your connection');
-      break;
-    default:
-      showToast('An unexpected error occurred');
+  // Check specific error types
+  if (errorHandler.isNotFound(result.error)) {
+    showToast('Account not found or deleted', 'warning');
+    navigate('/accounts');
+  } else if (errorHandler.isAccessDenied(result.error)) {
+    showToast('You do not have permission', 'error');
+  } else if (errorHandler.isRetryable(result.error)) {
+    showToast('Temporary error. Please retry.', 'info');
+  } else {
+    showToast(userMessage, 'error');
   }
+  
+  // Get full normalized error for logging
+  const normalized = errorHandler.normalize(result.error, 'retrieve', 'account');
+  console.log(normalized.code);        // 'NOT_FOUND', 'ACCESS_DENIED', etc.
+  console.log(normalized.userMessage); // User-friendly message
+  console.log(normalized.isRetryable); // boolean
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATTERN 2: Auto-Retry with Exponential Backoff
+// ─────────────────────────────────────────────────────────────────────────────
+
+const data = await withRetry(
+  () => crudService.retrieve(accountId),
+  {
+    maxRetries: 3,           // Retry up to 3 times
+    baseDelayMs: 1000,       // Start with 1 second delay
+    backoffMultiplier: 2,    // Double delay each retry: 1s → 2s → 4s
+    onRetry: (attempt, error, delay) => {
+      console.log(\`Retry \${attempt} in \${delay}ms...\`);
+    }
+  }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATTERN 3: Safe Execution (Never Throws)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const safeResult = await withSafeExecution(
+  () => crudService.retrieve(accountId),
+  { operation: 'retrieve', entityType: 'account' }
+);
+
+if (safeResult.success) {
+  console.log('Data:', safeResult.data);
+} else {
+  console.log('Error:', safeResult.error.userMessage);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATTERN 4: Combined Safe + Retry
+// ─────────────────────────────────────────────────────────────────────────────
+
+const robustResult = await withSafeRetry(
+  () => riskyOperation(),
+  { maxRetries: 3, operation: 'create', entityType: 'account' }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATTERN 5: Declarative Error Handlers
+// ─────────────────────────────────────────────────────────────────────────────
+
+const deleteResult = await crudService.delete(accountId);
+
+if (!deleteResult.success) {
+  handleError(deleteResult.error, {
+    onNotFound: () => showToast('Already deleted', 'info'),
+    onAccessDenied: () => showToast('Cannot delete', 'error'),
+    onConcurrency: () => { refreshData(); showToast('Refresh and retry', 'warning'); },
+    onNetwork: () => showToast('Check connection', 'warning'),
+    onUnknown: (err) => showToast(err.userMessage, 'error'),
+  }, undefined);
 }
 `;
 
