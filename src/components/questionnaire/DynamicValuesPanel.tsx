@@ -320,9 +320,6 @@ interface FilterRowEditorProps {
   onUpdate: (updated: DynamicValueFilter) => void;
   onDelete: () => void;
 }
-  onUpdate: (updated: DynamicValueFilter) => void;
-  onDelete: () => void;
-}
 
 const FilterRowEditor = ({ filter, availableFields, entityName, onUpdate, onDelete }: FilterRowEditorProps) => {
   const styles = useStyles();
@@ -431,7 +428,7 @@ const FilterRowEditor = ({ filter, availableFields, entityName, onUpdate, onDele
                 value={targetEntityFields.find(f => f.logicalName === targetField)?.displayName || ''}
                 selectedOptions={targetField ? [targetField] : []}
                 onOptionSelect={handleTargetFieldChange}
-                disabled={!lookupField || !targetEntity}
+                disabled={!lookupField || !targetInfo}
               >
                 {targetEntityFields.map(field => (
                   <Option key={field.logicalName} value={field.logicalName} text={field.displayName}>
@@ -537,11 +534,8 @@ interface FilterGroupEditorProps {
   onDelete?: () => void;
   isRoot?: boolean;
 }
-  onDelete?: () => void;
-  isRoot?: boolean;
-}
 
-const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot = true }: FilterGroupEditorProps) => {
+const FilterGroupEditor = ({ group, availableFields, entityName, onUpdate, onDelete, isRoot = true }: FilterGroupEditorProps) => {
   const styles = useStyles();
 
   const handleAddFilter = () => {
@@ -630,6 +624,7 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
                   <FilterGroupEditor
                     group={child}
                     availableFields={availableFields}
+                    entityName={entityName}
                     onUpdate={(updated) => handleUpdateChild(child.id, updated)}
                     onDelete={() => handleRemoveChild(child.id)}
                     isRoot={false}
@@ -639,6 +634,7 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
                 <FilterRowEditor
                   filter={child}
                   availableFields={availableFields}
+                  entityName={entityName}
                   onUpdate={(updated) => handleUpdateChild(child.id, updated)}
                   onDelete={() => handleRemoveChild(child.id)}
                 />
@@ -783,8 +779,9 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
     }
   }, [isOpen, config]);
 
-  const selectedEntity = getEntityByLogicalName(tableName);
-  const availableFields = selectedEntity?.fields || [];
+  const { entities, getEntityByName } = useDataverse();
+  const { fields: availableFields, isLoading: fieldsLoading } = useEntityFields(tableName || undefined);
+  const selectedEntity = getEntityByName(tableName);
 
   const handleSave = () => {
     onSave({
@@ -848,7 +845,7 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
               selectedOptions={tableName ? [tableName] : []}
               onOptionSelect={handleTableChange}
             >
-              {DATAVERSE_ENTITIES.map((entity) => (
+              {entities.map((entity) => (
                 <Option key={entity.logicalName} value={entity.logicalName} text={entity.displayName}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS, width: '100%' }}>
                     <DatabaseRegular />
@@ -914,6 +911,7 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
             <FilterGroupEditor
               group={conditionGroup}
               availableFields={availableFields}
+              entityName={tableName}
               onUpdate={setConditionGroup}
             />
           </div>
