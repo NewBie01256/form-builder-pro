@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,8 +23,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus, Trash2, FolderPlus, Check, ChevronsUpDown, Database, Info } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { X, Plus, Trash2, FolderPlus, Check, ChevronsUpDown, Database, Info, Code, Copy, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { generateFormattedFetchXml } from "@/lib/dataverse/fetchXmlGenerator";
+import { generateFormattedOData } from "@/lib/dataverse/odataGenerator";
 import {
   DATAVERSE_ENTITIES,
   DATAVERSE_OPERATORS,
@@ -492,6 +495,20 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
             </div>
           </div>
         )}
+
+        {/* Query Preview */}
+        {tableName && labelField && valueField && (
+          <QueryPreview 
+            config={{
+              tableName,
+              labelField,
+              valueField,
+              conditionGroup,
+              orderByField: orderByField || undefined,
+              orderDirection
+            }}
+          />
+        )}
       </div>
 
       {/* Footer */}
@@ -506,6 +523,110 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
           Save Configuration
         </Button>
       </div>
+    </div>
+  );
+};
+
+// Query Preview Component with OData and FetchXML tabs
+interface QueryPreviewProps {
+  config: {
+    tableName: string;
+    labelField: string;
+    valueField: string;
+    conditionGroup: DynamicValueFilterGroup;
+    orderByField?: string;
+    orderDirection: 'asc' | 'desc';
+  };
+}
+
+const QueryPreview = ({ config }: QueryPreviewProps) => {
+  const [copiedTab, setCopiedTab] = useState<string | null>(null);
+
+  const odataQuery = useMemo(() => {
+    try {
+      return generateFormattedOData(config);
+    } catch {
+      return '// Error generating OData query';
+    }
+  }, [config]);
+
+  const fetchXmlQuery = useMemo(() => {
+    try {
+      return generateFormattedFetchXml(config, { top: 5000 });
+    } catch {
+      return '<!-- Error generating FetchXML query -->';
+    }
+  }, [config]);
+
+  const handleCopy = async (text: string, tab: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedTab(tab);
+      setTimeout(() => setCopiedTab(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Code className="h-4 w-4 text-muted-foreground" />
+        <Label className="text-sm font-semibold">Query Preview</Label>
+      </div>
+      
+      <Tabs defaultValue="odata" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="odata" className="text-xs">OData</TabsTrigger>
+          <TabsTrigger value="fetchxml" className="text-xs">FetchXML</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="odata" className="mt-2">
+          <div className="relative group">
+            <pre className="p-3 rounded-lg bg-muted/50 border border-border text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all max-h-[200px] overflow-y-auto">
+              {odataQuery}
+            </pre>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => handleCopy(odataQuery, 'odata')}
+            >
+              {copiedTab === 'odata' ? (
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Use with Dataverse Web API: <code className="px-1 py-0.5 bg-muted rounded">Xrm.WebApi.retrieveMultipleRecords()</code>
+          </p>
+        </TabsContent>
+        
+        <TabsContent value="fetchxml" className="mt-2">
+          <div className="relative group">
+            <pre className="p-3 rounded-lg bg-muted/50 border border-border text-xs font-mono overflow-x-auto whitespace-pre max-h-[200px] overflow-y-auto">
+              {fetchXmlQuery}
+            </pre>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => handleCopy(fetchXmlQuery, 'fetchxml')}
+            >
+              {copiedTab === 'fetchxml' ? (
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Use with FetchXML API: <code className="px-1 py-0.5 bg-muted rounded">Xrm.WebApi.retrieveMultipleRecords(entityName, "?fetchXml=" + encodedXml)</code>
+          </p>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
