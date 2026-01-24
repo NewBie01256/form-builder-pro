@@ -6,6 +6,7 @@ import {
 } from "@/components/fluent";
 import Index from "./pages/Index";
 import Documentation from "./pages/Documentation";
+import PCFDocumentation from "./pages/PCFDocumentation";
 import Execute from "./pages/Execute";
 import NotFound from "./pages/NotFound";
 
@@ -17,6 +18,7 @@ const AppContent = () => (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/docs" element={<Documentation />} />
+      <Route path="/docs/pcf" element={<PCFDocumentation />} />
       <Route path="/execute" element={<Execute />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
