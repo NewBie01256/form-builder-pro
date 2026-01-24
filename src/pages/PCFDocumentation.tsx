@@ -24,6 +24,7 @@ import {
 } from "@fluentui/react-icons";
 import { useState, useEffect, useRef } from "react";
 import { CodeBlock } from "@/components/ui/code-block";
+import { DynamicValuesPlayground } from "@/components/docs/DynamicValuesPlayground";
 
 const useStyles = makeStyles({
   container: {
@@ -1256,6 +1257,7 @@ const PCFDocumentation = () => {
         { id: "guide-dropdown", label: "📖 Dynamic Dropdown" },
         { id: "guide-filters", label: "📖 Adding Filters" },
         { id: "guide-examples", label: "📖 Real Examples" },
+        { id: "guide-playground", label: "🎮 Interactive Playground" },
       ],
     },
     {
@@ -1553,6 +1555,22 @@ const PCFDocumentation = () => {
 
           <Title3>Example: Active Products with Price</Title3>
           <CodeBlock code={GUIDE_PRODUCT_EXAMPLE} language="typescript" />
+        </section>
+
+        <Divider />
+
+        {/* Interactive Playground */}
+        <section id="guide-playground" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <Title2>🎮 Interactive Playground</Title2>
+          </div>
+          <Body1>
+            Configure Dynamic Values interactively and see the generated OData/FetchXML queries in real-time.
+          </Body1>
+          
+          <div style={{ marginTop: tokens.spacingVerticalL }}>
+            <DynamicValuesPlayground />
+          </div>
         </section>
 
         <Divider />
