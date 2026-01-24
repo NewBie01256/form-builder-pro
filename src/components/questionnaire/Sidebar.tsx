@@ -79,6 +79,7 @@ const Sidebar = ({
   const renderBranchTree = (
     branch: ConditionalBranch,
     sectionId: string,
+    pageId: string,
     depth: number = 0,
     isLast: boolean = true,
     parentLines: boolean[] = []
@@ -113,6 +114,7 @@ const Sidebar = ({
               selectedBranchId === branch.id && !selectedQuestionId && "bg-accent text-accent-foreground"
             )}
             onClick={() => {
+              onSelectPage(pageId);
               onSelectSection(sectionId);
               onSelectBranch(branch.id);
             }}
@@ -149,6 +151,7 @@ const Sidebar = ({
                     selectedQuestionId === child.item.id && "bg-accent text-accent-foreground"
                   )}
                   onClick={() => {
+                    onSelectPage(pageId);
                     onSelectSection(sectionId);
                     onSelectQuestion(child.item.id, branch.id);
                   }}
@@ -162,7 +165,7 @@ const Sidebar = ({
               </div>
             );
           } else {
-            return renderBranchTree(child.item, sectionId, depth + 1, isChildLast, newParentLines);
+            return renderBranchTree(child.item, sectionId, pageId, depth + 1, isChildLast, newParentLines);
           }
         })}
       </div>
@@ -185,7 +188,11 @@ const Sidebar = ({
                 ? "bg-primary/5 border-primary/50 text-primary/80"
                 : "border-transparent hover:bg-accent"
           )}
-          onClick={() => onSelectSection(section.id)}
+          onClick={() => {
+            // Navigate to the page containing this section
+            onSelectPage(pageId);
+            onSelectSection(section.id);
+          }}
         >
           <Layers className={cn("h-4 w-4 shrink-0", isSectionDirectlySelected || hasSelectedChild ? "text-primary" : "text-muted-foreground")} />
           <span className="truncate text-sm font-medium">{section.name || 'Untitled Section'}</span>
@@ -201,6 +208,8 @@ const Sidebar = ({
               selectedQuestionId === q.id && selectedSectionId === section.id && "bg-accent text-accent-foreground"
             )}
             onClick={() => {
+              // Navigate to the page containing this section
+              onSelectPage(pageId);
               onSelectSection(section.id);
               onSelectQuestion(q.id, null);
             }}
@@ -216,7 +225,7 @@ const Sidebar = ({
         {/* Section Branches */}
         {section.branches.map((branch, idx) => (
           <div key={branch.id} className="ml-4">
-            {renderBranchTree(branch, section.id, 0, idx === section.branches.length - 1, [])}
+            {renderBranchTree(branch, section.id, pageId, 0, idx === section.branches.length - 1, [])}
           </div>
         ))}
       </div>
