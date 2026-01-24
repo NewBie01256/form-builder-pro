@@ -3771,6 +3771,148 @@ const Documentation = () => {
                     </div>
                   </div>
                   
+                  {/* Decision Flowchart */}
+                  <div className="p-6 rounded-lg border bg-muted/30">
+                    <h4 className="font-semibold mb-2 text-center">Quick-Start Decision Flowchart</h4>
+                    <p className="text-xs text-muted-foreground text-center mb-6">
+                      Answer these questions to find the right feature for your use case
+                    </p>
+                    
+                    <div className="flex flex-col items-center gap-4 min-w-[600px] overflow-x-auto">
+                      {/* Start */}
+                      <div className="p-3 rounded-full bg-primary text-primary-foreground font-medium text-sm">
+                        START
+                      </div>
+                      
+                      {/* Arrow */}
+                      <div className="w-0.5 h-4 bg-muted-foreground/40"></div>
+                      
+                      {/* Question 1 */}
+                      <div className="relative">
+                        <div className="w-64 h-24 border-2 border-primary bg-primary/5 rotate-45 flex items-center justify-center">
+                          <span className="text-sm font-medium -rotate-45 text-center px-4">
+                            Do answers come from<br/>an external database?
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Branch from Q1 */}
+                      <div className="flex items-start gap-16">
+                        {/* YES - Dynamic Values */}
+                        <div className="flex flex-col items-center gap-3">
+                          <Badge className="bg-green-500">YES</Badge>
+                          <div className="w-0.5 h-6 bg-green-500/50"></div>
+                          <div className="p-4 rounded-xl border-2 border-blue-500 bg-blue-500/10 text-center">
+                            <Database className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                            <div className="font-medium text-blue-500">Dynamic Values</div>
+                            <p className="text-xs text-muted-foreground mt-1 max-w-[140px]">
+                              Fetch from tables with filters & sorting
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* NO - Continue */}
+                        <div className="flex flex-col items-center gap-3">
+                          <Badge variant="secondary">NO</Badge>
+                          <div className="w-0.5 h-6 bg-muted-foreground/30"></div>
+                          
+                          {/* Question 2 */}
+                          <div className="relative">
+                            <div className="w-64 h-24 border-2 border-amber-500 bg-amber-500/5 rotate-45 flex items-center justify-center">
+                              <span className="text-sm font-medium -rotate-45 text-center px-4">
+                                Hide/show entire<br/>question groups?
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Branch from Q2 */}
+                          <div className="flex items-start gap-12 mt-4">
+                            {/* YES - Question-Level */}
+                            <div className="flex flex-col items-center gap-3">
+                              <Badge className="bg-green-500">YES</Badge>
+                              <div className="w-0.5 h-6 bg-green-500/50"></div>
+                              <div className="p-4 rounded-xl border-2 border-purple-500 bg-purple-500/10 text-center">
+                                <GitBranch className="h-6 w-6 text-purple-500 mx-auto mb-2" />
+                                <div className="font-medium text-purple-500">Question-Level</div>
+                                <p className="text-xs text-muted-foreground mt-1 max-w-[140px]">
+                                  Branches with nested questions
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* NO - Continue to Q3 */}
+                            <div className="flex flex-col items-center gap-3">
+                              <Badge variant="secondary">NO</Badge>
+                              <div className="w-0.5 h-6 bg-muted-foreground/30"></div>
+                              
+                              {/* Question 3 */}
+                              <div className="relative">
+                                <div className="w-64 h-24 border-2 border-orange-500 bg-orange-500/5 rotate-45 flex items-center justify-center">
+                                  <span className="text-sm font-medium -rotate-45 text-center px-4">
+                                    Same question,<br/>different choices?
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              {/* Branch from Q3 */}
+                              <div className="flex items-start gap-12 mt-4">
+                                {/* YES - Answer-Level */}
+                                <div className="flex flex-col items-center gap-3">
+                                  <Badge className="bg-green-500">YES</Badge>
+                                  <div className="w-0.5 h-6 bg-green-500/50"></div>
+                                  <div className="p-4 rounded-xl border-2 border-orange-500 bg-orange-500/10 text-center">
+                                    <ListChecks className="h-6 w-6 text-orange-500 mx-auto mb-2" />
+                                    <div className="font-medium text-orange-500">Answer-Level</div>
+                                    <p className="text-xs text-muted-foreground mt-1 max-w-[140px]">
+                                      Swap answer sets per context
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                {/* NO - Static */}
+                                <div className="flex flex-col items-center gap-3">
+                                  <Badge variant="secondary">NO</Badge>
+                                  <div className="w-0.5 h-6 bg-muted-foreground/30"></div>
+                                  <div className="p-4 rounded-xl border-2 border-muted-foreground/50 bg-muted/50 text-center">
+                                    <CheckCircle className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                                    <div className="font-medium text-muted-foreground">Static Answers</div>
+                                    <p className="text-xs text-muted-foreground mt-1 max-w-[140px]">
+                                      Define fixed answer options
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Quick Reference */}
+                    <div className="mt-8 pt-4 border-t">
+                      <div className="grid gap-3 sm:grid-cols-4 text-xs">
+                        <div className="flex items-center gap-2 p-2 rounded bg-blue-500/10">
+                          <Database className="h-4 w-4 text-blue-500 shrink-0" />
+                          <span><strong>Dynamic:</strong> External data source</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 rounded bg-purple-500/10">
+                          <GitBranch className="h-4 w-4 text-purple-500 shrink-0" />
+                          <span><strong>Q-Level:</strong> Show/hide groups</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 rounded bg-orange-500/10">
+                          <ListChecks className="h-4 w-4 text-orange-500 shrink-0" />
+                          <span><strong>A-Level:</strong> Swap choices</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 rounded bg-muted">
+                          <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span><strong>Static:</strong> Fixed options</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
                   {/* Combination Note */}
                   <div className="p-4 rounded-lg bg-muted/50 border">
                     <div className="text-sm font-medium mb-2">💡 Combining Features</div>
