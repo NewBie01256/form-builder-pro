@@ -1099,7 +1099,7 @@ const QuestionnaireBuilder = () => {
                       }}
                     >
                       <Play className="h-4 w-4 mr-2" />
-                      Open Executor
+                      Preview
                     </Button>
                     <Button variant="outline" onClick={handleSaveAsDraft}>
                       <Save className="h-4 w-4 mr-2" />
