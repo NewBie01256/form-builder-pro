@@ -1379,11 +1379,6 @@ const QuestionnaireBuilder = () => {
                           Documentation
                         </Button>
                       </Link>
-                      <Link to="/docs/pcf">
-                        <Button appearance="secondary" size="large" icon={<Code className="h-4 w-4" />}>
-                          PCF Technical Docs
-                        </Button>
-                      </Link>
                       <Button 
                         appearance="secondary"
                         size="large"
