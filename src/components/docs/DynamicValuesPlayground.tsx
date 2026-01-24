@@ -5,14 +5,16 @@
  * OData/FetchXML queries in real-time.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   makeStyles,
   tokens,
+  shorthands,
   Card,
   CardHeader,
   Title3,
   Body1,
+  Body2,
   Label,
   Dropdown,
   Option,
@@ -25,6 +27,13 @@ import {
   SelectTabData,
   SelectTabEvent,
   Combobox,
+  Spinner,
+  Table,
+  TableHeader,
+  TableRow,
+  TableHeaderCell,
+  TableBody,
+  TableCell,
 } from "@fluentui/react-components";
 import {
   Add16Regular,
@@ -35,12 +44,85 @@ import {
   Database16Regular,
   Filter16Regular,
   ArrowSort16Regular,
+  Play24Regular,
+  Dismiss16Regular,
+  TableSimple24Regular,
 } from "@fluentui/react-icons";
 import { CodeBlock } from "@/components/ui/code-block";
-import { DATAVERSE_ENTITIES, getFilterableFields, type DataverseEntity, type DataverseField } from "@/data/dataverseEntities";
+import { DATAVERSE_ENTITIES, getFilterableFields } from "@/data/dataverseEntities";
 import { generateFetchXml } from "@/lib/dataverse/fetchXmlGenerator";
 import { generateFormattedOData } from "@/lib/dataverse/odataGenerator";
 import type { DynamicValueConfig, DynamicValueConditionGroup, DynamicValueCondition, ConditionOperator } from "@/types/questionnaire";
+
+// ============================================================================
+// SAMPLE DATA FOR SIMULATION
+// ============================================================================
+
+interface SampleRecord {
+  [key: string]: string | number | boolean | null;
+}
+
+const SAMPLE_DATA: Record<string, SampleRecord[]> = {
+  account: [
+    { accountid: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "Contoso Ltd", statecode: 0, revenue: 5000000, telephone1: "555-0100", industrycode: 1 },
+    { accountid: "b2c3d4e5-f6a7-8901-bcde-f12345678901", name: "Fabrikam Inc", statecode: 0, revenue: 2500000, telephone1: "555-0200", industrycode: 2 },
+    { accountid: "c3d4e5f6-a7b8-9012-cdef-123456789012", name: "Adventure Works", statecode: 0, revenue: 8000000, telephone1: "555-0300", industrycode: 1 },
+    { accountid: "d4e5f6a7-b8c9-0123-defa-234567890123", name: "Northwind Traders", statecode: 1, revenue: 1500000, telephone1: "555-0400", industrycode: 3 },
+    { accountid: "e5f6a7b8-c9d0-1234-efab-345678901234", name: "Tailspin Toys", statecode: 0, revenue: 750000, telephone1: "555-0500", industrycode: 4 },
+    { accountid: "f6a7b8c9-d0e1-2345-fabc-456789012345", name: "Alpine Ski House", statecode: 0, revenue: 3200000, telephone1: "555-0600", industrycode: 2 },
+    { accountid: "a7b8c9d0-e1f2-3456-abcd-567890123456", name: "Blue Yonder Airlines", statecode: 1, revenue: 12000000, telephone1: "555-0700", industrycode: 5 },
+    { accountid: "b8c9d0e1-f2a3-4567-bcde-678901234567", name: "City Power & Light", statecode: 0, revenue: 9500000, telephone1: "555-0800", industrycode: 6 },
+  ],
+  contact: [
+    { contactid: "c1a2b3c4-d5e6-7890-1234-567890abcdef", fullname: "John Smith", statecode: 0, emailaddress1: "john.smith@contoso.com", telephone1: "555-1100" },
+    { contactid: "c2b3c4d5-e6f7-8901-2345-67890abcdef1", fullname: "Jane Doe", statecode: 0, emailaddress1: "jane.doe@fabrikam.com", telephone1: "555-1200" },
+    { contactid: "c3c4d5e6-f7a8-9012-3456-7890abcdef12", fullname: "Bob Johnson", statecode: 0, emailaddress1: "bob.johnson@adventure.com", telephone1: "555-1300" },
+    { contactid: "c4d5e6f7-a8b9-0123-4567-890abcdef123", fullname: "Alice Williams", statecode: 1, emailaddress1: "alice.w@northwind.com", telephone1: "555-1400" },
+    { contactid: "c5e6f7a8-b9c0-1234-5678-90abcdef1234", fullname: "Charlie Brown", statecode: 0, emailaddress1: "charlie.b@tailspin.com", telephone1: "555-1500" },
+  ],
+  incident: [
+    { incidentid: "i1a2b3c4-d5e6-7890-abcd-ef1234567890", title: "Cannot access email", statecode: 0, prioritycode: 1, ticketnumber: "CAS-001" },
+    { incidentid: "i2b3c4d5-e6f7-8901-bcde-f12345678901", title: "Printer not working", statecode: 0, prioritycode: 2, ticketnumber: "CAS-002" },
+    { incidentid: "i3c4d5e6-f7a8-9012-cdef-123456789012", title: "Software license expired", statecode: 0, prioritycode: 1, ticketnumber: "CAS-003" },
+    { incidentid: "i4d5e6f7-a8b9-0123-defa-234567890123", title: "Network connectivity issues", statecode: 1, prioritycode: 3, ticketnumber: "CAS-004" },
+    { incidentid: "i5e6f7a8-b9c0-1234-efab-345678901234", title: "Password reset required", statecode: 0, prioritycode: 2, ticketnumber: "CAS-005" },
+  ],
+  lead: [
+    { leadid: "l1a2b3c4-d5e6-7890-abcd-ef1234567890", fullname: "Michael Chen", statecode: 0, emailaddress1: "m.chen@prospect.com", companyname: "Tech Startup Inc" },
+    { leadid: "l2b3c4d5-e6f7-8901-bcde-f12345678901", fullname: "Sarah Wilson", statecode: 0, emailaddress1: "s.wilson@enterprise.com", companyname: "Enterprise Corp" },
+    { leadid: "l3c4d5e6-f7a8-9012-cdef-123456789012", fullname: "David Lee", statecode: 1, emailaddress1: "d.lee@smallbiz.com", companyname: "Small Business LLC" },
+  ],
+  opportunity: [
+    { opportunityid: "o1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Enterprise License Deal", statecode: 0, estimatedvalue: 500000, closeprobability: 75 },
+    { opportunityid: "o2b3c4d5-e6f7-8901-bcde-f12345678901", name: "Cloud Migration Project", statecode: 0, estimatedvalue: 250000, closeprobability: 60 },
+    { opportunityid: "o3c4d5e6-f7a8-9012-cdef-123456789012", name: "Support Contract Renewal", statecode: 0, estimatedvalue: 75000, closeprobability: 90 },
+  ],
+  systemuser: [
+    { systemuserid: "u1a2b3c4-d5e6-7890-abcd-ef1234567890", fullname: "Admin User", isdisabled: false, internalemailaddress: "admin@company.com" },
+    { systemuserid: "u2b3c4d5-e6f7-8901-bcde-f12345678901", fullname: "Support Agent", isdisabled: false, internalemailaddress: "support@company.com" },
+    { systemuserid: "u3c4d5e6-f7a8-9012-cdef-123456789012", fullname: "Sales Rep", isdisabled: false, internalemailaddress: "sales@company.com" },
+  ],
+  team: [
+    { teamid: "t1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Support Team", teamtype: 0, description: "Customer support team" },
+    { teamid: "t2b3c4d5-e6f7-8901-bcde-f12345678901", name: "Sales Team", teamtype: 0, description: "Sales department" },
+    { teamid: "t3c4d5e6-f7a8-9012-cdef-123456789012", name: "IT Team", teamtype: 0, description: "Information technology" },
+  ],
+  product: [
+    { productid: "p1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Enterprise Suite", statecode: 0, price: 999.99, productnumber: "ENT-001" },
+    { productid: "p2b3c4d5-e6f7-8901-bcde-f12345678901", name: "Professional License", statecode: 0, price: 499.99, productnumber: "PRO-001" },
+    { productid: "p3c4d5e6-f7a8-9012-cdef-123456789012", name: "Basic Package", statecode: 0, price: 99.99, productnumber: "BAS-001" },
+    { productid: "p4d5e6f7-a8b9-0123-defa-234567890123", name: "Support Add-on", statecode: 1, price: 149.99, productnumber: "SUP-001" },
+  ],
+  queue: [
+    { queueid: "q1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Support Queue", statecode: 0, emailaddress: "support@queue.com" },
+    { queueid: "q2b3c4d5-e6f7-8901-bcde-f12345678901", name: "Sales Queue", statecode: 0, emailaddress: "sales@queue.com" },
+  ],
+  businessunit: [
+    { businessunitid: "b1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Headquarters", isdisabled: false },
+    { businessunitid: "b2b3c4d5-e6f7-8901-bcde-f12345678901", name: "West Region", isdisabled: false },
+    { businessunitid: "b3c4d5e6-f7a8-9012-cdef-123456789012", name: "East Region", isdisabled: false },
+  ],
+};
 
 const useStyles = makeStyles({
   container: {
@@ -122,6 +204,51 @@ const useStyles = makeStyles({
     flexWrap: "wrap",
     marginTop: tokens.spacingVerticalS,
   },
+  resultsSection: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalM,
+    padding: tokens.spacingVerticalL,
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRadius: tokens.borderRadiusMedium,
+    border: `1px solid ${tokens.colorBrandStroke1}`,
+  },
+  resultsHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  resultsTitle: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+  },
+  resultsTable: {
+    marginTop: tokens.spacingVerticalS,
+    ...shorthands.overflow("auto"),
+    maxHeight: "300px",
+  },
+  resultRow: {
+    cursor: "pointer",
+    "&:hover": {
+      backgroundColor: tokens.colorNeutralBackground3,
+    },
+  },
+  tryItButton: {
+    minWidth: "120px",
+  },
+  statsRow: {
+    display: "flex",
+    gap: tokens.spacingHorizontalM,
+    flexWrap: "wrap",
+  },
+  loadingOverlay: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: tokens.spacingHorizontalS,
+    padding: tokens.spacingVerticalL,
+  },
 });
 
 interface FilterState {
@@ -159,6 +286,11 @@ export const DynamicValuesPlayground = () => {
   // UI state
   const [activeTab, setActiveTab] = useState<string>("odata");
   const [copied, setCopied] = useState(false);
+  
+  // Simulation state
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationResults, setSimulationResults] = useState<SampleRecord[] | null>(null);
+  const [executionTime, setExecutionTime] = useState<number>(0);
 
   // Get current entity and its fields
   const currentEntity = useMemo(() => 
@@ -249,6 +381,131 @@ export const DynamicValuesPlayground = () => {
 
   const handleTabSelect = (_: SelectTabEvent, data: SelectTabData) => {
     setActiveTab(data.value as string);
+  };
+
+  // Simulation logic - filters sample data based on configuration
+  const simulateQuery = useCallback(async () => {
+    setIsSimulating(true);
+    setSimulationResults(null);
+    
+    const startTime = performance.now();
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
+    
+    // Get sample data for this entity
+    const entityData = SAMPLE_DATA[selectedEntity] || [];
+    
+    // Apply filters
+    let filteredData = entityData.filter(record => {
+      if (filters.length === 0 || !filters.some(f => f.field)) {
+        return true;
+      }
+
+      const filterResults = filters
+        .filter(f => f.field)
+        .map(filter => {
+          const recordValue = record[filter.field];
+          const filterValue = filter.value;
+          
+          switch (filter.operator) {
+            case "eq":
+            case "equals":
+              return String(recordValue) === filterValue;
+            case "ne":
+            case "not_equals":
+              return String(recordValue) !== filterValue;
+            case "gt":
+            case "greater_than":
+              return Number(recordValue) > Number(filterValue);
+            case "lt":
+            case "less_than":
+              return Number(recordValue) < Number(filterValue);
+            case "contains":
+              return String(recordValue).toLowerCase().includes(filterValue.toLowerCase());
+            case "startswith":
+            case "starts_with":
+              return String(recordValue).toLowerCase().startsWith(filterValue.toLowerCase());
+            case "null":
+            case "is_null":
+              return recordValue === null || recordValue === undefined || recordValue === "";
+            case "not_null":
+            case "is_not_null":
+              return recordValue !== null && recordValue !== undefined && recordValue !== "";
+            default:
+              return true;
+          }
+        });
+
+      // Apply AND/OR logic
+      if (matchType === "AND") {
+        return filterResults.every(r => r);
+      } else {
+        return filterResults.some(r => r);
+      }
+    });
+
+    // Apply ordering
+    if (orderByField) {
+      filteredData = [...filteredData].sort((a, b) => {
+        const aVal = a[orderByField];
+        const bVal = b[orderByField];
+        
+        if (typeof aVal === "number" && typeof bVal === "number") {
+          return orderDirection === "asc" ? aVal - bVal : bVal - aVal;
+        }
+        
+        const aStr = String(aVal || "").toLowerCase();
+        const bStr = String(bVal || "").toLowerCase();
+        
+        if (orderDirection === "asc") {
+          return aStr.localeCompare(bStr);
+        } else {
+          return bStr.localeCompare(aStr);
+        }
+      });
+    }
+
+    const endTime = performance.now();
+    setExecutionTime(Math.round(endTime - startTime));
+    setSimulationResults(filteredData);
+    setIsSimulating(false);
+  }, [selectedEntity, filters, matchType, orderByField, orderDirection]);
+
+  const clearResults = () => {
+    setSimulationResults(null);
+    setExecutionTime(0);
+  };
+
+  // Get display columns for results table
+  const displayColumns = useMemo(() => {
+    const cols: string[] = [];
+    if (valueField) cols.push(valueField);
+    if (labelField && labelField !== valueField) cols.push(labelField);
+    // Add a few extra columns for context
+    const extraCols = currentEntity?.fields
+      .filter(f => f.logicalName !== valueField && f.logicalName !== labelField)
+      .slice(0, 2)
+      .map(f => f.logicalName) || [];
+    return [...cols, ...extraCols];
+  }, [valueField, labelField, currentEntity]);
+
+  const getFieldDisplayName = (logicalName: string): string => {
+    return currentEntity?.fields.find(f => f.logicalName === logicalName)?.displayName || logicalName;
+  };
+
+  const formatCellValue = (value: string | number | boolean | null): string => {
+    if (value === null || value === undefined) return "—";
+    if (typeof value === "boolean") return value ? "Yes" : "No";
+    if (typeof value === "number" && value > 10000) {
+      return value.toLocaleString();
+    }
+    const str = String(value);
+    // Truncate GUIDs for display
+    if (str.length === 36 && str.includes("-")) {
+      return str.substring(0, 8) + "...";
+    }
+    return str;
   };
 
   return (
@@ -433,6 +690,115 @@ export const DynamicValuesPlayground = () => {
             <Option value="desc">Descending</Option>
           </Dropdown>
         </div>
+      </Card>
+
+      {/* Try It Section */}
+      <Card>
+        <CardHeader
+          image={<TableSimple24Regular />}
+          header={<b>4. Try It - Simulate Query</b>}
+          description="Execute the query against sample data to see results"
+          action={
+            <Button
+              appearance="primary"
+              icon={isSimulating ? <Spinner size="tiny" /> : <Play24Regular />}
+              onClick={simulateQuery}
+              disabled={isSimulating}
+              className={styles.tryItButton}
+            >
+              {isSimulating ? "Running..." : "Try It"}
+            </Button>
+          }
+        />
+        
+        {isSimulating && (
+          <div className={styles.loadingOverlay}>
+            <Spinner size="small" />
+            <Body1>Executing query against sample data...</Body1>
+          </div>
+        )}
+
+        {simulationResults !== null && !isSimulating && (
+          <div className={styles.resultsSection} style={{ margin: tokens.spacingVerticalM }}>
+            <div className={styles.resultsHeader}>
+              <div className={styles.resultsTitle}>
+                <TableSimple24Regular />
+                <Title3>Query Results</Title3>
+              </div>
+              <div style={{ display: "flex", gap: tokens.spacingHorizontalS, alignItems: "center" }}>
+                <Badge appearance="filled" color="success">
+                  {simulationResults.length} record{simulationResults.length !== 1 ? "s" : ""}
+                </Badge>
+                <Badge appearance="tint" color="informative">
+                  {executionTime}ms
+                </Badge>
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={<Dismiss16Regular />}
+                  onClick={clearResults}
+                  title="Clear results"
+                />
+              </div>
+            </div>
+
+            <div className={styles.statsRow}>
+              <Body2>
+                <strong>Entity:</strong> {currentEntity?.displayName}
+              </Body2>
+              <Body2>
+                <strong>Filters:</strong> {filters.filter(f => f.field).length} condition{filters.filter(f => f.field).length !== 1 ? "s" : ""}
+              </Body2>
+              <Body2>
+                <strong>Order:</strong> {getFieldDisplayName(orderByField)} ({orderDirection})
+              </Body2>
+            </div>
+
+            {simulationResults.length === 0 ? (
+              <div className={styles.emptyState}>
+                No records match the current filter criteria.
+                <br />
+                Try adjusting your filters or removing some conditions.
+              </div>
+            ) : (
+              <div className={styles.resultsTable}>
+                <Table size="small">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHeaderCell style={{ width: "40px" }}>#</TableHeaderCell>
+                      {displayColumns.map(col => (
+                        <TableHeaderCell key={col}>
+                          {getFieldDisplayName(col)}
+                        </TableHeaderCell>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {simulationResults.slice(0, 10).map((record, index) => (
+                      <TableRow key={index} className={styles.resultRow}>
+                        <TableCell>{index + 1}</TableCell>
+                        {displayColumns.map(col => (
+                          <TableCell key={col}>
+                            {formatCellValue(record[col])}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {simulationResults.length > 10 && (
+                  <div style={{ 
+                    padding: tokens.spacingVerticalS, 
+                    textAlign: "center",
+                    color: tokens.colorNeutralForeground3 
+                  }}>
+                    Showing first 10 of {simulationResults.length} results
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* Query Preview */}
