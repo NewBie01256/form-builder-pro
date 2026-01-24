@@ -23,8 +23,9 @@ import {
   Folder16Regular,
 } from "@fluentui/react-icons";
 import { useState, useEffect, useRef } from "react";
-import { CodeBlock } from "@/components/ui/code-block";
-import { DynamicValuesPlayground } from "@/components/docs/DynamicValuesPlayground";
+
+// Self-contained PCF docs imports (no project dependencies)
+import { CodeBlock, DynamicValuesPlayground } from "@/features/pcf-docs";
 
 const useStyles = makeStyles({
   container: {
