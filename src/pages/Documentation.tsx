@@ -3092,6 +3092,119 @@ const Documentation = () => {
                       Within the Question Editor, you can configure answer-level branching to show different answer options based on previous responses:
                     </p>
                     
+                    {/* Answer-Level Branching Flow Diagram */}
+                    <div className="p-6 rounded-lg border bg-muted/30 overflow-x-auto mb-6">
+                      <h5 className="font-semibold mb-6 text-center">Answer Set Swap Flow</h5>
+                      
+                      <div className="min-w-[750px]">
+                        <div className="flex flex-col items-center gap-4">
+                          
+                          {/* Top Row - Previous Question */}
+                          <div className="flex items-center gap-4">
+                            <div className="p-4 rounded-xl border-2 border-blue-500 bg-blue-500/5">
+                              <div className="text-center">
+                                <HelpCircle className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                                <span className="text-sm font-medium">Previous Question</span>
+                                <div className="text-xs text-muted-foreground mt-1">"What is your role?"</div>
+                              </div>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                            <div className="p-3 rounded-lg border bg-background">
+                              <div className="text-xs font-medium mb-2">User Response:</div>
+                              <Badge className="bg-blue-500">"Manager"</Badge>
+                            </div>
+                          </div>
+                          
+                          {/* Arrow Down */}
+                          <div className="flex flex-col items-center">
+                            <div className="w-0.5 h-6 bg-muted-foreground/40"></div>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground rotate-90" />
+                            <span className="text-xs text-muted-foreground">triggers evaluation</span>
+                          </div>
+                          
+                          {/* Current Question with Rule Evaluation */}
+                          <div className="flex items-center gap-6">
+                            <div className="p-4 rounded-xl border-2 border-primary bg-primary/5">
+                              <div className="text-center">
+                                <HelpCircle className="h-6 w-6 text-primary mx-auto mb-2" />
+                                <span className="text-sm font-medium">Current Question</span>
+                                <div className="text-xs text-muted-foreground mt-1">"Select priority level"</div>
+                              </div>
+                            </div>
+                            
+                            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                            
+                            {/* Rule Evaluation Box */}
+                            <div className="p-4 rounded-xl border-2 border-amber-500 bg-amber-500/5">
+                              <div className="font-medium text-amber-500 text-sm mb-2 text-center">Evaluate Answer-Level Rules</div>
+                              <div className="space-y-2 text-xs">
+                                <div className="flex items-center gap-2 p-2 rounded bg-green-500/10 border border-green-500/30">
+                                  <CheckCircle className="h-3 w-3 text-green-500" />
+                                  <span>Rule 1: Role = "Manager"</span>
+                                  <Badge variant="outline" className="text-[10px] ml-auto">MATCH</Badge>
+                                </div>
+                                <div className="flex items-center gap-2 p-2 rounded bg-muted/50 border">
+                                  <span className="h-3 w-3 text-muted-foreground">○</span>
+                                  <span className="text-muted-foreground">Rule 2: Role = "Staff"</span>
+                                  <Badge variant="outline" className="text-[10px] ml-auto text-muted-foreground">skip</Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Arrow Down */}
+                          <div className="flex flex-col items-center">
+                            <div className="w-0.5 h-6 bg-muted-foreground/40"></div>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground rotate-90" />
+                            <span className="text-xs text-muted-foreground">first matching rule wins</span>
+                          </div>
+                          
+                          {/* Answer Set Swap Result */}
+                          <div className="flex items-start gap-8">
+                            {/* Before (Default) */}
+                            <div className="p-4 rounded-xl border-2 border-muted-foreground/30 bg-muted/20 opacity-50">
+                              <div className="font-medium text-sm mb-3 text-center text-muted-foreground">
+                                <EyeOff className="h-4 w-4 inline mr-1" />
+                                Default Answer Set
+                              </div>
+                              <div className="space-y-1 text-xs">
+                                <div className="p-2 rounded bg-background/50 text-muted-foreground">○ Low</div>
+                                <div className="p-2 rounded bg-background/50 text-muted-foreground">○ Medium</div>
+                                <div className="p-2 rounded bg-background/50 text-muted-foreground">○ High</div>
+                              </div>
+                              <div className="text-xs text-center mt-2 text-muted-foreground">Hidden</div>
+                            </div>
+                            
+                            {/* Arrow */}
+                            <div className="flex flex-col items-center justify-center h-full pt-8">
+                              <ArrowRight className="h-6 w-6 text-green-500" />
+                              <span className="text-xs text-green-500 font-medium">SWAP</span>
+                            </div>
+                            
+                            {/* After (Conditional) */}
+                            <div className="p-4 rounded-xl border-2 border-green-500 bg-green-500/5">
+                              <div className="font-medium text-sm mb-3 text-center text-green-500">
+                                <Eye className="h-4 w-4 inline mr-1" />
+                                Manager Answer Set
+                              </div>
+                              <div className="space-y-1 text-xs">
+                                <div className="p-2 rounded bg-background border border-green-500/30">○ Low</div>
+                                <div className="p-2 rounded bg-background border border-green-500/30">○ Medium</div>
+                                <div className="p-2 rounded bg-background border border-green-500/30">○ High</div>
+                                <div className="p-2 rounded bg-green-500/10 border border-green-500/50 font-medium">○ Critical ⭐</div>
+                              </div>
+                              <div className="text-xs text-center mt-2 text-green-500">Displayed to User</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground text-center mt-6 max-w-xl mx-auto">
+                        The same question displays different answer options based on the user's previous responses.
+                        This enables role-based, context-aware questionnaires without duplicating questions.
+                      </p>
+                    </div>
+                    
                     <div className="space-y-3">
                       <div className="flex gap-4 p-4 rounded-lg border">
                         <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shrink-0">
