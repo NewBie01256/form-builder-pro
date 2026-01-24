@@ -987,8 +987,8 @@ const Documentation = () => {
                         <div className={styles.erdLine} />
                       </div>
                       {/* Page Level */}
-                      <div className={styles.erdEntity} style={{ borderColor: tokens.colorPaletteBlueBorder1 }}>
-                        <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPaletteBlueForeground1 }}>
+                      <div className={styles.erdEntity} style={{ borderColor: tokens.colorPaletteCornflowerBorderActive }}>
+                        <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPaletteCornflowerForeground2 }}>
                           📄 Pages
                         </Text>
                         <Text size={100} block style={{ textAlign: "center", color: tokens.colorNeutralForeground3 }}>
@@ -1024,8 +1024,8 @@ const Documentation = () => {
                             User input fields
                           </Text>
                         </div>
-                        <div className={styles.erdEntity} style={{ borderColor: tokens.colorPalettePurpleBorder1 }}>
-                          <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPalettePurpleForeground1 }}>
+                        <div className={styles.erdEntity} style={{ borderColor: tokens.colorPaletteLilacBorderActive }}>
+                          <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPaletteLilacForeground2 }}>
                             🔀 Branches
                           </Text>
                           <Text size={100} block style={{ textAlign: "center", color: tokens.colorNeutralForeground3 }}>
@@ -1042,7 +1042,7 @@ const Documentation = () => {
                         level: "Level 1", 
                         title: "Pages", 
                         desc: "Top-level containers that represent steps in a multi-page form. Users navigate between pages using Previous/Next buttons. Each page can contain multiple sections.",
-                        color: tokens.colorPaletteBlueForeground1,
+                        color: tokens.colorPaletteCornflowerForeground2,
                         icon: <File className="h-4 w-4" />
                       },
                       { 
@@ -1108,7 +1108,7 @@ const Documentation = () => {
                   <div className={styles.treeExample}>
                     <div style={{ color: tokens.colorBrandForeground1 }}>📋 IT Support Request Form</div>
                     <div className={styles.treeNested}>
-                      <div style={{ color: tokens.colorPaletteBlueForeground1 }}>📄 Page 1: Initial Assessment</div>
+                      <div style={{ color: tokens.colorPaletteCornflowerForeground2 }}>📄 Page 1: Initial Assessment</div>
                       <div className={styles.treeNested}>
                         <div style={{ color: tokens.colorPaletteGreenForeground1 }}>📁 Section: Contact Information</div>
                         <div className={styles.treeNested}>
@@ -1133,11 +1133,11 @@ const Documentation = () => {
                             <HelpCircle className="h-3 w-3" style={{ color: tokens.colorPaletteMarigoldForeground1 }} />
                             <span>What type of issue are you experiencing?</span>
                           </div>
-                          <div className={styles.treeItem} style={{ color: tokens.colorPalettePurpleForeground1 }}>
+                          <div className={styles.treeItem} style={{ color: tokens.colorPaletteLilacForeground2 }}>
                             <GitBranch className="h-3 w-3" />
                             <span>If Hardware Issue...</span>
                           </div>
-                          <div className={styles.treeNested} style={{ borderColor: tokens.colorPalettePurpleBorder1, opacity: 0.9 }}>
+                          <div className={styles.treeNested} style={{ borderColor: tokens.colorPaletteLilacBorderActive, opacity: 0.9 }}>
                             <div className={styles.treeItem}>
                               <HelpCircle className="h-3 w-3" style={{ color: tokens.colorPaletteMarigoldForeground1 }} />
                               <span>What hardware is affected?</span>
@@ -1146,22 +1146,22 @@ const Documentation = () => {
                               <HelpCircle className="h-3 w-3" style={{ color: tokens.colorPaletteMarigoldForeground1 }} />
                               <span>Serial number (if known)?</span>
                             </div>
-                            <div className={styles.treeItem} style={{ color: tokens.colorPalettePurpleForeground1 }}>
+                            <div className={styles.treeItem} style={{ color: tokens.colorPaletteLilacForeground2 }}>
                               <GitBranch className="h-3 w-3" />
                               <span>If Laptop/Desktop...</span>
                             </div>
-                            <div className={styles.treeNested} style={{ borderColor: tokens.colorPalettePurpleBorder2, opacity: 0.8 }}>
+                            <div className={styles.treeNested} style={{ borderColor: tokens.colorPaletteLilacBorderActive, opacity: 0.8 }}>
                               <div className={styles.treeItem}>
                                 <HelpCircle className="h-3 w-3" style={{ color: tokens.colorPaletteMarigoldForeground1 }} />
                                 <span>Operating system?</span>
                               </div>
                             </div>
                           </div>
-                          <div className={styles.treeItem} style={{ color: tokens.colorPalettePurpleForeground1 }}>
+                          <div className={styles.treeItem} style={{ color: tokens.colorPaletteLilacForeground2 }}>
                             <GitBranch className="h-3 w-3" />
                             <span>If Software Issue...</span>
                           </div>
-                          <div className={styles.treeNested} style={{ borderColor: tokens.colorPalettePurpleBorder1, opacity: 0.9 }}>
+                          <div className={styles.treeNested} style={{ borderColor: tokens.colorPaletteLilacBorderActive, opacity: 0.9 }}>
                             <div className={styles.treeItem}>
                               <HelpCircle className="h-3 w-3" style={{ color: tokens.colorPaletteMarigoldForeground1 }} />
                               <span>Application name?</span>
@@ -1169,7 +1169,7 @@ const Documentation = () => {
                           </div>
                         </div>
                       </div>
-                      <div style={{ color: tokens.colorPaletteBlueForeground1 }}>📄 Page 2: Additional Details</div>
+                      <div style={{ color: tokens.colorPaletteCornflowerForeground2 }}>📄 Page 2: Additional Details</div>
                     </div>
                   </div>
                   
@@ -1194,7 +1194,7 @@ const Documentation = () => {
                           <span>Question</span>
                         </div>
                         <div className={styles.iconListItem}>
-                          <GitBranch className="h-4 w-4" style={{ color: tokens.colorPalettePurpleForeground1 }} />
+                          <GitBranch className="h-4 w-4" style={{ color: tokens.colorPaletteLilacForeground2 }} />
                           <span>Conditional Branch</span>
                         </div>
                         <div className={styles.iconListItem}>
@@ -1571,12 +1571,12 @@ const Documentation = () => {
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: tokens.spacingVerticalS }}>
                           <Badge appearance="filled" color="informative">Hardware</Badge>
                           <div className={styles.erdLine} />
-                          <div style={{ 
-                            border: `2px solid ${tokens.colorPaletteBlueBorder1}`,
-                            borderRadius: tokens.borderRadiusMedium,
-                            padding: tokens.spacingVerticalM,
-                            backgroundColor: tokens.colorPaletteBlueBackground1,
-                          }}>
+                        <div style={{ 
+                          border: `2px solid ${tokens.colorPaletteCornflowerBorderActive}`,
+                          borderRadius: tokens.borderRadiusMedium,
+                          padding: tokens.spacingVerticalM,
+                          backgroundColor: tokens.colorPaletteCornflowerBackground2,
+                        }}>
                             <Text size={200} weight="medium" block>Hardware Branch</Text>
                             <Text size={100} style={{ color: tokens.colorNeutralForeground3 }}>
                               • Device type?<br/>
@@ -1648,19 +1648,19 @@ const Documentation = () => {
                       <Text weight="semibold" block style={{ marginBottom: tokens.spacingVerticalS }}>Nested Branches</Text>
                       <div className={styles.iconList}>
                         <div className={styles.iconListItem}>
-                          <GitBranch className="h-4 w-4" style={{ color: tokens.colorPalettePurpleForeground1 }} />
+                          <GitBranch className="h-4 w-4" style={{ color: tokens.colorPaletteLilacForeground2 }} />
                           <span>Branches can contain child branches</span>
                         </div>
                         <div className={styles.iconListItem}>
-                          <Network className="h-4 w-4" style={{ color: tokens.colorPalettePurpleForeground1 }} />
+                          <Network className="h-4 w-4" style={{ color: tokens.colorPaletteLilacForeground2 }} />
                           <span>Create multi-level decision trees</span>
                         </div>
                         <div className={styles.iconListItem}>
-                          <Eye className="h-4 w-4" style={{ color: tokens.colorPalettePurpleForeground1 }} />
+                          <Eye className="h-4 w-4" style={{ color: tokens.colorPaletteLilacForeground2 }} />
                           <span>Visual tree shows full hierarchy</span>
                         </div>
                         <div className={styles.iconListItem}>
-                          <EyeOff className="h-4 w-4" style={{ color: tokens.colorPalettePurpleForeground1 }} />
+                          <EyeOff className="h-4 w-4" style={{ color: tokens.colorPaletteLilacForeground2 }} />
                           <span>Child visibility inherits from parent</span>
                         </div>
                       </div>
@@ -1744,12 +1744,12 @@ const Documentation = () => {
                     </Text>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: tokens.spacingHorizontalL, flexWrap: "wrap" }}>
                       <div style={{ 
-                        border: `2px solid ${tokens.colorPaletteBlueBorder1}`,
+                        border: `2px solid ${tokens.colorPaletteCornflowerBorderActive}`,
                         borderRadius: tokens.borderRadiusMedium,
                         padding: tokens.spacingVerticalM,
                         textAlign: "center",
                       }}>
-                        <Database className="h-8 w-8" style={{ color: tokens.colorPaletteBlueForeground1, marginBottom: tokens.spacingVerticalXS }} />
+                        <Database className="h-8 w-8" style={{ color: tokens.colorPaletteCornflowerForeground2, marginBottom: tokens.spacingVerticalXS }} />
                         <Text size={200} weight="medium" block>Dataverse Table</Text>
                         <Text size={100} style={{ color: tokens.colorNeutralForeground3 }}>accounts, contacts, etc.</Text>
                       </div>
@@ -1871,7 +1871,7 @@ const Documentation = () => {
                   <div className={styles.grid3}>
                     <div className={styles.featureBox}>
                       <div className={styles.treeItem} style={{ marginBottom: tokens.spacingVerticalS }}>
-                        <Eye className="h-5 w-5" style={{ color: tokens.colorPaletteBlueForeground1 }} />
+                        <Eye className="h-5 w-5" style={{ color: tokens.colorPaletteCornflowerForeground2 }} />
                         <Text weight="semibold">Visibility Rules</Text>
                       </div>
                       <Text size={200} block style={{ color: tokens.colorNeutralForeground3, marginBottom: tokens.spacingVerticalS }}>
@@ -1977,7 +1977,7 @@ const Documentation = () => {
                           <span>Incident - Report issues or outages</span>
                         </div>
                         <div className={styles.iconListItem}>
-                          <Briefcase className="h-4 w-4" style={{ color: tokens.colorPaletteBlueForeground1 }} />
+                          <Briefcase className="h-4 w-4" style={{ color: tokens.colorPaletteCornflowerForeground2 }} />
                           <span>Service Request - Request services</span>
                         </div>
                         <div className={styles.iconListItem}>
@@ -1989,7 +1989,7 @@ const Documentation = () => {
                           <span>Problem - Root cause analysis</span>
                         </div>
                         <div className={styles.iconListItem}>
-                          <ClipboardList className="h-4 w-4" style={{ color: tokens.colorPalettePurpleForeground1 }} />
+                          <ClipboardList className="h-4 w-4" style={{ color: tokens.colorPaletteLilacForeground2 }} />
                           <span>Task - General work items</span>
                         </div>
                       </div>
@@ -2069,7 +2069,7 @@ const Documentation = () => {
                         <div className={styles.erdRow}><span>version</span><span style={{ color: tokens.colorBrandForeground1 }}>string</span></div>
                         <div className={styles.erdRow}><span>status</span><span style={{ color: tokens.colorBrandForeground1 }}>enum</span></div>
                         <div className={styles.erdRow}><span>serviceCatalog</span><span style={{ color: tokens.colorBrandForeground1 }}>string</span></div>
-                        <div className={styles.erdRow}><span>pages[]</span><span style={{ color: tokens.colorPaletteBlueForeground1 }}>Page[]</span></div>
+                        <div className={styles.erdRow}><span>pages[]</span><span style={{ color: tokens.colorPaletteCornflowerForeground2 }}>Page[]</span></div>
                       </div>
                       
                       <div className={styles.erdConnector}>
@@ -2079,14 +2079,14 @@ const Documentation = () => {
                       </div>
                       
                       {/* Level 2: Page */}
-                      <div className={styles.erdEntity} style={{ borderColor: tokens.colorPaletteBlueBorder1, minWidth: "250px" }}>
-                        <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPaletteBlueForeground1, marginBottom: tokens.spacingVerticalS }}>
+                      <div className={styles.erdEntity} style={{ borderColor: tokens.colorPaletteCornflowerBorderActive, minWidth: "250px" }}>
+                        <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPaletteCornflowerForeground2, marginBottom: tokens.spacingVerticalS }}>
                           📄 Page
                         </Text>
-                        <div className={styles.erdRow}><span>id</span><span style={{ color: tokens.colorPaletteBlueForeground1 }}>string</span></div>
-                        <div className={styles.erdRow}><span>name</span><span style={{ color: tokens.colorPaletteBlueForeground1 }}>string *</span></div>
-                        <div className={styles.erdRow}><span>description</span><span style={{ color: tokens.colorPaletteBlueForeground1 }}>string</span></div>
-                        <div className={styles.erdRow}><span>order</span><span style={{ color: tokens.colorPaletteBlueForeground1 }}>number</span></div>
+                        <div className={styles.erdRow}><span>id</span><span style={{ color: tokens.colorPaletteCornflowerForeground2 }}>string</span></div>
+                        <div className={styles.erdRow}><span>name</span><span style={{ color: tokens.colorPaletteCornflowerForeground2 }}>string *</span></div>
+                        <div className={styles.erdRow}><span>description</span><span style={{ color: tokens.colorPaletteCornflowerForeground2 }}>string</span></div>
+                        <div className={styles.erdRow}><span>order</span><span style={{ color: tokens.colorPaletteCornflowerForeground2 }}>number</span></div>
                         <div className={styles.erdRow}><span>sections[]</span><span style={{ color: tokens.colorPaletteGreenForeground1 }}>Section[]</span></div>
                       </div>
                       
@@ -2106,7 +2106,7 @@ const Documentation = () => {
                         <div className={styles.erdRow}><span>description</span><span style={{ color: tokens.colorPaletteGreenForeground1 }}>string</span></div>
                         <div className={styles.erdRow}><span>order</span><span style={{ color: tokens.colorPaletteGreenForeground1 }}>number</span></div>
                         <div className={styles.erdRow}><span>questions[]</span><span style={{ color: tokens.colorPaletteMarigoldForeground1 }}>Question[]</span></div>
-                        <div className={styles.erdRow}><span>branches[]</span><span style={{ color: tokens.colorPalettePurpleForeground1 }}>Branch[]</span></div>
+                        <div className={styles.erdRow}><span>branches[]</span><span style={{ color: tokens.colorPaletteLilacForeground2 }}>Branch[]</span></div>
                       </div>
                       
                       <div className={styles.erdConnector}>
@@ -2131,21 +2131,21 @@ const Documentation = () => {
                           <div className={styles.erdRow}><span>hidden</span><span style={{ color: tokens.colorPaletteMarigoldForeground1 }}>boolean</span></div>
                           <div className={styles.erdRow}><span>helpText</span><span style={{ color: tokens.colorPaletteMarigoldForeground1 }}>string</span></div>
                           <div className={styles.erdRow}><span>placeholder</span><span style={{ color: tokens.colorPaletteMarigoldForeground1 }}>string</span></div>
-                          <div className={styles.erdRow}><span>answerSets[]</span><span style={{ color: tokens.colorPaletteTealForeground1 }}>AnswerSet[]</span></div>
+                          <div className={styles.erdRow}><span>answerSets[]</span><span style={{ color: tokens.colorPaletteTealForeground2 }}>AnswerSet[]</span></div>
                           <div className={styles.erdRow}><span>conditionGroup</span><span style={{ color: tokens.colorPaletteRedForeground1 }}>ConditionGroup</span></div>
                           <div className={styles.erdRow}><span>answerLevelRuleGroups[]</span><span style={{ color: tokens.colorPaletteRedForeground1 }}>RuleGroup[]</span></div>
                         </div>
                         
                         {/* ConditionalBranch Entity */}
-                        <div className={styles.erdEntity} style={{ borderColor: tokens.colorPalettePurpleBorder1, minWidth: "280px" }}>
-                          <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPalettePurpleForeground1, marginBottom: tokens.spacingVerticalS }}>
+                        <div className={styles.erdEntity} style={{ borderColor: tokens.colorPaletteLilacBorderActive, minWidth: "280px" }}>
+                          <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPaletteLilacForeground2, marginBottom: tokens.spacingVerticalS }}>
                             🔀 ConditionalBranch
                           </Text>
-                          <div className={styles.erdRow}><span>id</span><span style={{ color: tokens.colorPalettePurpleForeground1 }}>string</span></div>
-                          <div className={styles.erdRow}><span>name</span><span style={{ color: tokens.colorPalettePurpleForeground1 }}>string *</span></div>
+                          <div className={styles.erdRow}><span>id</span><span style={{ color: tokens.colorPaletteLilacForeground2 }}>string</span></div>
+                          <div className={styles.erdRow}><span>name</span><span style={{ color: tokens.colorPaletteLilacForeground2 }}>string *</span></div>
                           <div className={styles.erdRow}><span>conditionGroup</span><span style={{ color: tokens.colorPaletteRedForeground1 }}>ConditionGroup *</span></div>
                           <div className={styles.erdRow}><span>questions[]</span><span style={{ color: tokens.colorPaletteMarigoldForeground1 }}>Question[]</span></div>
-                          <div className={styles.erdRow}><span>childBranches[]</span><span style={{ color: tokens.colorPalettePurpleForeground1 }}>Branch[] (self)</span></div>
+                          <div className={styles.erdRow}><span>childBranches[]</span><span style={{ color: tokens.colorPaletteLilacForeground2 }}>Branch[] (self)</span></div>
                         </div>
                       </div>
                       
@@ -2155,14 +2155,14 @@ const Documentation = () => {
                       <Text weight="semibold" block style={{ marginBottom: tokens.spacingVerticalM }}>Supporting Entities</Text>
                       <div style={{ display: "flex", gap: tokens.spacingHorizontalL, flexWrap: "wrap", justifyContent: "center" }}>
                         {/* AnswerSet */}
-                        <div className={styles.erdEntity} style={{ borderColor: tokens.colorPaletteTealBorder1, minWidth: "220px" }}>
-                          <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPaletteTealForeground1, marginBottom: tokens.spacingVerticalS }}>
+                        <div className={styles.erdEntity} style={{ borderColor: tokens.colorPaletteTealBorderActive, minWidth: "220px" }}>
+                          <Text weight="bold" block style={{ textAlign: "center", color: tokens.colorPaletteTealForeground2, marginBottom: tokens.spacingVerticalS }}>
                             📋 AnswerSet
                           </Text>
-                          <div className={styles.erdRow}><span>id</span><span style={{ color: tokens.colorPaletteTealForeground1 }}>string</span></div>
-                          <div className={styles.erdRow}><span>name</span><span style={{ color: tokens.colorPaletteTealForeground1 }}>string</span></div>
-                          <div className={styles.erdRow}><span>isDefault</span><span style={{ color: tokens.colorPaletteTealForeground1 }}>boolean</span></div>
-                          <div className={styles.erdRow}><span>answers[]</span><span style={{ color: tokens.colorPaletteTealForeground1 }}>Answer[]</span></div>
+                          <div className={styles.erdRow}><span>id</span><span style={{ color: tokens.colorPaletteTealForeground2 }}>string</span></div>
+                          <div className={styles.erdRow}><span>name</span><span style={{ color: tokens.colorPaletteTealForeground2 }}>string</span></div>
+                          <div className={styles.erdRow}><span>isDefault</span><span style={{ color: tokens.colorPaletteTealForeground2 }}>boolean</span></div>
+                          <div className={styles.erdRow}><span>answers[]</span><span style={{ color: tokens.colorPaletteTealForeground2 }}>Answer[]</span></div>
                           <div className={styles.erdRow}><span>conditionGroup</span><span style={{ color: tokens.colorPaletteRedForeground1 }}>ConditionGroup</span></div>
                         </div>
                         
@@ -2239,7 +2239,7 @@ const Documentation = () => {
                         icon: <Upload className="h-5 w-5" />, 
                         title: "3. Load/Import", 
                         desc: "Questionnaire is loaded into the executor. Can be from preview, file upload, or session storage.",
-                        color: tokens.colorPaletteBlueForeground1 
+                        color: tokens.colorPaletteCornflowerForeground2 
                       },
                       { 
                         icon: <Play className="h-5 w-5" />, 
@@ -2649,7 +2649,7 @@ const Documentation = () => {
                         <Text size={200} weight="medium">Opens /execute</Text>
                       </div>
                       <ArrowRight className="h-5 w-5" />
-                      <div className={styles.flowBox} style={{ borderColor: tokens.colorPaletteBlueBorder1 }}>
+                      <div className={styles.flowBox} style={{ borderColor: tokens.colorPaletteCornflowerBorderActive }}>
                         <Text size={200} weight="medium">Test Questionnaire</Text>
                       </div>
                       <ArrowRight className="h-5 w-5" />
