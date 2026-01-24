@@ -1,3 +1,42 @@
+import {
+  ConditionOperator,
+  DynamicValueCondition,
+  DynamicValueConditionGroup,
+  DynamicValueConfig,
+  QuestionCondition,
+  QuestionConditionGroup,
+  AnswerSetCondition,
+  AnswerSetConditionGroup,
+  // Re-export deprecated aliases for backward compatibility
+  DynamicValueFilter,
+  DynamicValueFilterGroup,
+  DynamicValueOperator,
+  AnswerLevelOperator,
+  QuestionLevelRule,
+  AnswerLevelRule,
+  RuleGroup,
+} from './condition';
+
+// Re-export all condition types for convenience
+export type {
+  ConditionOperator,
+  DynamicValueCondition,
+  DynamicValueConditionGroup,
+  DynamicValueConfig,
+  QuestionCondition,
+  QuestionConditionGroup,
+  AnswerSetCondition,
+  AnswerSetConditionGroup,
+  // Backward compatibility aliases
+  DynamicValueFilter,
+  DynamicValueFilterGroup,
+  DynamicValueOperator,
+  AnswerLevelOperator,
+  QuestionLevelRule,
+  AnswerLevelRule,
+  RuleGroup,
+};
+
 export type ImpactLevel = '1' | '2' | '3' | '4';
 export type UrgencyLevel = '1' | '2' | '3' | '4';
 
@@ -18,32 +57,6 @@ export interface Answer {
   value: string;
   active: boolean;
   actionRecord?: ActionRecord;
-}
-
-export type DynamicValueOperator = 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'not_contains' | 'starts_with' | 'ends_with' | 'is_null' | 'is_not_null';
-
-export interface DynamicValueFilter {
-  type: 'filter';
-  id: string;
-  field: string;
-  operator: DynamicValueOperator;
-  value: string;
-}
-
-export interface DynamicValueFilterGroup {
-  type: 'group';
-  id: string;
-  matchType: 'AND' | 'OR';
-  children: Array<DynamicValueFilter | DynamicValueFilterGroup>;
-}
-
-export interface DynamicValueConfig {
-  tableName: string;
-  labelField: string;
-  valueField: string;
-  filterGroup: DynamicValueFilterGroup;
-  orderByField?: string;
-  orderDirection?: 'asc' | 'desc';
 }
 
 export interface AnswerSet {
@@ -81,34 +94,10 @@ export interface AnswerSet {
   downloadableFileType?: string;
 }
 
-export interface QuestionLevelRule {
-  type: 'rule';
-  id: string;
-  sourceQuestionId: string;
-  sourceAnswerSetId: string;
-  operator: AnswerLevelOperator;
-  sourceAnswerId: string;
-}
-
-export type AnswerLevelOperator = 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'not_contains' | 'starts_with' | 'ends_with';
-
-export interface AnswerLevelRule {
-  type: 'answerRule';
-  id: string;
-  previousQuestionId: string;
-  previousAnswerSetId: string;
-  operator: AnswerLevelOperator;
-  previousAnswerId: string;
-  selectedAnswerSetId: string;
-}
-
-export interface RuleGroup {
-  type: 'group';
-  id: string;
-  matchType: 'AND' | 'OR';
-  children: Array<RuleGroup | QuestionLevelRule>;
-}
-
+/**
+ * Answer-level rule group typed with AnswerSet
+ * This is the concrete type used in questions, with AnswerSet as the inline answer set type
+ */
 export interface AnswerLevelRuleGroup {
   type: 'group';
   id: string;

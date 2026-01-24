@@ -58,14 +58,14 @@ const OPERATORS = [
   { value: 'is_not_null', label: 'Is Not Null' },
 ];
 
-const createEmptyFilterGroup = (): DynamicValueFilterGroup => ({
+const createEmptyConditionGroup = (): DynamicValueFilterGroup => ({
   type: 'group',
   id: `group-${Date.now()}`,
   matchType: 'AND',
   children: []
 });
 
-const createEmptyFilter = (): DynamicValueFilter => ({
+const createEmptyCondition = (): DynamicValueFilter => ({
   type: 'filter',
   id: `filter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
   field: '',
@@ -86,14 +86,14 @@ const FilterGroupEditor = ({ group, availableFields, onUpdate, onDelete, isRoot 
   const handleAddFilter = () => {
     onUpdate({
       ...group,
-      children: [...group.children, createEmptyFilter()]
+      children: [...group.children, createEmptyCondition()]
     });
   };
 
   const handleAddGroup = () => {
     onUpdate({
       ...group,
-      children: [...group.children, createEmptyFilterGroup()]
+      children: [...group.children, createEmptyConditionGroup()]
     });
   };
 
@@ -263,18 +263,19 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
   const [tableName, setTableName] = useState('');
   const [labelField, setLabelField] = useState('');
   const [valueField, setValueField] = useState('');
-  const [filterGroup, setFilterGroup] = useState<DynamicValueFilterGroup>(createEmptyFilterGroup());
+  const [conditionGroup, setConditionGroup] = useState<DynamicValueFilterGroup>(createEmptyConditionGroup());
   const [orderByField, setOrderByField] = useState('');
   const [orderDirection, setOrderDirection] = useState<'asc' | 'desc'>('asc');
   const [tableSearchOpen, setTableSearchOpen] = useState(false);
 
   // Sync state with config prop when panel opens or config changes
+  // Support both 'conditionGroup' (new) and 'filterGroup' (legacy) for backward compatibility
   useEffect(() => {
     if (isOpen) {
       setTableName(config?.tableName || '');
       setLabelField(config?.labelField || '');
       setValueField(config?.valueField || '');
-      setFilterGroup(config?.filterGroup || createEmptyFilterGroup());
+      setConditionGroup(config?.conditionGroup || config?.filterGroup || createEmptyConditionGroup());
       setOrderByField(config?.orderByField || '');
       setOrderDirection(config?.orderDirection || 'asc');
     }
@@ -288,7 +289,7 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
       tableName,
       labelField,
       valueField,
-      filterGroup,
+      conditionGroup,
       orderByField: orderByField || undefined,
       orderDirection
     });
@@ -301,7 +302,7 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
     setLabelField('');
     setValueField('');
     setOrderByField('');
-    setFilterGroup(createEmptyFilterGroup());
+    setConditionGroup(createEmptyConditionGroup());
   };
 
   if (!isOpen) return null;
@@ -427,9 +428,9 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
           <div className="space-y-4">
             <Label className="text-sm font-semibold">Filter Conditions</Label>
             <FilterGroupEditor
-              group={filterGroup}
+              group={conditionGroup}
               availableFields={availableFields}
-              onUpdate={setFilterGroup}
+              onUpdate={setConditionGroup}
             />
           </div>
         )}
