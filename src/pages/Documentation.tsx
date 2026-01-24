@@ -2213,6 +2213,210 @@ const Documentation = () => {
                     from external data sources in real-time. This is ideal for data that changes frequently or is managed centrally.
                   </p>
                   
+                  {/* Dynamic Values Flow Diagram */}
+                  <div className="p-6 rounded-lg border bg-muted/30 overflow-x-auto">
+                    <h4 className="font-semibold mb-6 text-center">Dynamic Values Data Flow</h4>
+                    
+                    <div className="min-w-[800px]">
+                      <div className="flex items-start gap-4 justify-center">
+                        
+                        {/* Step 1: Data Source */}
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="p-4 rounded-xl border-2 border-blue-500 bg-blue-500/5 min-w-[160px]">
+                            <Database className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                            <div className="text-sm font-medium text-center">Data Source</div>
+                            <div className="text-xs text-muted-foreground text-center mt-1">External Table</div>
+                          </div>
+                          <div className="p-3 rounded-lg border bg-background text-xs">
+                            <div className="font-mono space-y-1">
+                              <div className="flex gap-4"><span className="text-muted-foreground">id</span><span className="text-muted-foreground">name</span><span className="text-muted-foreground">region</span></div>
+                              <div className="flex gap-4"><span>1</span><span>Sales</span><span>NA</span></div>
+                              <div className="flex gap-4"><span>2</span><span>Support</span><span>EU</span></div>
+                              <div className="flex gap-4"><span>3</span><span>IT</span><span>NA</span></div>
+                              <div className="flex gap-4"><span>4</span><span>HR</span><span>APAC</span></div>
+                              <div className="flex gap-4"><span>5</span><span>Finance</span><span>NA</span></div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Arrow */}
+                        <div className="flex flex-col items-center justify-center pt-12">
+                          <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        
+                        {/* Step 2: Filter */}
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="p-4 rounded-xl border-2 border-amber-500 bg-amber-500/5 min-w-[180px]">
+                            <Filter className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                            <div className="text-sm font-medium text-center">Apply Filters</div>
+                            <div className="text-xs text-muted-foreground text-center mt-1">AND/OR Logic</div>
+                          </div>
+                          <div className="p-3 rounded-lg border bg-background">
+                            <div className="space-y-2 text-xs">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-[10px]">AND</Badge>
+                              </div>
+                              <div className="ml-2 space-y-1 border-l-2 border-amber-500/30 pl-2">
+                                <div className="p-1.5 rounded bg-amber-500/10 text-amber-700">
+                                  region = "NA"
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-xs text-muted-foreground text-center">
+                            <span className="text-amber-500">3 rows</span> match filter
+                          </div>
+                        </div>
+                        
+                        {/* Arrow */}
+                        <div className="flex flex-col items-center justify-center pt-12">
+                          <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        
+                        {/* Step 3: Map Fields */}
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="p-4 rounded-xl border-2 border-purple-500 bg-purple-500/5 min-w-[160px]">
+                            <ArrowUpDown className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+                            <div className="text-sm font-medium text-center">Map & Sort</div>
+                            <div className="text-xs text-muted-foreground text-center mt-1">Label/Value Fields</div>
+                          </div>
+                          <div className="p-3 rounded-lg border bg-background text-xs">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground">Label:</span>
+                                <Badge variant="secondary" className="text-[10px]">name</Badge>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground">Value:</span>
+                                <Badge variant="secondary" className="text-[10px]">id</Badge>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground">Sort:</span>
+                                <Badge variant="secondary" className="text-[10px]">name ASC</Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Arrow */}
+                        <div className="flex flex-col items-center justify-center pt-12">
+                          <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        
+                        {/* Step 4: Answer Set Output */}
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="p-4 rounded-xl border-2 border-green-500 bg-green-500/5 min-w-[160px]">
+                            <ListChecks className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                            <div className="text-sm font-medium text-center">Answer Set</div>
+                            <div className="text-xs text-muted-foreground text-center mt-1">Rendered Options</div>
+                          </div>
+                          <div className="p-3 rounded-lg border-2 border-green-500/50 bg-green-500/5">
+                            <div className="space-y-1.5 text-xs">
+                              <div className="flex items-center gap-2 p-1.5 rounded bg-background">
+                                <CircleDot className="h-3 w-3 text-muted-foreground" />
+                                <span>Finance</span>
+                                <span className="text-muted-foreground ml-auto">(5)</span>
+                              </div>
+                              <div className="flex items-center gap-2 p-1.5 rounded bg-background">
+                                <CircleDot className="h-3 w-3 text-muted-foreground" />
+                                <span>IT</span>
+                                <span className="text-muted-foreground ml-auto">(3)</span>
+                              </div>
+                              <div className="flex items-center gap-2 p-1.5 rounded bg-background">
+                                <CircleDot className="h-3 w-3 text-muted-foreground" />
+                                <span>Sales</span>
+                                <span className="text-muted-foreground ml-auto">(1)</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-xs text-center">
+                            <span className="text-green-500 font-medium">Sorted A→Z</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Flow Description */}
+                      <div className="mt-6 pt-4 border-t">
+                        <div className="flex justify-center gap-6 text-xs">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span className="text-muted-foreground">Data Source (5 rows)</span>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                            <span className="text-muted-foreground">Filtered (3 rows)</span>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                            <span className="text-muted-foreground">Mapped & Sorted</span>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span className="text-muted-foreground">Rendered to User</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground text-center mt-4 max-w-2xl mx-auto">
+                      Dynamic Values fetch data from external tables at runtime, apply filter conditions, map label/value fields, 
+                      sort results, and render the final options to users. Changes in the source data are automatically reflected.
+                    </p>
+                  </div>
+                  
+                  {/* Nested Filter Example */}
+                  <div className="p-4 rounded-lg border bg-muted/30">
+                    <h5 className="font-semibold mb-4">Nested Filter Groups</h5>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Filters support complex nested AND/OR logic for precise data selection:
+                    </p>
+                    
+                    <div className="flex flex-col lg:flex-row gap-4 justify-center">
+                      {/* Simple Filter */}
+                      <div className="p-3 rounded-lg border bg-background min-w-[200px]">
+                        <div className="text-xs font-medium mb-2">Simple Filter</div>
+                        <div className="space-y-1 text-xs font-mono">
+                          <div className="p-1.5 rounded bg-amber-500/10">status = "active"</div>
+                        </div>
+                      </div>
+                      
+                      {/* AND Filter */}
+                      <div className="p-3 rounded-lg border bg-background min-w-[220px]">
+                        <div className="text-xs font-medium mb-2 flex items-center gap-2">
+                          <Badge className="bg-rose-500 text-[10px]">AND</Badge>
+                          Multiple Conditions
+                        </div>
+                        <div className="space-y-1 text-xs font-mono border-l-2 border-rose-500/50 pl-2">
+                          <div className="p-1.5 rounded bg-rose-500/10">region = "NA"</div>
+                          <div className="p-1.5 rounded bg-rose-500/10">active = true</div>
+                          <div className="p-1.5 rounded bg-rose-500/10">type != "internal"</div>
+                        </div>
+                      </div>
+                      
+                      {/* Nested Filter */}
+                      <div className="p-3 rounded-lg border bg-background min-w-[260px]">
+                        <div className="text-xs font-medium mb-2 flex items-center gap-2">
+                          <Badge className="bg-purple-500 text-[10px]">Nested</Badge>
+                          Complex Logic
+                        </div>
+                        <div className="space-y-2 text-xs font-mono">
+                          <div className="border-l-2 border-blue-500/50 pl-2">
+                            <Badge variant="outline" className="text-[9px] mb-1">OR</Badge>
+                            <div className="space-y-1">
+                              <div className="p-1.5 rounded bg-blue-500/10">region = "NA"</div>
+                              <div className="p-1.5 rounded bg-blue-500/10">region = "EU"</div>
+                            </div>
+                          </div>
+                          <div className="text-center text-muted-foreground">AND</div>
+                          <div className="p-1.5 rounded bg-amber-500/10">active = true</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <Separator />
                   
                   {/* Supported Question Types */}
