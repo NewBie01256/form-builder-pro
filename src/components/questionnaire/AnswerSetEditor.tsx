@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Library, Zap, Database, Table2, ArrowUpDown, Filter, Pencil, FileUp } from "lucide-react";
+import { Plus, Library, Zap, Database, Table2, ArrowUpDown, Filter, Pencil, FileUp, Trash2 } from "lucide-react";
 import { AnswerSet, Answer, QuestionType, TextValidationType, TextAreaFormat } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 import DynamicValuesPanel, { DynamicValueConfig, DynamicValueFilterGroup } from "./DynamicValuesPanel";
@@ -74,6 +74,13 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
         answers: answerSet.answers.map(a => a.id === answerId ? { ...a, ...updated } : a)
       });
     }
+  };
+
+  const removeAnswer = (answerId: string) => {
+    onUpdate({
+      ...answerSet,
+      answers: answerSet.answers.filter(a => a.id !== answerId)
+    });
   };
 
   // For simple types, ensure there's always exactly one answer
@@ -850,6 +857,14 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                         actionRecord={ans.actionRecord}
                         onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
                       />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeAnswer(ans.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </RadioGroup>
@@ -888,6 +903,14 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                       actionRecord={ans.actionRecord}
                       onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
                     />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeAnswer(ans.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>
