@@ -633,7 +633,11 @@ const Documentation = () => {
           <div className={styles.headerTitle}>
             <Text weight="semibold" size={400}>Questionnaire Builder Documentation</Text>
           </div>
-          <div style={{ width: "140px" }} />
+          <Link to="/docs/pcf">
+            <Button appearance="primary" icon={<Database className="h-4 w-4" />}>
+              PCF Technical Docs
+            </Button>
+          </Link>
         </div>
       </header>
 
