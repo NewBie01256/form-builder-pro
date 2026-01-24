@@ -2,10 +2,10 @@
  * Fluent UI Confirm Dialog
  * 
  * A centralized confirmation dialog using Fluent UI components.
- * Replaces the shadcn AlertDialog for consistent styling.
+ * Supports both trigger-based and programmatic (hook-based) usage.
  */
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useCallback, createContext, useContext, cloneElement, isValidElement, ReactElement } from "react";
 import {
   Dialog,
   DialogSurface,
@@ -40,6 +40,10 @@ const useStyles = makeStyles({
   },
 });
 
+// ============================================
+// Trigger-based ConfirmDialog component
+// ============================================
+
 interface ConfirmDialogProps {
   trigger: ReactNode;
   title?: string;
@@ -67,11 +71,22 @@ export const ConfirmDialog = ({
     setOpen(false);
   };
 
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setOpen(true);
+  };
+
+  // Clone the trigger element and inject our click handler
+  const enhancedTrigger = isValidElement(trigger)
+    ? cloneElement(trigger as ReactElement<{ onClick?: (e: React.MouseEvent) => void }>, {
+        onClick: handleTriggerClick,
+      })
+    : <span onClick={handleTriggerClick}>{trigger}</span>;
+
   return (
     <>
-      <span onClick={() => setOpen(true)} style={{ display: 'contents' }}>
-        {trigger}
-      </span>
+      {enhancedTrigger}
       <Dialog open={open} onOpenChange={(_, data) => setOpen(data.open)}>
         <DialogSurface className={styles.surface}>
           <DialogBody>
@@ -106,6 +121,123 @@ export const ConfirmDialog = ({
       </Dialog>
     </>
   );
+};
+
+// ============================================
+// Hook-based confirmation dialog
+// ============================================
+
+export interface ConfirmOptions {
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: "destructive" | "default";
+}
+
+interface ConfirmDialogContextValue {
+  confirm: (options: ConfirmOptions) => Promise<boolean>;
+}
+
+const ConfirmDialogContext = createContext<ConfirmDialogContextValue | null>(null);
+
+interface ConfirmDialogProviderProps {
+  children: ReactNode;
+}
+
+interface DialogState extends ConfirmOptions {
+  isOpen: boolean;
+  resolve: ((value: boolean) => void) | null;
+}
+
+/**
+ * Provider component that enables useConfirmDialog hook
+ */
+export const ConfirmDialogProvider = ({ children }: ConfirmDialogProviderProps) => {
+  const styles = useStyles();
+  const [state, setState] = useState<DialogState>({
+    isOpen: false,
+    title: "",
+    description: "",
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+    variant: "default",
+    resolve: null,
+  });
+
+  const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setState({
+        isOpen: true,
+        title: options.title,
+        description: options.description,
+        confirmText: options.confirmText ?? "Confirm",
+        cancelText: options.cancelText ?? "Cancel",
+        variant: options.variant ?? "default",
+        resolve,
+      });
+    });
+  }, []);
+
+  const handleClose = (confirmed: boolean) => {
+    state.resolve?.(confirmed);
+    setState((prev) => ({ ...prev, isOpen: false, resolve: null }));
+  };
+
+  return (
+    <ConfirmDialogContext.Provider value={{ confirm }}>
+      {children}
+      <Dialog 
+        open={state.isOpen} 
+        onOpenChange={(_, data) => {
+          if (!data.open) handleClose(false);
+        }}
+      >
+        <DialogSurface className={styles.surface}>
+          <DialogBody>
+            <DialogTitle>
+              <div className={styles.titleRow}>
+                {state.variant === "destructive" && (
+                  <Warning24Regular className={styles.warningIcon} />
+                )}
+                {state.title}
+              </div>
+            </DialogTitle>
+            <DialogContent>
+              <p className={styles.description}>{state.description}</p>
+            </DialogContent>
+            <DialogActions className={styles.actions}>
+              <Button appearance="secondary" onClick={() => handleClose(false)}>
+                {state.cancelText}
+              </Button>
+              <Button
+                appearance="primary"
+                onClick={() => handleClose(true)}
+                style={state.variant === "destructive" ? { 
+                  backgroundColor: tokens.colorPaletteRedBackground3,
+                  color: tokens.colorNeutralForegroundOnBrand,
+                } : undefined}
+              >
+                {state.confirmText}
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
+    </ConfirmDialogContext.Provider>
+  );
+};
+
+/**
+ * Hook for programmatic confirmation dialogs
+ * Must be used within a ConfirmDialogProvider
+ */
+export const useConfirmDialog = (): ConfirmDialogContextValue => {
+  const context = useContext(ConfirmDialogContext);
+  if (!context) {
+    throw new Error("useConfirmDialog must be used within a ConfirmDialogProvider");
+  }
+  return context;
 };
 
 export default ConfirmDialog;

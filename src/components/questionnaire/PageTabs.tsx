@@ -141,7 +141,6 @@ const PageTabs = ({
                   appearance="subtle"
                   size="small"
                   icon={<Dismiss12Regular />}
-                  onClick={(e) => e.stopPropagation()}
                   style={{ opacity: hoveredPageId === page.id ? 1 : 0 }}
                 />
               }

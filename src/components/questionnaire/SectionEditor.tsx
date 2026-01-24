@@ -425,7 +425,6 @@ const SectionEditor = ({
               <Button
                 appearance="subtle"
                 icon={<Delete24Regular />}
-                onClick={(e) => e.stopPropagation()}
               />
             }
             title="Delete Section"
