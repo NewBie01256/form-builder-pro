@@ -23,7 +23,7 @@ import {
   Flash24Regular,
   Library24Regular,
 } from "@fluentui/react-icons";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ConfirmDialog } from "@/components/fluent";
 import ActionRecordEditor from "./ActionRecordEditor";
 import { Question, AnswerLevelRuleGroup, AnswerSet } from "@/types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";

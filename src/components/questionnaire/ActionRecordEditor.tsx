@@ -1,25 +1,67 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Zap, Pencil } from "lucide-react";
+  DialogSurface,
+  DialogTitle,
+  DialogBody,
+  DialogActions,
+  DialogContent,
+  Button,
+  Input,
+  Label,
+  Field,
+  Dropdown,
+  Option,
+  makeStyles,
+  tokens,
+  Text,
+} from "@fluentui/react-components";
+import { Flash24Regular, Edit24Regular } from "@fluentui/react-icons";
 import { ActionRecord, ImpactLevel, UrgencyLevel } from "@/types/questionnaire";
+
+const useStyles = makeStyles({
+  surface: {
+    maxWidth: "600px",
+  },
+  titleRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+  },
+  flashIcon: {
+    color: tokens.colorPaletteYellowForeground1,
+  },
+  section: {
+    marginBottom: tokens.spacingVerticalL,
+  },
+  sectionLabel: {
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    marginBottom: tokens.spacingVerticalS,
+    display: "block",
+  },
+  grid3: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: tokens.spacingHorizontalM,
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: tokens.spacingHorizontalM,
+  },
+  actions: {
+    display: "flex",
+    justifyContent: "space-between",
+    paddingTop: tokens.spacingVerticalL,
+  },
+  rightActions: {
+    display: "flex",
+    gap: tokens.spacingHorizontalS,
+    marginLeft: "auto",
+  },
+});
 
 interface ActionRecordEditorProps {
   actionRecord?: ActionRecord;
@@ -52,6 +94,7 @@ const createEmptyActionRecord = (): ActionRecord => ({
 });
 
 const ActionRecordEditor = ({ actionRecord, onUpdate }: ActionRecordEditorProps) => {
+  const styles = useStyles();
   const [isOpen, setIsOpen] = useState(false);
   const [localRecord, setLocalRecord] = useState<ActionRecord>(
     actionRecord || createEmptyActionRecord()
@@ -81,170 +124,154 @@ const ActionRecordEditor = ({ actionRecord, onUpdate }: ActionRecordEditorProps)
   const hasAction = !!actionRecord;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpen}>
-      <DialogTrigger asChild>
+    <Dialog open={isOpen} onOpenChange={(_, data) => handleOpen(data.open)}>
+      <DialogTrigger disableButtonEnhancement>
         {hasAction ? (
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 text-amber-500 hover:text-amber-600 hover:bg-amber-50"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
+            appearance="subtle"
+            size="small"
+            icon={<Edit24Regular />}
+            style={{ color: tokens.colorPaletteYellowForeground1 }}
+          />
         ) : (
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-muted-foreground hover:text-amber-600"
+            appearance="subtle"
+            size="small"
+            icon={<Flash24Regular />}
           >
-            <Zap className="h-3.5 w-3.5 mr-1" />
             Action
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-amber-500" />
-            {hasAction ? 'Edit Action Record' : 'Attach Action Record'}
+      <DialogSurface className={styles.surface}>
+        <DialogBody>
+          <DialogTitle>
+            <div className={styles.titleRow}>
+              <Flash24Regular className={styles.flashIcon} />
+              {hasAction ? 'Edit Action Record' : 'Attach Action Record'}
+            </div>
           </DialogTitle>
-          <DialogDescription>
-            Configure the action record details for this answer.
-          </DialogDescription>
-        </DialogHeader>
+          <DialogContent>
+            <Text size={200} block style={{ marginBottom: tokens.spacingVerticalL }}>
+              Configure the action record details for this answer.
+            </Text>
 
-        <div className="space-y-6 py-4">
-          {/* Operation Category */}
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Operation Category
-            </Label>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Tier 1</Label>
-                <Input
-                  placeholder="Tier 1"
-                  value={localRecord.operationCategoryTier1}
-                  onChange={(e) => handleFieldChange('operationCategoryTier1', e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Tier 2</Label>
-                <Input
-                  placeholder="Tier 2"
-                  value={localRecord.operationCategoryTier2}
-                  onChange={(e) => handleFieldChange('operationCategoryTier2', e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Tier 3</Label>
-                <Input
-                  placeholder="Tier 3"
-                  value={localRecord.operationCategoryTier3}
-                  onChange={(e) => handleFieldChange('operationCategoryTier3', e.target.value)}
-                />
+            {/* Operation Category */}
+            <div className={styles.section}>
+              <Text weight="semibold" size={200} className={styles.sectionLabel}>
+                Operation Category
+              </Text>
+              <div className={styles.grid3}>
+                <Field label={<Label size="small">Tier 1</Label>}>
+                  <Input
+                    placeholder="Tier 1"
+                    value={localRecord.operationCategoryTier1}
+                    onChange={(_, data) => handleFieldChange('operationCategoryTier1', data.value)}
+                  />
+                </Field>
+                <Field label={<Label size="small">Tier 2</Label>}>
+                  <Input
+                    placeholder="Tier 2"
+                    value={localRecord.operationCategoryTier2}
+                    onChange={(_, data) => handleFieldChange('operationCategoryTier2', data.value)}
+                  />
+                </Field>
+                <Field label={<Label size="small">Tier 3</Label>}>
+                  <Input
+                    placeholder="Tier 3"
+                    value={localRecord.operationCategoryTier3}
+                    onChange={(_, data) => handleFieldChange('operationCategoryTier3', data.value)}
+                  />
+                </Field>
               </div>
             </div>
-          </div>
 
-          {/* Product Category */}
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Product Category
-            </Label>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Tier 1</Label>
-                <Input
-                  placeholder="Tier 1"
-                  value={localRecord.productCategoryTier1}
-                  onChange={(e) => handleFieldChange('productCategoryTier1', e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Tier 2</Label>
-                <Input
-                  placeholder="Tier 2"
-                  value={localRecord.productCategoryTier2}
-                  onChange={(e) => handleFieldChange('productCategoryTier2', e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Tier 3</Label>
-                <Input
-                  placeholder="Tier 3"
-                  value={localRecord.productCategoryTier3}
-                  onChange={(e) => handleFieldChange('productCategoryTier3', e.target.value)}
-                />
+            {/* Product Category */}
+            <div className={styles.section}>
+              <Text weight="semibold" size={200} className={styles.sectionLabel}>
+                Product Category
+              </Text>
+              <div className={styles.grid3}>
+                <Field label={<Label size="small">Tier 1</Label>}>
+                  <Input
+                    placeholder="Tier 1"
+                    value={localRecord.productCategoryTier1}
+                    onChange={(_, data) => handleFieldChange('productCategoryTier1', data.value)}
+                  />
+                </Field>
+                <Field label={<Label size="small">Tier 2</Label>}>
+                  <Input
+                    placeholder="Tier 2"
+                    value={localRecord.productCategoryTier2}
+                    onChange={(_, data) => handleFieldChange('productCategoryTier2', data.value)}
+                  />
+                </Field>
+                <Field label={<Label size="small">Tier 3</Label>}>
+                  <Input
+                    placeholder="Tier 3"
+                    value={localRecord.productCategoryTier3}
+                    onChange={(_, data) => handleFieldChange('productCategoryTier3', data.value)}
+                  />
+                </Field>
               </div>
             </div>
-          </div>
 
-          {/* Impact & Urgency */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Impact
-              </Label>
-              <Select
-                value={localRecord.impact}
-                onValueChange={(value) => handleFieldChange('impact', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select impact level" />
-                </SelectTrigger>
-                <SelectContent>
+            {/* Impact & Urgency */}
+            <div className={styles.grid2}>
+              <Field label={<Text weight="semibold" size={200} className={styles.sectionLabel}>Impact</Text>}>
+                <Dropdown
+                  placeholder="Select impact level"
+                  value={IMPACT_OPTIONS.find(o => o.value === localRecord.impact)?.label || ''}
+                  selectedOptions={localRecord.impact ? [localRecord.impact] : []}
+                  onOptionSelect={(_, data) => handleFieldChange('impact', data.optionValue as string)}
+                >
                   {IMPACT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <Option key={option.value} value={option.value}>
                       {option.label}
-                    </SelectItem>
+                    </Option>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Urgency
-              </Label>
-              <Select
-                value={localRecord.urgency}
-                onValueChange={(value) => handleFieldChange('urgency', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select urgency level" />
-                </SelectTrigger>
-                <SelectContent>
+                </Dropdown>
+              </Field>
+              <Field label={<Text weight="semibold" size={200} className={styles.sectionLabel}>Urgency</Text>}>
+                <Dropdown
+                  placeholder="Select urgency level"
+                  value={URGENCY_OPTIONS.find(o => o.value === localRecord.urgency)?.label || ''}
+                  selectedOptions={localRecord.urgency ? [localRecord.urgency] : []}
+                  onOptionSelect={(_, data) => handleFieldChange('urgency', data.optionValue as string)}
+                >
                   {URGENCY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <Option key={option.value} value={option.value}>
                       {option.label}
-                    </SelectItem>
+                    </Option>
                   ))}
-                </SelectContent>
-              </Select>
+                </Dropdown>
+              </Field>
             </div>
-          </div>
-        </div>
-
-        <DialogFooter className="flex-row gap-2 sm:justify-between">
-          {hasAction && (
-            <Button
-              variant="destructive"
-              onClick={handleRemove}
-              className="mr-auto"
-            >
-              Remove Action
-            </Button>
-          )}
-          <div className="flex gap-2 ml-auto">
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>
-              {hasAction ? 'Update' : 'Attach'} Action
-            </Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
+          </DialogContent>
+          <DialogActions className={styles.actions}>
+            {hasAction && (
+              <Button
+                appearance="primary"
+                onClick={handleRemove}
+                style={{ 
+                  backgroundColor: tokens.colorPaletteRedBackground3,
+                  color: tokens.colorNeutralForegroundOnBrand,
+                }}
+              >
+                Remove Action
+              </Button>
+            )}
+            <div className={styles.rightActions}>
+              <Button appearance="secondary" onClick={() => setIsOpen(false)}>
+                Cancel
+              </Button>
+              <Button appearance="primary" onClick={handleSave}>
+                {hasAction ? 'Update' : 'Attach'} Action
+              </Button>
+            </div>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
     </Dialog>
   );
 };
