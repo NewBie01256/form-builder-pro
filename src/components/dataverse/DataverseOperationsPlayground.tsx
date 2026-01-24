@@ -44,6 +44,8 @@ import {
   Checkmark16Regular,
   Info16Regular,
   ArrowSync16Regular,
+  Warning16Regular,
+  ErrorCircle16Regular,
 } from '@fluentui/react-icons';
 import { useDataverse, useEntityFields } from '@/lib/dataverse/pcf';
 
@@ -177,7 +179,7 @@ const useStyles = makeStyles({
 // Types
 // ============================================================================
 
-type OperationType = 'create' | 'retrieve' | 'update' | 'delete' | 'retrieveMultiple' | 'count' | 'metadata';
+type OperationType = 'create' | 'retrieve' | 'update' | 'delete' | 'retrieveMultiple' | 'count' | 'metadata' | 'errorHandling';
 
 interface OperationResult {
   success: boolean;
@@ -210,6 +212,7 @@ const OPERATIONS: Array<{
   { type: 'delete', label: 'Delete', icon: <Delete16Regular />, description: 'Delete record by ID' },
   { type: 'retrieveMultiple', label: 'Retrieve Multiple', icon: <Database16Regular />, description: 'Query multiple records' },
   { type: 'count', label: 'Count', icon: <Info16Regular />, description: 'Count records' },
+  { type: 'errorHandling', label: 'Error Handling', icon: <Warning16Regular />, description: 'Test error scenarios' },
 ];
 
 // ============================================================================
@@ -234,6 +237,7 @@ export function DataverseOperationsPlayground() {
   const [result, setResult] = useState<OperationResult | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [errorScenario, setErrorScenario] = useState<'not_found' | 'permission' | 'network' | 'validation' | 'concurrent'>('not_found');
   
   // Fetch fields for selected entity
   const { fields, isLoading: fieldsLoading } = useEntityFields(selectedEntity || undefined);
@@ -359,10 +363,97 @@ if (result.success) {
   console.error('Error:', result.error.message);
 }`;
 
+      case 'errorHandling':
+        return `// ═══════════════════════════════════════════════════════════════════════════
+// Error Handling with Result Pattern
+// ═══════════════════════════════════════════════════════════════════════════
+
+const crudService = createCrudService(context, {
+  entityLogicalName: '${entityVar}'
+});
+
+// All operations return DataverseResult<T> - NEVER throws!
+const result = await crudService.retrieve('${recordId || 'record-guid-here'}');
+
+// Type-safe error handling
+if (result.success) {
+  // ✅ TypeScript knows result.data exists
+  console.log('Record:', result.data);
+} else {
+  // ❌ TypeScript knows result.error exists
+  const error = result.error;
+  
+  // Handle specific error types
+  switch (error.code) {
+    case 'NOT_FOUND':
+      // Record doesn't exist or was deleted
+      showNotification('Record not found', 'warning');
+      break;
+      
+    case 'PERMISSION_DENIED':
+      // User lacks required privileges
+      showNotification('Access denied. Contact admin.', 'error');
+      break;
+      
+    case 'NETWORK_ERROR':
+      // Connection issue
+      showNotification('Network error. Check connection.', 'error');
+      // Optionally retry
+      break;
+      
+    case 'VALIDATION_ERROR':
+      // Invalid data submitted
+      showNotification(\`Validation: \${error.message}\`, 'warning');
+      break;
+      
+    case 'CONCURRENT_EDIT':
+      // Record modified by another user
+      showNotification('Record was modified. Refresh and retry.', 'warning');
+      break;
+      
+    default:
+      // Unexpected error - log for debugging
+      console.error('Unexpected error:', error);
+      showNotification('An error occurred', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Error Handling Utilities
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Helper to safely execute with fallback
+async function safeRetrieve<T>(
+  service: CrudService,
+  id: string,
+  fallback: T
+): Promise<T> {
+  const result = await service.retrieve(id);
+  return result.success ? result.data as T : fallback;
+}
+
+// Helper to retry on network errors
+async function retryOnNetworkError<T>(
+  operation: () => Promise<DataverseResult<T>>,
+  maxRetries = 3
+): Promise<DataverseResult<T>> {
+  let lastResult: DataverseResult<T>;
+  
+  for (let i = 0; i < maxRetries; i++) {
+    lastResult = await operation();
+    if (lastResult.success || lastResult.error.code !== 'NETWORK_ERROR') {
+      return lastResult;
+    }
+    await new Promise(r => setTimeout(r, 1000 * (i + 1))); // Exponential backoff
+  }
+  
+  return lastResult!;
+}`;
+
       default:
         return '// Select an operation';
     }
-  }, [selectedOperation, selectedEntity, recordId, fieldValues, selectColumns, filterExpression, orderBy, topCount, useFetchXml, fetchXml]);
+  }, [selectedOperation, selectedEntity, recordId, fieldValues, selectColumns, filterExpression, orderBy, topCount, useFetchXml, fetchXml, errorScenario]);
 
   // Execute operation (mock in dev, real in PCF)
   const executeOperation = useCallback(async () => {
@@ -435,6 +526,61 @@ if (result.success) {
               : '[DEV MODE] Would count records in Dataverse'
           };
           break;
+        case 'errorHandling': {
+          // Simulate different error scenarios based on selection
+          const errorMessages: Record<string, { code: string; message: string; details: string }> = {
+            not_found: {
+              code: 'NOT_FOUND',
+              message: 'Record not found',
+              details: 'The record with the specified ID does not exist or has been deleted.'
+            },
+            permission: {
+              code: 'PERMISSION_DENIED',
+              message: 'Access denied',
+              details: 'User lacks required privileges (prvRead) for entity account.'
+            },
+            network: {
+              code: 'NETWORK_ERROR',
+              message: 'Network request failed',
+              details: 'Unable to connect to Dataverse. Check network connectivity.'
+            },
+            validation: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid data',
+              details: 'Required field "name" is missing or invalid.'
+            },
+            concurrent: {
+              code: 'CONCURRENT_EDIT',
+              message: 'Record modified',
+              details: 'The record was modified by another user. Refresh and retry.'
+            }
+          };
+          
+          const errorInfo = errorMessages[errorScenario];
+          
+          // Simulate error response
+          setResult({
+            success: false,
+            error: `${errorInfo.code}: ${errorInfo.message}`,
+            data: {
+              error: {
+                code: errorInfo.code,
+                message: errorInfo.message,
+                details: errorInfo.details,
+                timestamp: new Date().toISOString(),
+                entityType: selectedEntity,
+                operation: 'retrieve'
+              },
+              howToHandle: `Use the Result pattern to check result.success and handle result.error accordingly.`
+            },
+            duration: Date.now() - startTime,
+            timestamp: new Date(),
+            operation: selectedOperation,
+            entityType: selectedEntity,
+          });
+          setIsExecuting(false);
+          return; // Exit early since we set result directly
+        }
         default:
           mockData = { message: 'Operation not implemented' };
       }
@@ -679,6 +825,66 @@ if (result.success) {
                   onChange={(_, data) => setFilterExpression(data.value)}
                 />
               </Field>
+            </div>
+          )}
+
+          {/* Error Scenario Selection (for errorHandling) */}
+          {selectedOperation === 'errorHandling' && (
+            <div className={styles.section}>
+              <Label className={styles.sectionTitle}>
+                <ErrorCircle16Regular />
+                Simulate Error Scenario
+              </Label>
+              <Field hint="Select an error type to see how to handle it">
+                <Dropdown
+                  value={
+                    errorScenario === 'not_found' ? 'Record Not Found' :
+                    errorScenario === 'permission' ? 'Permission Denied' :
+                    errorScenario === 'network' ? 'Network Error' :
+                    errorScenario === 'validation' ? 'Validation Error' :
+                    'Concurrent Edit'
+                  }
+                  selectedOptions={[errorScenario]}
+                  onOptionSelect={(_, data) => setErrorScenario(data.optionValue as typeof errorScenario)}
+                >
+                  <Option value="not_found" text="Record Not Found">
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <Text weight="semibold">Record Not Found</Text>
+                      <Text size={200}>Record doesn't exist or was deleted</Text>
+                    </div>
+                  </Option>
+                  <Option value="permission" text="Permission Denied">
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <Text weight="semibold">Permission Denied</Text>
+                      <Text size={200}>User lacks required privileges</Text>
+                    </div>
+                  </Option>
+                  <Option value="network" text="Network Error">
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <Text weight="semibold">Network Error</Text>
+                      <Text size={200}>Connection failed or timeout</Text>
+                    </div>
+                  </Option>
+                  <Option value="validation" text="Validation Error">
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <Text weight="semibold">Validation Error</Text>
+                      <Text size={200}>Invalid data submitted</Text>
+                    </div>
+                  </Option>
+                  <Option value="concurrent" text="Concurrent Edit">
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <Text weight="semibold">Concurrent Edit</Text>
+                      <Text size={200}>Record modified by another user</Text>
+                    </div>
+                  </Option>
+                </Dropdown>
+              </Field>
+              <Card style={{ marginTop: tokens.spacingVerticalS, backgroundColor: tokens.colorNeutralBackground3 }}>
+                <Text size={200}>
+                  💡 <strong>Tip:</strong> Run the operation to see how errors are structured and 
+                  view the generated code for handling patterns.
+                </Text>
+              </Card>
             </div>
           )}
 
