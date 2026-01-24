@@ -121,6 +121,9 @@ const Documentation = () => {
                 <a href="#preview" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Preview & Testing
                 </a>
+                <a href="#troubleshooting" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Troubleshooting
+                </a>
               </nav>
             </ScrollArea>
           </aside>
@@ -4692,6 +4695,393 @@ const Documentation = () => {
                           <li>Check that hidden sections/questions don't appear in the final response</li>
                           <li>Download both JSON and CSV to verify export formats meet your needs</li>
                         </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Troubleshooting */}
+            <section id="troubleshooting">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-destructive/10">
+                      <Info className="h-6 w-6 text-destructive" />
+                    </div>
+                    <div>
+                      <CardTitle>Troubleshooting</CardTitle>
+                      <CardDescription>
+                        Common issues and solutions for branching, dynamic values, and rule evaluation
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    Encountering unexpected behavior? Check these common issues and their solutions.
+                  </p>
+                  
+                  {/* Branching Issues */}
+                  <div className="p-4 rounded-lg border">
+                    <div className="flex items-center gap-2 mb-4">
+                      <GitBranch className="h-5 w-5 text-purple-500" />
+                      <h4 className="font-semibold">Question-Level Branching Issues</h4>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Branch not appearing when expected</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check rule logic:</strong> Ensure AND/OR match type is correct. AND requires ALL conditions to match.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Verify source question:</strong> The trigger question must appear BEFORE the branch in the questionnaire order.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check answer values:</strong> Ensure the rule's target answer value exactly matches what the user selects.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Branch shows when it shouldn't</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check operator:</strong> Using "equals" vs "not_equals" or "contains" vs "not_contains".</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Review nested groups:</strong> Complex OR groups may trigger unexpectedly if any child matches.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Source question dropdown is empty</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Add trigger questions first:</strong> Rules can only reference questions that exist before the branch.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check question order:</strong> Ensure questions have answer sets defined (empty questions won't appear).</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Answer-Level Branching Issues */}
+                  <div className="p-4 rounded-lg border">
+                    <div className="flex items-center gap-2 mb-4">
+                      <ListChecks className="h-5 w-5 text-orange-500" />
+                      <h4 className="font-semibold">Answer-Level Branching Issues</h4>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Wrong answer set displayed</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check evaluation order:</strong> The first matching rule group wins. Reorder groups if needed.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Verify inline answer set:</strong> Each rule group needs its own inline answer set configured.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Review rule conditions:</strong> More specific rules should appear before general ones.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Inline answer set appears empty</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Configure the inline set:</strong> Click the rule group and define answers in the inline answer set section.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Add from library:</strong> Use "Add from Existing" to populate with template answers.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Falls back to default when it shouldn't</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Complete all rule fields:</strong> Source Question, Answer Set, Operator, and Answer must all be selected.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check user response:</strong> Ensure the previous question was actually answered (not skipped).</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Dynamic Values Issues */}
+                  <div className="p-4 rounded-lg border">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Database className="h-5 w-5 text-blue-500" />
+                      <h4 className="font-semibold">Dynamic Values Issues</h4>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">No options appear in dropdown</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Verify table name:</strong> Ensure the configured table exists and is accessible.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check field mappings:</strong> Label and Value fields must match actual column names in the table.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Review filters:</strong> Overly restrictive filters may exclude all records. Try removing filters temporarily.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Wrong data displayed</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check Label vs Value:</strong> Label is shown to users; Value is stored. Ensure correct field assignment.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Verify sort order:</strong> Check Order By field and direction (ASC/DESC).</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Filters not working as expected</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check AND vs OR:</strong> AND requires all conditions; OR requires any one condition.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Use correct operator:</strong> "equals" for exact match, "contains" for partial, "is_null" for empty values.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Case sensitivity:</strong> String comparisons may be case-sensitive depending on the data source.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Rule Evaluation Issues */}
+                  <div className="p-4 rounded-lg border">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Settings className="h-5 w-5 text-primary" />
+                      <h4 className="font-semibold">Rule Evaluation Issues</h4>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Numeric comparisons not working</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Use Number/Decimal types:</strong> Ensure source question uses Number or Decimal type for greater_than/less_than operators.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check value format:</strong> Enter numeric values without quotes or currency symbols.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Boolean/Toggle conditions failing</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check initial state:</strong> Toggles default to "off" unless explicitly set. Account for unset state.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Use correct values:</strong> Boolean comparisons expect "true" or "false" string values.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Multi-select rules behaving unexpectedly</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Use "contains" operator:</strong> For multi-select sources, "contains" checks if the value is in the selection array.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Consider multiple rules:</strong> Use OR groups to match any of several possible selections.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Preview/Testing Issues */}
+                  <div className="p-4 rounded-lg border">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Eye className="h-5 w-5 text-green-500" />
+                      <h4 className="font-semibold">Preview & Testing Issues</h4>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Preview shows stale data</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Close and re-open Preview:</strong> Changes require clicking "Preview" again to sync.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Clear browser storage:</strong> Session storage may retain old data. Clear and retry.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-start gap-3">
+                          <span className="text-destructive font-bold text-lg">?</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">Validation errors blocking navigation</div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Check required fields:</strong> Questions marked as required must be answered before proceeding.</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                <span><strong>Review regex patterns:</strong> Text validation patterns may be rejecting valid input. Test the regex separately.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Quick Reference */}
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <h4 className="font-semibold mb-3">🔧 Quick Debugging Checklist</h4>
+                    <div className="grid gap-2 sm:grid-cols-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <CheckSquare className="h-3 w-3 text-primary" />
+                        <span>Verify question order (source before target)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckSquare className="h-3 w-3 text-primary" />
+                        <span>Check AND vs OR match type</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckSquare className="h-3 w-3 text-primary" />
+                        <span>Confirm all rule fields are populated</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckSquare className="h-3 w-3 text-primary" />
+                        <span>Test with exact answer values</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckSquare className="h-3 w-3 text-primary" />
+                        <span>Verify operator matches data type</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckSquare className="h-3 w-3 text-primary" />
+                        <span>Re-open Preview after changes</span>
                       </div>
                     </div>
                   </div>
