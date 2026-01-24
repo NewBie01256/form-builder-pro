@@ -1,8 +1,8 @@
 /**
  * Interactive Dynamic Values Playground
  * 
- * Allows users to configure Dynamic Values and see generated
- * OData/FetchXML queries in real-time.
+ * Self-contained playground for PCF documentation.
+ * NO external dependencies on project files.
  */
 
 import { useState, useMemo, useCallback } from "react";
@@ -48,81 +48,16 @@ import {
   Dismiss16Regular,
   TableSimple24Regular,
 } from "@fluentui/react-icons";
-import { CodeBlock } from "@/components/ui/code-block";
-import { DATAVERSE_ENTITIES, getFilterableFields } from "@/data/dataverseEntities";
-import { generateFetchXml } from "@/lib/dataverse/fetchXmlGenerator";
-import { generateFormattedOData } from "@/lib/dataverse/odataGenerator";
-import type { DynamicValueConfig, DynamicValueConditionGroup, DynamicValueCondition, ConditionOperator } from "@/types/questionnaire";
+
+// Self-contained imports (no project dependencies)
+import { CodeBlock } from "./CodeBlock";
+import { SAMPLE_ENTITIES, SAMPLE_DATA, getFilterableFields, OPERATORS } from "../data/sampleEntities";
+import { generateFetchXml, generateFormattedOData } from "../utils/queryGenerators";
+import type { DynamicValueConfig, DynamicValueFilterGroup, DynamicValueFilter, ConditionOperator, FilterState, SampleRecord } from "../types";
 
 // ============================================================================
-// SAMPLE DATA FOR SIMULATION
+// Styles
 // ============================================================================
-
-interface SampleRecord {
-  [key: string]: string | number | boolean | null;
-}
-
-const SAMPLE_DATA: Record<string, SampleRecord[]> = {
-  account: [
-    { accountid: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "Contoso Ltd", statecode: 0, revenue: 5000000, telephone1: "555-0100", industrycode: 1 },
-    { accountid: "b2c3d4e5-f6a7-8901-bcde-f12345678901", name: "Fabrikam Inc", statecode: 0, revenue: 2500000, telephone1: "555-0200", industrycode: 2 },
-    { accountid: "c3d4e5f6-a7b8-9012-cdef-123456789012", name: "Adventure Works", statecode: 0, revenue: 8000000, telephone1: "555-0300", industrycode: 1 },
-    { accountid: "d4e5f6a7-b8c9-0123-defa-234567890123", name: "Northwind Traders", statecode: 1, revenue: 1500000, telephone1: "555-0400", industrycode: 3 },
-    { accountid: "e5f6a7b8-c9d0-1234-efab-345678901234", name: "Tailspin Toys", statecode: 0, revenue: 750000, telephone1: "555-0500", industrycode: 4 },
-    { accountid: "f6a7b8c9-d0e1-2345-fabc-456789012345", name: "Alpine Ski House", statecode: 0, revenue: 3200000, telephone1: "555-0600", industrycode: 2 },
-    { accountid: "a7b8c9d0-e1f2-3456-abcd-567890123456", name: "Blue Yonder Airlines", statecode: 1, revenue: 12000000, telephone1: "555-0700", industrycode: 5 },
-    { accountid: "b8c9d0e1-f2a3-4567-bcde-678901234567", name: "City Power & Light", statecode: 0, revenue: 9500000, telephone1: "555-0800", industrycode: 6 },
-  ],
-  contact: [
-    { contactid: "c1a2b3c4-d5e6-7890-1234-567890abcdef", fullname: "John Smith", statecode: 0, emailaddress1: "john.smith@contoso.com", telephone1: "555-1100" },
-    { contactid: "c2b3c4d5-e6f7-8901-2345-67890abcdef1", fullname: "Jane Doe", statecode: 0, emailaddress1: "jane.doe@fabrikam.com", telephone1: "555-1200" },
-    { contactid: "c3c4d5e6-f7a8-9012-3456-7890abcdef12", fullname: "Bob Johnson", statecode: 0, emailaddress1: "bob.johnson@adventure.com", telephone1: "555-1300" },
-    { contactid: "c4d5e6f7-a8b9-0123-4567-890abcdef123", fullname: "Alice Williams", statecode: 1, emailaddress1: "alice.w@northwind.com", telephone1: "555-1400" },
-    { contactid: "c5e6f7a8-b9c0-1234-5678-90abcdef1234", fullname: "Charlie Brown", statecode: 0, emailaddress1: "charlie.b@tailspin.com", telephone1: "555-1500" },
-  ],
-  incident: [
-    { incidentid: "i1a2b3c4-d5e6-7890-abcd-ef1234567890", title: "Cannot access email", statecode: 0, prioritycode: 1, ticketnumber: "CAS-001" },
-    { incidentid: "i2b3c4d5-e6f7-8901-bcde-f12345678901", title: "Printer not working", statecode: 0, prioritycode: 2, ticketnumber: "CAS-002" },
-    { incidentid: "i3c4d5e6-f7a8-9012-cdef-123456789012", title: "Software license expired", statecode: 0, prioritycode: 1, ticketnumber: "CAS-003" },
-    { incidentid: "i4d5e6f7-a8b9-0123-defa-234567890123", title: "Network connectivity issues", statecode: 1, prioritycode: 3, ticketnumber: "CAS-004" },
-    { incidentid: "i5e6f7a8-b9c0-1234-efab-345678901234", title: "Password reset required", statecode: 0, prioritycode: 2, ticketnumber: "CAS-005" },
-  ],
-  lead: [
-    { leadid: "l1a2b3c4-d5e6-7890-abcd-ef1234567890", fullname: "Michael Chen", statecode: 0, emailaddress1: "m.chen@prospect.com", companyname: "Tech Startup Inc" },
-    { leadid: "l2b3c4d5-e6f7-8901-bcde-f12345678901", fullname: "Sarah Wilson", statecode: 0, emailaddress1: "s.wilson@enterprise.com", companyname: "Enterprise Corp" },
-    { leadid: "l3c4d5e6-f7a8-9012-cdef-123456789012", fullname: "David Lee", statecode: 1, emailaddress1: "d.lee@smallbiz.com", companyname: "Small Business LLC" },
-  ],
-  opportunity: [
-    { opportunityid: "o1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Enterprise License Deal", statecode: 0, estimatedvalue: 500000, closeprobability: 75 },
-    { opportunityid: "o2b3c4d5-e6f7-8901-bcde-f12345678901", name: "Cloud Migration Project", statecode: 0, estimatedvalue: 250000, closeprobability: 60 },
-    { opportunityid: "o3c4d5e6-f7a8-9012-cdef-123456789012", name: "Support Contract Renewal", statecode: 0, estimatedvalue: 75000, closeprobability: 90 },
-  ],
-  systemuser: [
-    { systemuserid: "u1a2b3c4-d5e6-7890-abcd-ef1234567890", fullname: "Admin User", isdisabled: false, internalemailaddress: "admin@company.com" },
-    { systemuserid: "u2b3c4d5-e6f7-8901-bcde-f12345678901", fullname: "Support Agent", isdisabled: false, internalemailaddress: "support@company.com" },
-    { systemuserid: "u3c4d5e6-f7a8-9012-cdef-123456789012", fullname: "Sales Rep", isdisabled: false, internalemailaddress: "sales@company.com" },
-  ],
-  team: [
-    { teamid: "t1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Support Team", teamtype: 0, description: "Customer support team" },
-    { teamid: "t2b3c4d5-e6f7-8901-bcde-f12345678901", name: "Sales Team", teamtype: 0, description: "Sales department" },
-    { teamid: "t3c4d5e6-f7a8-9012-cdef-123456789012", name: "IT Team", teamtype: 0, description: "Information technology" },
-  ],
-  product: [
-    { productid: "p1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Enterprise Suite", statecode: 0, price: 999.99, productnumber: "ENT-001" },
-    { productid: "p2b3c4d5-e6f7-8901-bcde-f12345678901", name: "Professional License", statecode: 0, price: 499.99, productnumber: "PRO-001" },
-    { productid: "p3c4d5e6-f7a8-9012-cdef-123456789012", name: "Basic Package", statecode: 0, price: 99.99, productnumber: "BAS-001" },
-    { productid: "p4d5e6f7-a8b9-0123-defa-234567890123", name: "Support Add-on", statecode: 1, price: 149.99, productnumber: "SUP-001" },
-  ],
-  queue: [
-    { queueid: "q1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Support Queue", statecode: 0, emailaddress: "support@queue.com" },
-    { queueid: "q2b3c4d5-e6f7-8901-bcde-f12345678901", name: "Sales Queue", statecode: 0, emailaddress: "sales@queue.com" },
-  ],
-  businessunit: [
-    { businessunitid: "b1a2b3c4-d5e6-7890-abcd-ef1234567890", name: "Headquarters", isdisabled: false },
-    { businessunitid: "b2b3c4d5-e6f7-8901-bcde-f12345678901", name: "West Region", isdisabled: false },
-    { businessunitid: "b3c4d5e6-f7a8-9012-cdef-123456789012", name: "East Region", isdisabled: false },
-  ],
-};
 
 const useStyles = makeStyles({
   container: {
@@ -251,23 +186,9 @@ const useStyles = makeStyles({
   },
 });
 
-interface FilterState {
-  id: string;
-  field: string;
-  operator: string;
-  value: string;
-}
-
-const OPERATORS = [
-  { value: "eq", label: "equals" },
-  { value: "ne", label: "not equals" },
-  { value: "gt", label: "greater than" },
-  { value: "lt", label: "less than" },
-  { value: "contains", label: "contains" },
-  { value: "startswith", label: "starts with" },
-  { value: "null", label: "is null" },
-  { value: "not_null", label: "is not null" },
-];
+// ============================================================================
+// Component
+// ============================================================================
 
 export const DynamicValuesPlayground = () => {
   const styles = useStyles();
@@ -294,7 +215,7 @@ export const DynamicValuesPlayground = () => {
 
   // Get current entity and its fields
   const currentEntity = useMemo(() => 
-    DATAVERSE_ENTITIES.find(e => e.logicalName === selectedEntity),
+    SAMPLE_ENTITIES.find(e => e.logicalName === selectedEntity),
     [selectedEntity]
   );
 
@@ -305,13 +226,13 @@ export const DynamicValuesPlayground = () => {
 
   // Build DynamicValueConfig from state
   const config = useMemo((): DynamicValueConfig => {
-    const conditionGroup: DynamicValueConditionGroup = {
+    const conditionGroup: DynamicValueFilterGroup = {
       type: "group",
       id: "root",
       matchType,
       children: filters
         .filter(f => f.field)
-        .map((f): DynamicValueCondition => ({
+        .map((f): DynamicValueFilter => ({
           type: "filter",
           id: f.id,
           field: f.field,
@@ -333,7 +254,7 @@ export const DynamicValuesPlayground = () => {
   // Generate queries
   const { odataQuery, fetchXmlQuery, error } = useMemo(() => {
     try {
-      const odata = generateFormattedOData(config, { top: 500 });
+      const odata = generateFormattedOData(config);
       const fetchXml = generateFetchXml(config, { top: 500 });
       return { odataQuery: odata, fetchXmlQuery: fetchXml, error: null };
     } catch (e) {
@@ -348,7 +269,7 @@ export const DynamicValuesPlayground = () => {
   // Handlers
   const handleEntityChange = (entity: string) => {
     setSelectedEntity(entity);
-    const newEntity = DATAVERSE_ENTITIES.find(e => e.logicalName === entity);
+    const newEntity = SAMPLE_ENTITIES.find(e => e.logicalName === entity);
     if (newEntity) {
       setValueField(newEntity.primaryIdAttribute);
       setLabelField(newEntity.primaryNameAttribute);
@@ -383,7 +304,7 @@ export const DynamicValuesPlayground = () => {
     setActiveTab(data.value as string);
   };
 
-  // Simulation logic - filters sample data based on configuration
+  // Simulation logic
   const simulateQuery = useCallback(async () => {
     setIsSimulating(true);
     setSimulationResults(null);
@@ -410,34 +331,26 @@ export const DynamicValuesPlayground = () => {
           
           switch (filter.operator) {
             case "eq":
-            case "equals":
               return String(recordValue) === filterValue;
             case "ne":
-            case "not_equals":
               return String(recordValue) !== filterValue;
             case "gt":
-            case "greater_than":
               return Number(recordValue) > Number(filterValue);
             case "lt":
-            case "less_than":
               return Number(recordValue) < Number(filterValue);
             case "contains":
               return String(recordValue).toLowerCase().includes(filterValue.toLowerCase());
             case "startswith":
-            case "starts_with":
               return String(recordValue).toLowerCase().startsWith(filterValue.toLowerCase());
             case "null":
-            case "is_null":
               return recordValue === null || recordValue === undefined || recordValue === "";
             case "not_null":
-            case "is_not_null":
               return recordValue !== null && recordValue !== undefined && recordValue !== "";
             default:
               return true;
           }
         });
 
-      // Apply AND/OR logic
       if (matchType === "AND") {
         return filterResults.every(r => r);
       } else {
@@ -458,11 +371,7 @@ export const DynamicValuesPlayground = () => {
         const aStr = String(aVal || "").toLowerCase();
         const bStr = String(bVal || "").toLowerCase();
         
-        if (orderDirection === "asc") {
-          return aStr.localeCompare(bStr);
-        } else {
-          return bStr.localeCompare(aStr);
-        }
+        return orderDirection === "asc" ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
       });
     }
 
@@ -482,7 +391,6 @@ export const DynamicValuesPlayground = () => {
     const cols: string[] = [];
     if (valueField) cols.push(valueField);
     if (labelField && labelField !== valueField) cols.push(labelField);
-    // Add a few extra columns for context
     const extraCols = currentEntity?.fields
       .filter(f => f.logicalName !== valueField && f.logicalName !== labelField)
       .slice(0, 2)
@@ -501,7 +409,6 @@ export const DynamicValuesPlayground = () => {
       return value.toLocaleString();
     }
     const str = String(value);
-    // Truncate GUIDs for display
     if (str.length === 36 && str.includes("-")) {
       return str.substring(0, 8) + "...";
     }
@@ -539,7 +446,7 @@ export const DynamicValuesPlayground = () => {
               }}
               placeholder="Select entity..."
             >
-              {DATAVERSE_ENTITIES.map(entity => (
+              {SAMPLE_ENTITIES.map(entity => (
                 <Option key={entity.logicalName} value={entity.logicalName} text={`${entity.displayName} (${entity.logicalName})`}>
                   {entity.displayName} ({entity.logicalName})
                 </Option>
@@ -619,7 +526,7 @@ export const DynamicValuesPlayground = () => {
               No filters configured. All records will be returned.
             </div>
           ) : (
-            filters.map((filter, index) => (
+            filters.map((filter) => (
               <div key={filter.id} className={styles.filterRow}>
                 <Dropdown
                   value={filterableFields.find(f => f.logicalName === filter.field)?.displayName || filter.field || "Select field..."}
@@ -757,8 +664,6 @@ export const DynamicValuesPlayground = () => {
             {simulationResults.length === 0 ? (
               <div className={styles.emptyState}>
                 No records match the current filter criteria.
-                <br />
-                Try adjusting your filters or removing some conditions.
               </div>
             ) : (
               <div className={styles.resultsTable}>
