@@ -1,33 +1,215 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
-import { RequiredLabel } from "@/components/ui/required-label";
-import { Switch } from "@/components/ui/switch";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Button,
+  Input,
+  Label,
+  Checkbox,
+  Textarea,
+  Switch,
+  Dropdown,
+  Option,
+  Field,
+  Menu,
+  MenuTrigger,
+  MenuList,
+  MenuItem,
+  MenuPopover,
+  Accordion,
+  AccordionItem,
+  AccordionHeader,
+  AccordionPanel,
+  makeStyles,
+  tokens,
+  Text,
+} from "@fluentui/react-components";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Plus, ChevronDown, ChevronUp, Trash2, Library, Zap, FileUp } from "lucide-react";
+  Add24Regular,
+  ChevronDown24Regular,
+  ChevronUp24Regular,
+  Delete24Regular,
+  Library24Regular,
+  Flash24Regular,
+  ArrowUpload24Regular,
+} from "@fluentui/react-icons";
 import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer, AnswerLevelOperator, QuestionType } from "@/types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 import DynamicRuleValueInput from "./DynamicRuleValueInput";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+
+const useStyles = makeStyles({
+  container: {
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground3,
+  },
+  matchTypeCell: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+    minWidth: "80px",
+    borderRight: `1px solid ${tokens.colorNeutralStroke1}`,
+  },
+  columnsHeader: {
+    flex: 1,
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr 1fr",
+    gap: tokens.spacingHorizontalS,
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+  },
+  actionsCell: {
+    width: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: tokens.spacingHorizontalS,
+  },
+  ruleRow: {
+    display: "flex",
+    alignItems: "stretch",
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+  },
+  connectorCell: {
+    width: "32px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  treeLine: {
+    position: "absolute",
+    left: "16px",
+    width: "1px",
+    backgroundColor: tokens.colorNeutralStroke1,
+    top: 0,
+    bottom: 0,
+  },
+  treeConnector: {
+    position: "absolute",
+    left: "16px",
+    width: "16px",
+    height: "1px",
+    backgroundColor: tokens.colorNeutralStroke1,
+    top: "50%",
+  },
+  ruleColumns: {
+    flex: 1,
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr 1fr",
+    gap: tokens.spacingHorizontalS,
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
+  },
+  nestedGroup: {
+    flex: 1,
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
+  },
+  addRow: {
+    display: "flex",
+    alignItems: "center",
+    borderTop: `1px solid ${tokens.colorNeutralStroke1}`,
+  },
+  addButton: {
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
+  },
+  inlineAnswerSet: {
+    border: `1px solid ${tokens.colorBrandStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+    padding: tokens.spacingHorizontalL,
+    backgroundColor: tokens.colorBrandBackground2,
+    marginTop: tokens.spacingVerticalM,
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: tokens.spacingHorizontalM,
+  },
+  flexRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+  },
+  flexBetween: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  answerRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    padding: tokens.spacingVerticalS,
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRadius: tokens.borderRadiusMedium,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+  },
+  mt3: {
+    marginTop: tokens.spacingVerticalM,
+  },
+  mt4: {
+    marginTop: tokens.spacingVerticalL,
+  },
+  mb3: {
+    marginBottom: tokens.spacingVerticalM,
+  },
+  spaceY2: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalS,
+  },
+  spaceY3: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalM,
+  },
+  errorText: {
+    color: tokens.colorPaletteRedForeground1,
+    fontSize: tokens.fontSizeBase200,
+  },
+  flexGrow: {
+    flex: 1,
+  },
+  selectNative: {
+    height: "28px",
+    padding: `0 ${tokens.spacingHorizontalS}`,
+    fontSize: tokens.fontSizeBase200,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground1,
+    cursor: "pointer",
+  },
+  uploadZone: {
+    border: `2px dashed ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
+    padding: tokens.spacingHorizontalM,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: tokens.spacingVerticalXS,
+    cursor: "pointer",
+  },
+  uploadedFile: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    padding: tokens.spacingVerticalS,
+    backgroundColor: tokens.colorBrandBackground2,
+    border: `1px solid ${tokens.colorBrandStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  fileIcon: {
+    height: "32px",
+    width: "32px",
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorBrandBackground,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
 
 interface AnswerLevelRuleGroupEditorProps {
   group: AnswerLevelRuleGroup;
@@ -48,9 +230,9 @@ interface InlineAnswerSetEditorProps {
 }
 
 const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType = 'Choice' }: InlineAnswerSetEditorProps) => {
-  // Types that don't need the full answer set UI
+  const styles = useStyles();
+  
   const isSimpleType = ['Text', 'TextArea', 'Number', 'Decimal', 'Date', 'Rating', 'Boolean', 'Document', 'DownloadableDocument'].includes(questionType);
-  // Types that use the choice-based answer set UI
   const isChoiceType = ['Choice', 'Dropdown', 'MultiSelect', 'RadioButton'].includes(questionType);
 
   const addAnswer = () => {
@@ -64,7 +246,6 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
   };
 
   const updateAnswer = (answerId: string, updated: Partial<Answer>) => {
-    // For Choice and Dropdown types, only one answer can be active at a time
     if (updated.active === true && (questionType === 'Choice' || questionType === 'Dropdown')) {
       onUpdate({
         ...answerSet,
@@ -89,7 +270,6 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
     });
   };
 
-  // For simple types, ensure there's always exactly one answer
   const simpleAnswer = answerSet.answers[0] || { id: `ans-${Date.now()}`, label: '', value: '', active: true };
 
   const updateSimpleAnswer = (value: string, label: string) => {
@@ -121,255 +301,234 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
     }
   };
 
-  // For simple types, show a minimal UI
   if (isSimpleType) {
     return (
-      <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 mt-3">
-        {/* Answer Set Name and Tag - consistent across all types */}
-        <div className="grid gap-3 sm:grid-cols-2 mb-4">
-          <div className="space-y-2">
-            <RequiredLabel className="text-xs">Set Name</RequiredLabel>
+      <div className={styles.inlineAnswerSet}>
+        <div className={styles.grid2}>
+          <Field label={<Label required size="small">Set Name</Label>}>
             <Input
               placeholder="Answer Set Name"
               value={answerSet.name}
-              onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
-              className={`h-8 ${!answerSet.name.trim() ? "border-destructive" : ""}`}
+              onChange={(_, data) => onUpdate({ ...answerSet, name: data.value })}
+              size="small"
             />
-          </div>
-          <div className="space-y-2">
-            <RequiredLabel className="text-xs">Tag</RequiredLabel>
+          </Field>
+          <Field label={<Label required size="small">Tag</Label>}>
             <Input
               placeholder="Tag"
               value={answerSet.tag}
-              onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
-              className={`h-8 ${!answerSet.tag.trim() ? "border-destructive" : ""}`}
+              onChange={(_, data) => onUpdate({ ...answerSet, tag: data.value })}
+              size="small"
             />
-          </div>
+          </Field>
         </div>
 
-        <div className="flex items-center space-x-2 mb-4">
+        <div className={`${styles.flexRow} ${styles.mt3} ${styles.mb3}`}>
           <Checkbox
-            id={`default-inline-simple-${answerSet.id}`}
             checked={answerSet.isDefault}
-            onCheckedChange={(checked) => onUpdate({ ...answerSet, isDefault: !!checked })}
+            onChange={(_, data) => onUpdate({ ...answerSet, isDefault: !!data.checked })}
+            label="Is Default"
           />
-          <Label htmlFor={`default-inline-simple-${answerSet.id}`} className="text-xs font-normal">
-            Is Default
-          </Label>
         </div>
 
-        <div className="space-y-3">
-          <Label className="text-sm font-semibold text-primary">{getSimpleTypeLabel()}</Label>
-          {questionType === 'Text' ? (
+        <div className={styles.spaceY3}>
+          <Text weight="semibold" size={300}>{getSimpleTypeLabel()}</Text>
+          
+          {questionType === 'Text' && (
             <Textarea
               placeholder="Enter default text response (optional)"
               value={simpleAnswer.value}
-              onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Response')}
-              className="min-h-[80px]"
+              onChange={(_, data) => updateSimpleAnswer(data.value, 'Text Response')}
+              resize="vertical"
             />
-          ) : questionType === 'TextArea' ? (
-            <div className="space-y-3">
+          )}
+
+          {questionType === 'TextArea' && (
+            <div className={styles.spaceY3}>
               <Textarea
                 placeholder="Enter default text area content (optional)"
                 value={simpleAnswer.value}
-                onChange={(e) => updateSimpleAnswer(e.target.value, 'Text Area Response')}
-                className="min-h-[120px]"
+                onChange={(_, data) => updateSimpleAnswer(data.value, 'Text Area Response')}
+                resize="vertical"
+                style={{ minHeight: '120px' }}
               />
-              <div className="flex items-center gap-2">
-                <Label className="text-xs text-muted-foreground">Format</Label>
+              <div className={styles.flexRow}>
+                <Text size={200}>Format</Text>
                 <select
                   value={answerSet.textAreaFormat || 'plain'}
                   onChange={(e) => onUpdate({ ...answerSet, textAreaFormat: e.target.value as 'plain' | 'rich' })}
-                  className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+                  className={styles.selectNative}
                 >
                   <option value="plain">Plain Text</option>
                   <option value="rich">Rich Text</option>
                 </select>
               </div>
             </div>
-          ) : questionType === 'Number' ? (
-            <div className="space-y-3">
+          )}
+
+          {questionType === 'Number' && (
+            <div className={styles.spaceY3}>
               <Input
                 type="number"
                 placeholder="Enter default number (optional)"
                 value={simpleAnswer.value}
-                onChange={(e) => updateSimpleAnswer(e.target.value, 'Number Response')}
-                className="h-8"
+                onChange={(_, data) => updateSimpleAnswer(data.value, 'Number Response')}
+                size="small"
               />
-              <div className="flex items-center gap-2">
-                <Switch
-                  id={`inline-number-restriction-${answerSet.id}`}
-                  checked={answerSet.numberRestriction ?? false}
-                  onCheckedChange={(checked) => onUpdate({ ...answerSet, numberRestriction: checked })}
-                />
-                <Label htmlFor={`inline-number-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
-                  Restriction
-                </Label>
-              </div>
+              <Switch
+                checked={answerSet.numberRestriction ?? false}
+                onChange={(_, data) => onUpdate({ ...answerSet, numberRestriction: data.checked })}
+                label="Restriction"
+              />
               {answerSet.numberRestriction && (
-                <div className="grid grid-cols-2 gap-3 pl-1">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Min Value</Label>
+                <div className={styles.grid2}>
+                  <Field label={<Text size={200}>Min Value</Text>}>
                     <Input
                       type="number"
                       placeholder="No min"
-                      value={answerSet.minValue ?? ''}
-                      onChange={(e) => onUpdate({ ...answerSet, minValue: e.target.value ? Number(e.target.value) : undefined })}
-                      className="h-8 text-sm"
+                      value={answerSet.minValue?.toString() ?? ''}
+                      onChange={(_, data) => onUpdate({ ...answerSet, minValue: data.value ? Number(data.value) : undefined })}
+                      size="small"
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Max Value</Label>
+                  </Field>
+                  <Field label={<Text size={200}>Max Value</Text>}>
                     <Input
                       type="number"
                       placeholder="No max"
-                      value={answerSet.maxValue ?? ''}
-                      onChange={(e) => onUpdate({ ...answerSet, maxValue: e.target.value ? Number(e.target.value) : undefined })}
-                      className="h-8 text-sm"
+                      value={answerSet.maxValue?.toString() ?? ''}
+                      onChange={(_, data) => onUpdate({ ...answerSet, maxValue: data.value ? Number(data.value) : undefined })}
+                      size="small"
                     />
-                  </div>
+                  </Field>
                 </div>
               )}
             </div>
-          ) : questionType === 'Decimal' ? (
-            <div className="space-y-3">
+          )}
+
+          {questionType === 'Decimal' && (
+            <div className={styles.spaceY3}>
               <Input
                 type="number"
-                step="0.01"
+                step={0.01}
                 placeholder="Enter default decimal (optional)"
                 value={simpleAnswer.value}
-                onChange={(e) => updateSimpleAnswer(e.target.value, 'Decimal Response')}
-                className="h-8"
+                onChange={(_, data) => updateSimpleAnswer(data.value, 'Decimal Response')}
+                size="small"
               />
-              <div className="flex items-center gap-2">
-                <Switch
-                  id={`inline-decimal-restriction-${answerSet.id}`}
-                  checked={answerSet.numberRestriction ?? false}
-                  onCheckedChange={(checked) => onUpdate({ ...answerSet, numberRestriction: checked })}
-                />
-                <Label htmlFor={`inline-decimal-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
-                  Restriction
-                </Label>
-              </div>
+              <Switch
+                checked={answerSet.numberRestriction ?? false}
+                onChange={(_, data) => onUpdate({ ...answerSet, numberRestriction: data.checked })}
+                label="Restriction"
+              />
               {answerSet.numberRestriction && (
-                <div className="grid grid-cols-2 gap-3 pl-1">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Min Value</Label>
+                <div className={styles.grid2}>
+                  <Field label={<Text size={200}>Min Value</Text>}>
                     <Input
                       type="number"
-                      step="0.01"
+                      step={0.01}
                       placeholder="No min"
-                      value={answerSet.minValue ?? ''}
-                      onChange={(e) => onUpdate({ ...answerSet, minValue: e.target.value ? Number(e.target.value) : undefined })}
-                      className="h-8 text-sm"
+                      value={answerSet.minValue?.toString() ?? ''}
+                      onChange={(_, data) => onUpdate({ ...answerSet, minValue: data.value ? Number(data.value) : undefined })}
+                      size="small"
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Max Value</Label>
+                  </Field>
+                  <Field label={<Text size={200}>Max Value</Text>}>
                     <Input
                       type="number"
-                      step="0.01"
+                      step={0.01}
                       placeholder="No max"
-                      value={answerSet.maxValue ?? ''}
-                      onChange={(e) => onUpdate({ ...answerSet, maxValue: e.target.value ? Number(e.target.value) : undefined })}
-                      className="h-8 text-sm"
+                      value={answerSet.maxValue?.toString() ?? ''}
+                      onChange={(_, data) => onUpdate({ ...answerSet, maxValue: data.value ? Number(data.value) : undefined })}
+                      size="small"
                     />
-                  </div>
+                  </Field>
                 </div>
               )}
             </div>
-          ) : questionType === 'Date' ? (
-            <div className="space-y-3">
-              <div className={`grid gap-3 ${answerSet.includeTime ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          )}
+
+          {questionType === 'Date' && (
+            <div className={styles.spaceY3}>
+              <div className={answerSet.includeTime ? styles.grid2 : undefined}>
                 <Input
                   type="date"
                   value={simpleAnswer.value?.split('T')[0] || simpleAnswer.value || ''}
-                  onChange={(e) => {
-                    const dateValue = e.target.value;
+                  onChange={(_, data) => {
+                    const dateValue = data.value;
                     const timeValue = simpleAnswer.value?.split('T')[1] || '';
                     const newValue = answerSet.includeTime && timeValue 
                       ? `${dateValue}T${timeValue}` 
                       : dateValue;
                     updateSimpleAnswer(newValue, 'Date Response');
                   }}
-                  className="h-8"
+                  size="small"
                 />
                 {answerSet.includeTime && (
                   <Input
                     type="time"
                     value={simpleAnswer.value?.split('T')[1] || ''}
-                    onChange={(e) => {
-                      const timeValue = e.target.value;
+                    onChange={(_, data) => {
+                      const timeValue = data.value;
                       const dateValue = simpleAnswer.value?.split('T')[0] || simpleAnswer.value || '';
                       const newValue = dateValue ? `${dateValue}T${timeValue}` : timeValue;
                       updateSimpleAnswer(newValue, 'Date Response');
                     }}
-                    className="h-8"
+                    size="small"
                   />
                 )}
               </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id={`inline-date-restriction-${answerSet.id}`}
-                    checked={answerSet.dateRestriction ?? false}
-                    onCheckedChange={(checked) => onUpdate({ ...answerSet, dateRestriction: checked })}
-                  />
-                  <Label htmlFor={`inline-date-restriction-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
-                    Date Restriction
-                  </Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id={`inline-include-time-${answerSet.id}`}
-                    checked={answerSet.includeTime ?? false}
-                    onCheckedChange={(checked) => onUpdate({ ...answerSet, includeTime: checked })}
-                  />
-                  <Label htmlFor={`inline-include-time-${answerSet.id}`} className="text-xs text-muted-foreground cursor-pointer">
-                    Time
-                  </Label>
-                </div>
+              <div className={styles.flexRow} style={{ gap: tokens.spacingHorizontalL }}>
+                <Switch
+                  checked={answerSet.dateRestriction ?? false}
+                  onChange={(_, data) => onUpdate({ ...answerSet, dateRestriction: data.checked })}
+                  label="Date Restriction"
+                />
+                <Switch
+                  checked={answerSet.includeTime ?? false}
+                  onChange={(_, data) => onUpdate({ ...answerSet, includeTime: data.checked })}
+                  label="Time"
+                />
               </div>
               {answerSet.dateRestriction && (
-                <div className="grid grid-cols-2 gap-3 pl-1">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Min Date</Label>
+                <div className={styles.grid2}>
+                  <Field label={<Text size={200}>Min Date</Text>}>
                     <Input
                       type="date"
                       value={answerSet.minDate ?? ''}
-                      onChange={(e) => onUpdate({ ...answerSet, minDate: e.target.value })}
-                      className="h-8 text-sm"
+                      onChange={(_, data) => onUpdate({ ...answerSet, minDate: data.value })}
+                      size="small"
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Max Date</Label>
+                  </Field>
+                  <Field label={<Text size={200}>Max Date</Text>}>
                     <Input
                       type="date"
                       value={answerSet.maxDate ?? ''}
-                      onChange={(e) => onUpdate({ ...answerSet, maxDate: e.target.value })}
-                      className="h-8 text-sm"
+                      onChange={(_, data) => onUpdate({ ...answerSet, maxDate: data.value })}
+                      size="small"
                     />
-                  </div>
+                  </Field>
                 </div>
               )}
             </div>
-          ) : questionType === 'Rating' ? (
-            <div className="space-y-3">
+          )}
+
+          {questionType === 'Rating' && (
+            <div className={styles.spaceY3}>
               <Input
                 type="number"
                 placeholder="Enter default rating (optional)"
                 min={answerSet.ratingMinValue ?? 1}
                 max={answerSet.ratingMaxValue ?? 5}
                 value={simpleAnswer.value}
-                onChange={(e) => updateSimpleAnswer(e.target.value, 'Rating Response')}
-                className="h-8"
+                onChange={(_, data) => updateSimpleAnswer(data.value, 'Rating Response')}
+                size="small"
               />
-              <div className="flex items-center gap-2 mb-2">
-                <Label className="text-xs text-muted-foreground">Display Style</Label>
+              <div className={styles.flexRow}>
+                <Text size={200}>Display Style</Text>
                 <select
                   value={answerSet.ratingDisplayStyle ?? 'numbers'}
                   onChange={(e) => onUpdate({ ...answerSet, ratingDisplayStyle: e.target.value as 'numbers' | 'stars' | 'smileys' | 'hearts' | 'thumbs' })}
-                  className="h-7 px-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+                  className={styles.selectNative}
                 >
                   <option value="numbers">Numbers (1, 2, 3...)</option>
                   <option value="stars">Stars (★)</option>
@@ -378,182 +537,163 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
                   <option value="thumbs">Thumbs (👍)</option>
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Min Value</Label>
+              <div className={styles.grid2}>
+                <Field label={<Text size={200}>Min Value</Text>}>
                   <Input
                     type="number"
-                    min="0"
-                    value={answerSet.ratingMinValue ?? 1}
-                    onChange={(e) => onUpdate({ ...answerSet, ratingMinValue: Number(e.target.value) || 1 })}
-                    className="h-8 text-sm"
+                    min={0}
+                    value={(answerSet.ratingMinValue ?? 1).toString()}
+                    onChange={(_, data) => onUpdate({ ...answerSet, ratingMinValue: Number(data.value) || 1 })}
+                    size="small"
                   />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Max Value</Label>
+                </Field>
+                <Field label={<Text size={200}>Max Value</Text>}>
                   <Input
                     type="number"
-                    min="1"
-                    value={answerSet.ratingMaxValue ?? 5}
-                    onChange={(e) => onUpdate({ ...answerSet, ratingMaxValue: Number(e.target.value) || 5 })}
-                    className="h-8 text-sm"
+                    min={1}
+                    value={(answerSet.ratingMaxValue ?? 5).toString()}
+                    onChange={(_, data) => onUpdate({ ...answerSet, ratingMaxValue: Number(data.value) || 5 })}
+                    size="small"
                   />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Min Label (optional)</Label>
+                </Field>
+                <Field label={<Text size={200}>Min Label (optional)</Text>}>
                   <Input
                     placeholder="e.g., Poor"
                     value={answerSet.ratingMinLabel ?? ''}
-                    onChange={(e) => onUpdate({ ...answerSet, ratingMinLabel: e.target.value || undefined })}
-                    className="h-8 text-sm"
+                    onChange={(_, data) => onUpdate({ ...answerSet, ratingMinLabel: data.value || undefined })}
+                    size="small"
                   />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Max Label (optional)</Label>
+                </Field>
+                <Field label={<Text size={200}>Max Label (optional)</Text>}>
                   <Input
                     placeholder="e.g., Excellent"
                     value={answerSet.ratingMaxLabel ?? ''}
-                    onChange={(e) => onUpdate({ ...answerSet, ratingMaxLabel: e.target.value || undefined })}
-                    className="h-8 text-sm"
+                    onChange={(_, data) => onUpdate({ ...answerSet, ratingMaxLabel: data.value || undefined })}
+                    size="small"
                   />
-                </div>
+                </Field>
               </div>
             </div>
-          ) : questionType === 'Boolean' ? (
-            <div className="flex items-center gap-3">
-              <Switch
-                id={`inline-boolean-${answerSet.id}`}
-                checked={simpleAnswer.value === 'true'}
-                onCheckedChange={(checked) => updateSimpleAnswer(checked ? 'true' : 'false', checked ? 'Yes' : 'No')}
-              />
-              <Label htmlFor={`inline-boolean-${answerSet.id}`} className="text-sm font-normal">
-                {simpleAnswer.value === 'true' ? 'Yes (True)' : 'No (False)'}
-              </Label>
-            </div>
-          ) : questionType === 'Document' ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <FileUp className="h-4 w-4 text-muted-foreground" />
-                <Label className="text-xs text-muted-foreground">File Attachment Configuration</Label>
+          )}
+
+          {questionType === 'Boolean' && (
+            <Switch
+              checked={simpleAnswer.value === 'true'}
+              onChange={(_, data) => updateSimpleAnswer(data.checked ? 'true' : 'false', data.checked ? 'Yes' : 'No')}
+              label={simpleAnswer.value === 'true' ? 'Yes (True)' : 'No (False)'}
+            />
+          )}
+
+          {questionType === 'Document' && (
+            <div className={styles.spaceY3}>
+              <div className={styles.flexRow}>
+                <ArrowUpload24Regular />
+                <Text size={200}>File Attachment Configuration</Text>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Allowed File Types</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { value: 'pdf', label: 'PDF' },
-                    { value: 'doc', label: 'Word' },
-                    { value: 'xls', label: 'Excel' },
-                    { value: 'ppt', label: 'PowerPoint' },
-                    { value: 'txt', label: 'Text' },
-                    { value: 'image', label: 'Images' },
-                  ].map((fileType) => (
-                    <div key={fileType.value} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`inline-file-type-${answerSet.id}-${fileType.value}`}
-                        checked={(answerSet.allowedFileTypes ?? ['pdf', 'doc', 'xls', 'ppt', 'txt', 'image']).includes(fileType.value)}
-                        onCheckedChange={(checked) => {
-                          const current = answerSet.allowedFileTypes ?? ['pdf', 'doc', 'xls', 'ppt', 'txt', 'image'];
-                          const updated = checked 
-                            ? [...current, fileType.value]
-                            : current.filter(t => t !== fileType.value);
-                          onUpdate({ ...answerSet, allowedFileTypes: updated });
-                        }}
-                      />
-                      <Label htmlFor={`inline-file-type-${answerSet.id}-${fileType.value}`} className="text-xs cursor-pointer">
-                        {fileType.label}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
+              <div className={styles.grid2}>
+                {[
+                  { value: 'pdf', label: 'PDF' },
+                  { value: 'doc', label: 'Word' },
+                  { value: 'xls', label: 'Excel' },
+                  { value: 'ppt', label: 'PowerPoint' },
+                  { value: 'txt', label: 'Text' },
+                  { value: 'image', label: 'Images' },
+                ].map((fileType) => (
+                  <Checkbox
+                    key={fileType.value}
+                    checked={(answerSet.allowedFileTypes ?? ['pdf', 'doc', 'xls', 'ppt', 'txt', 'image']).includes(fileType.value)}
+                    onChange={(_, data) => {
+                      const current = answerSet.allowedFileTypes ?? ['pdf', 'doc', 'xls', 'ppt', 'txt', 'image'];
+                      const updated = data.checked 
+                        ? [...current, fileType.value]
+                        : current.filter(t => t !== fileType.value);
+                      onUpdate({ ...answerSet, allowedFileTypes: updated });
+                    }}
+                    label={fileType.label}
+                  />
+                ))}
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Max File Size (MB)</Label>
+              <div className={styles.grid2}>
+                <Field label={<Text size={200}>Max File Size (MB)</Text>}>
                   <Input
                     type="number"
-                    min="1"
-                    max="100"
+                    min={1}
+                    max={100}
                     placeholder="10"
-                    value={answerSet.maxFileSize ?? 10}
-                    onChange={(e) => onUpdate({ ...answerSet, maxFileSize: Number(e.target.value) || 10 })}
-                    className="h-7 text-xs"
+                    value={(answerSet.maxFileSize ?? 10).toString()}
+                    onChange={(_, data) => onUpdate({ ...answerSet, maxFileSize: Number(data.value) || 10 })}
+                    size="small"
                   />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Number of Files</Label>
+                </Field>
+                <Field label={<Text size={200}>Number of Files</Text>}>
                   <Input
                     type="number"
-                    min="1"
-                    max="20"
+                    min={1}
+                    max={20}
                     placeholder="3"
-                    value={answerSet.maxFiles ?? 3}
-                    onChange={(e) => onUpdate({ ...answerSet, maxFiles: Number(e.target.value) || 3 })}
-                    className="h-7 text-xs"
+                    value={(answerSet.maxFiles ?? 3).toString()}
+                    onChange={(_, data) => onUpdate({ ...answerSet, maxFiles: Number(data.value) || 3 })}
+                    size="small"
                   />
-                </div>
+                </Field>
               </div>
             </div>
-          ) : questionType === 'DownloadableDocument' ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <FileUp className="h-4 w-4 text-muted-foreground" />
-                <Label className="text-xs text-muted-foreground">Downloadable Document Configuration</Label>
+          )}
+
+          {questionType === 'DownloadableDocument' && (
+            <div className={styles.spaceY3}>
+              <div className={styles.flexRow}>
+                <ArrowUpload24Regular />
+                <Text size={200}>Downloadable Document Configuration</Text>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Upload a document for users to download.
-              </p>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Document Name</Label>
+              <Text size={200}>Upload a document for users to download.</Text>
+              <Field label={<Text size={200}>Document Name</Text>}>
                 <Input
                   placeholder="Enter document display name"
                   value={answerSet.downloadableFileName ?? ''}
-                  onChange={(e) => onUpdate({ ...answerSet, downloadableFileName: e.target.value })}
-                  className="h-7 text-xs"
+                  onChange={(_, data) => onUpdate({ ...answerSet, downloadableFileName: data.value })}
+                  size="small"
                 />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Attach Document</Label>
+              </Field>
+              <Field label={<Text size={200}>Attach Document</Text>}>
                 {!answerSet.downloadableFileUrl ? (
-                  <div className="border-2 border-dashed border-border rounded-lg p-3 hover:border-primary/50 transition-colors">
-                    <label className="flex flex-col items-center gap-1 cursor-pointer">
-                      <FileUp className="h-6 w-6 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">Click to upload</span>
-                      <Input
-                        type="file"
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const url = URL.createObjectURL(file);
-                            onUpdate({ 
-                              ...answerSet, 
-                              downloadableFileUrl: url,
-                              downloadableFileName: answerSet.downloadableFileName || file.name,
-                              downloadableFileType: file.type
-                            });
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
+                  <label className={styles.uploadZone}>
+                    <ArrowUpload24Regular />
+                    <Text size={200}>Click to upload</Text>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const url = URL.createObjectURL(file);
+                          onUpdate({ 
+                            ...answerSet, 
+                            downloadableFileUrl: url,
+                            downloadableFileName: answerSet.downloadableFileName || file.name,
+                            downloadableFileType: file.type
+                          });
+                        }
+                      }}
+                    />
+                  </label>
                 ) : (
-                  <div className="flex items-center gap-2 p-2 bg-primary/5 border border-primary/20 rounded-lg">
-                    <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center">
-                      <FileUp className="h-4 w-4 text-primary" />
+                  <div className={styles.uploadedFile}>
+                    <div className={styles.fileIcon}>
+                      <ArrowUpload24Regular />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">
+                    <div className={styles.flexGrow}>
+                      <Text weight="semibold" size={200} truncate block>
                         {answerSet.downloadableFileName || 'Uploaded document'}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
+                      </Text>
+                      <Text size={100}>
                         {answerSet.downloadableFileType || 'Document attached'}
-                      </p>
+                      </Text>
                     </div>
                     <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
+                      appearance="outline"
+                      size="small"
                       onClick={() => onUpdate({ 
                         ...answerSet, 
                         downloadableFileUrl: undefined,
@@ -565,117 +705,106 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
                     </Button>
                   </div>
                 )}
-              </div>
+              </Field>
             </div>
-          ) : null}
+          )}
         </div>
       </div>
     );
   }
 
-  // For Choice and MultiSelect types, show the full answer set UI
+  // Choice types UI
   return (
-    <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 mt-3">
-      <div className="flex items-center justify-between mb-3">
-        <Label className="text-sm font-semibold text-primary">
-          Answer Set for this Rule {questionType === 'MultiSelect' && <span className="text-primary/70">(Multi-Select)</span>}
-        </Label>
+    <div className={styles.inlineAnswerSet}>
+      <div className={`${styles.flexBetween} ${styles.mb3}`}>
+        <Text weight="semibold" size={300}>
+          Answer Set for this Rule {questionType === 'MultiSelect' && <Text size={200}>(Multi-Select)</Text>}
+        </Text>
         {onAddFromExisting && (
           <Button 
-            variant="outline" 
-            size="sm"
+            appearance="outline" 
+            size="small"
+            icon={<Library24Regular />}
             onClick={onAddFromExisting}
           >
-            <Library className="h-4 w-4 mr-1" />
             Add from Existing
           </Button>
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-2">
-          <RequiredLabel className="text-xs">Set Name</RequiredLabel>
+      <div className={styles.grid2}>
+        <Field label={<Label required size="small">Set Name</Label>}>
           <Input
             placeholder="Answer Set Name"
             value={answerSet.name}
-            onChange={(e) => onUpdate({ ...answerSet, name: e.target.value })}
-            className={`h-8 ${!answerSet.name.trim() ? "border-destructive" : ""}`}
+            onChange={(_, data) => onUpdate({ ...answerSet, name: data.value })}
+            size="small"
           />
-        </div>
-        <div className="space-y-2">
-          <RequiredLabel className="text-xs">Tag</RequiredLabel>
+        </Field>
+        <Field label={<Label required size="small">Tag</Label>}>
           <Input
             placeholder="Tag"
             value={answerSet.tag}
-            onChange={(e) => onUpdate({ ...answerSet, tag: e.target.value })}
-            className={`h-8 ${!answerSet.tag.trim() ? "border-destructive" : ""}`}
+            onChange={(_, data) => onUpdate({ ...answerSet, tag: data.value })}
+            size="small"
           />
-        </div>
+        </Field>
       </div>
 
-      <div className="flex items-center space-x-2 mt-3">
+      <div className={`${styles.flexRow} ${styles.mt3}`}>
         <Checkbox
-          id={`default-${answerSet.id}`}
           checked={answerSet.isDefault}
-          onCheckedChange={(checked) => onUpdate({ ...answerSet, isDefault: !!checked })}
+          onChange={(_, data) => onUpdate({ ...answerSet, isDefault: !!data.checked })}
+          label="Is Default"
         />
-        <Label htmlFor={`default-${answerSet.id}`} className="text-xs font-normal">
-          Is Default
-        </Label>
       </div>
 
-      <div className="mt-4">
-        <div className="flex items-center justify-between mb-2">
-          <Label className="text-xs font-medium">Answers</Label>
-          <Button variant="ghost" size="sm" onClick={addAnswer} className="h-7 text-xs">
-            <Plus className="h-3 w-3 mr-1" />
+      <div className={styles.mt4}>
+        <div className={`${styles.flexBetween} ${styles.mb3}`}>
+          <Text size={200} weight="medium">Answers</Text>
+          <Button appearance="subtle" size="small" icon={<Add24Regular />} onClick={addAnswer}>
             Add Answer
           </Button>
         </div>
 
-        <div className="space-y-2">
+        <div className={styles.spaceY2}>
           {answerSet.answers.length === 0 && (
-            <p className="text-xs text-destructive">At least one answer is required</p>
+            <Text className={styles.errorText}>At least one answer is required</Text>
           )}
           {answerSet.answers.map(ans => (
-            <div key={ans.id} className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
+            <div key={ans.id} className={styles.answerRow}>
               <Input
                 placeholder="Label"
                 value={ans.label}
-                onChange={(e) => updateAnswer(ans.id, { label: e.target.value })}
-                className={`flex-1 h-7 text-sm ${!ans.label.trim() ? "border-destructive" : ""}`}
+                onChange={(_, data) => updateAnswer(ans.id, { label: data.value })}
+                className={styles.flexGrow}
+                size="small"
               />
               <Input
                 placeholder="Value"
                 value={ans.value}
-                onChange={(e) => updateAnswer(ans.id, { value: e.target.value })}
-                className={`flex-1 h-7 text-sm ${!ans.value.trim() ? "border-destructive" : ""}`}
+                onChange={(_, data) => updateAnswer(ans.id, { value: data.value })}
+                className={styles.flexGrow}
+                size="small"
               />
-              <div className="flex items-center space-x-1">
-                <Checkbox
-                  id={`active-${ans.id}`}
-                  checked={ans.active}
-                  onCheckedChange={(checked) => updateAnswer(ans.id, { active: !!checked })}
-                />
-                <Label htmlFor={`active-${ans.id}`} className="text-xs font-normal">
-                  Active
-                </Label>
-              </div>
+              <Checkbox
+                checked={ans.active}
+                onChange={(_, data) => updateAnswer(ans.id, { active: !!data.checked })}
+                label="Active"
+              />
               {ans.actionRecord && (
-                <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <Flash24Regular primaryFill={tokens.colorPaletteYellowForeground1} />
               )}
               <ActionRecordEditor
                 actionRecord={ans.actionRecord}
                 onUpdate={(actionRecord) => updateAnswer(ans.id, { actionRecord })}
               />
               <Button 
-                variant="ghost" 
-                size="sm" 
+                appearance="subtle" 
+                size="small"
+                icon={<Delete24Regular />}
                 onClick={() => removeAnswer(ans.id)}
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
+              />
             </div>
           ))}
         </div>
@@ -684,11 +813,22 @@ const InlineAnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questio
   );
 };
 
+const OPERATORS: { value: AnswerLevelOperator; label: string }[] = [
+  { value: 'equals', label: 'Equals' },
+  { value: 'not_equals', label: 'Not Equals' },
+  { value: 'greater_than', label: 'Greater Than' },
+  { value: 'less_than', label: 'Less Than' },
+  { value: 'contains', label: 'Contains' },
+  { value: 'not_contains', label: 'Not Contains' },
+  { value: 'starts_with', label: 'Starts With' },
+  { value: 'ends_with', label: 'Ends With' },
+];
+
 const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUpdate, isRoot = true, onDelete, onAddFromExisting, questionType = 'Choice' }: AnswerLevelRuleGroupEditorProps) => {
-  const [answerSetExpanded, setAnswerSetExpanded] = useState(!!group.inlineAnswerSet);
+  const styles = useStyles();
+  const [answerSetExpanded, setAnswerSetExpanded] = useState<string[]>(group.inlineAnswerSet ? ["answerSet"] : []);
   const isTextType = questionType === 'Text';
 
-  // Filter to only show previous questions (order less than current question)
   const previousQuestions = allQuestions.filter(q => q.order < currentQuestion.order);
 
   const updateGroup = (partial: Partial<AnswerLevelRuleGroup>) => {
@@ -729,26 +869,11 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUp
     updateGroup({ children: [...group.children, newRule] });
   };
 
-  const operatorOptions: { value: AnswerLevelOperator; label: string }[] = [
-    { value: 'equals', label: 'Equals' },
-    { value: 'not_equals', label: 'Not Equals' },
-    { value: 'greater_than', label: 'Greater Than' },
-    { value: 'less_than', label: 'Less Than' },
-    { value: 'contains', label: 'Contains' },
-    { value: 'not_contains', label: 'Not Contains' },
-    { value: 'starts_with', label: 'Starts With' },
-    { value: 'ends_with', label: 'Ends With' },
-  ];
-
-  // Get answer sets for selected question (including inline answer sets from answer-level rule groups)
   const getAnswerSetsForQuestion = (questionId: string) => {
     const question = allQuestions.find(q => q.id === questionId);
     if (!question) return [];
     
-    // Start with the regular answer sets
     const allAnswerSets = [...question.answerSets];
-    
-    // Add inline answer sets from answer-level rule groups
     question.answerLevelRuleGroups?.forEach(ruleGroup => {
       if (ruleGroup.inlineAnswerSet) {
         allAnswerSets.push(ruleGroup.inlineAnswerSet);
@@ -758,15 +883,12 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUp
     return allAnswerSets;
   };
 
-  // Get answers for selected answer set (including inline answer sets)
   const getAnswersForAnswerSet = (questionId: string, answerSetId: string) => {
     const question = allQuestions.find(q => q.id === questionId);
     if (!question || !answerSetId) return [];
     
-    // First check regular answer sets
     let answerSet = question.answerSets.find(as => as.id === answerSetId);
     
-    // If not found, check inline answer sets from answer-level rule groups
     if (!answerSet) {
       for (const ruleGroup of question.answerLevelRuleGroups || []) {
         if (ruleGroup.inlineAnswerSet?.id === answerSetId) {
@@ -779,239 +901,199 @@ const AnswerLevelRuleGroupEditor = ({ group, allQuestions, currentQuestion, onUp
     return answerSet?.answers || [];
   };
 
-  const allAnswers = allQuestions.flatMap(q => q.answerSets.flatMap(as => as.answers));
-  const allAnswerSets = allQuestions.flatMap(q => q.answerSets);
-
-  // Get inline answer sets from all groups in the tree
-  const getInlineAnswerSets = (g: AnswerLevelRuleGroup): AnswerSet[] => {
-    const sets: AnswerSet[] = [];
-    if (g.inlineAnswerSet) sets.push(g.inlineAnswerSet);
-    g.children.forEach(child => {
-      if (child.type === 'group') {
-        sets.push(...getInlineAnswerSets(child));
-      }
-    });
-    return sets;
-  };
-
   return (
-    <div className="border border-border bg-card">
-      {/* Header Row with AND/OR and Column Labels */}
-      <div className="flex items-center border-b border-border bg-muted/30">
-        <div className="flex items-center gap-2 px-3 py-2 min-w-[80px] border-r border-border">
-          <Select
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.header}>
+        <div className={styles.matchTypeCell}>
+          <Dropdown
             value={group.matchType}
-            onValueChange={(value: 'AND' | 'OR') => updateGroup({ matchType: value })}
+            selectedOptions={[group.matchType]}
+            onOptionSelect={(_, data) => updateGroup({ matchType: data.optionValue as 'AND' | 'OR' })}
+            size="small"
+            style={{ minWidth: '64px' }}
           >
-            <SelectTrigger className="h-7 w-16 text-xs font-medium">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="AND">AND</SelectItem>
-              <SelectItem value="OR">OR</SelectItem>
-            </SelectContent>
-          </Select>
+            <Option value="AND">AND</Option>
+            <Option value="OR">OR</Option>
+          </Dropdown>
         </div>
-        <div className="flex-1 grid grid-cols-4 gap-2 px-3 py-2">
-          <span className="text-xs font-medium text-muted-foreground">Select Question</span>
-          <span className="text-xs font-medium text-muted-foreground">Answer Set</span>
-          <span className="text-xs font-medium text-muted-foreground">Operator</span>
-          <span className="text-xs font-medium text-muted-foreground">Answer</span>
+        <div className={styles.columnsHeader}>
+          <Text size={200} weight="medium">Select Question</Text>
+          <Text size={200} weight="medium">Answer Set</Text>
+          <Text size={200} weight="medium">Operator</Text>
+          <Text size={200} weight="medium">Answer</Text>
         </div>
-        <div className="w-10 px-2 flex items-center justify-center">
+        <div className={styles.actionsCell}>
           {!isRoot && onDelete && (
             <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+              appearance="subtle" 
+              size="small"
+              icon={<Delete24Regular />}
               onClick={onDelete}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            />
           )}
         </div>
       </div>
 
-      {/* Rules and Nested Groups */}
+      {/* Rules */}
       <div className="relative">
         {group.children.map((child, index) => (
-          <div key={child.id} className="relative">
-            {/* Tree connector lines */}
-            <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
-            <div className="absolute left-4 top-1/2 w-4 h-px bg-border" />
-            
-            <div className="flex items-stretch border-b border-border last:border-b-0">
-              {/* Left connector area */}
-              <div className="w-8 flex items-center justify-center relative" />
+          <div key={child.id} className={styles.ruleRow}>
+            <div className={styles.connectorCell}>
+              <div className={styles.treeLine} />
+              <div className={styles.treeConnector} />
+            </div>
 
-              {child.type === 'group' ? (
-                <div className="flex-1 py-2 pr-2">
-                  <AnswerLevelRuleGroupEditor
-                    group={child}
-                    allQuestions={allQuestions}
-                    currentQuestion={currentQuestion}
-                    onUpdate={(updated) => updateChild(index, updated)}
-                    isRoot={false}
-                    onDelete={() => deleteChild(index)}
+            {child.type === 'group' ? (
+              <div className={styles.nestedGroup}>
+                <AnswerLevelRuleGroupEditor
+                  group={child}
+                  allQuestions={allQuestions}
+                  currentQuestion={currentQuestion}
+                  onUpdate={(updated) => updateChild(index, updated)}
+                  isRoot={false}
+                  onDelete={() => deleteChild(index)}
+                />
+              </div>
+            ) : (
+              <>
+                <div className={styles.ruleColumns}>
+                  <Dropdown
+                    placeholder="Select question"
+                    value={previousQuestions.find(q => q.id === child.previousQuestionId)?.text || ''}
+                    selectedOptions={child.previousQuestionId ? [child.previousQuestionId] : []}
+                    onOptionSelect={(_, data) => {
+                      updateChild(index, { ...child, previousQuestionId: data.optionValue as string, previousAnswerSetId: '', previousAnswerId: '' });
+                    }}
+                    size="small"
+                  >
+                    {previousQuestions.map(q => (
+                      <Option key={q.id} value={q.id}>
+                        {q.text || 'Untitled Question'}
+                      </Option>
+                    ))}
+                  </Dropdown>
+
+                  <Dropdown
+                    placeholder="Select answer set"
+                    value={getAnswerSetsForQuestion(child.previousQuestionId).find(as => as.id === child.previousAnswerSetId)?.name || ''}
+                    selectedOptions={child.previousAnswerSetId ? [child.previousAnswerSetId] : []}
+                    onOptionSelect={(_, data) => {
+                      updateChild(index, { ...child, previousAnswerSetId: data.optionValue as string, previousAnswerId: '' });
+                    }}
+                    disabled={!child.previousQuestionId}
+                    size="small"
+                  >
+                    {getAnswerSetsForQuestion(child.previousQuestionId).map(as => (
+                      <Option key={as.id} value={as.id}>
+                        {as.name || 'Untitled Answer Set'}
+                      </Option>
+                    ))}
+                  </Dropdown>
+
+                  <Dropdown
+                    value={OPERATORS.find(op => op.value === (child.operator || 'equals'))?.label || 'Equals'}
+                    selectedOptions={[child.operator || 'equals']}
+                    onOptionSelect={(_, data) => {
+                      updateChild(index, { ...child, operator: data.optionValue as AnswerLevelOperator });
+                    }}
+                    size="small"
+                  >
+                    {OPERATORS.map(op => (
+                      <Option key={op.value} value={op.value}>
+                        {op.label}
+                      </Option>
+                    ))}
+                  </Dropdown>
+
+                  {(() => {
+                    const sourceQuestion = allQuestions.find(q => q.id === child.previousQuestionId);
+                    const qType = sourceQuestion?.type || 'Choice';
+                    const answers = getAnswersForAnswerSet(child.previousQuestionId, child.previousAnswerSetId || '');
+                    
+                    return (
+                      <DynamicRuleValueInput
+                        questionType={qType}
+                        answers={answers}
+                        value={child.previousAnswerId}
+                        onChange={(value) => {
+                          updateChild(index, { ...child, previousAnswerId: value });
+                        }}
+                        disabled={!child.previousAnswerSetId}
+                      />
+                    );
+                  })()}
+                </div>
+
+                <div className={styles.actionsCell}>
+                  <Button 
+                    appearance="subtle" 
+                    size="small"
+                    icon={<Delete24Regular />}
+                    onClick={() => deleteChild(index)}
                   />
                 </div>
-              ) : (
-                <>
-                  {/* Rule Row */}
-                  <div className="flex-1 grid grid-cols-4 gap-2 py-2 px-2">
-                    <Select
-                      value={child.previousQuestionId}
-                      onValueChange={(value) => {
-                        updateChild(index, { ...child, previousQuestionId: value, previousAnswerSetId: '', previousAnswerId: '' });
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Select question" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {previousQuestions.map(q => (
-                          <SelectItem key={q.id} value={q.id}>
-                            {q.text || 'Untitled Question'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select
-                      value={child.previousAnswerSetId || ''}
-                      onValueChange={(value) => {
-                        updateChild(index, { ...child, previousAnswerSetId: value, previousAnswerId: '' });
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Select answer set" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getAnswerSetsForQuestion(child.previousQuestionId).map(as => (
-                          <SelectItem key={as.id} value={as.id}>
-                            {as.name || 'Untitled Answer Set'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select
-                      value={child.operator || 'equals'}
-                      onValueChange={(value: AnswerLevelOperator) => {
-                        updateChild(index, { ...child, operator: value });
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Select operator" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {operatorOptions.map(op => (
-                          <SelectItem key={op.value} value={op.value}>
-                            {op.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    {/* Answer - Dynamic based on question type */}
-                    {(() => {
-                      const sourceQuestion = allQuestions.find(q => q.id === child.previousQuestionId);
-                      const questionType = sourceQuestion?.type || 'Choice';
-                      const answers = getAnswersForAnswerSet(child.previousQuestionId, child.previousAnswerSetId || '');
-                      
-                      return (
-                        <DynamicRuleValueInput
-                          questionType={questionType}
-                          answers={answers}
-                          value={child.previousAnswerId}
-                          onChange={(value) => {
-                            updateChild(index, { ...child, previousAnswerId: value });
-                          }}
-                          disabled={!child.previousAnswerSetId}
-                        />
-                      );
-                    })()}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="w-10 flex items-center justify-center">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => deleteChild(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
-
-        {/* Add Button Row */}
-        <div className="flex items-center border-t border-border">
-          <div className="w-8 flex items-center justify-center relative">
-            {group.children.length > 0 && (
-              <>
-                <div className="absolute left-4 top-0 h-1/2 w-px bg-border" />
-                <div className="absolute left-4 top-1/2 w-4 h-px bg-border" />
               </>
             )}
           </div>
-          <div className="py-2 px-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs">
-                  <Plus className="h-3 w-3 mr-1" />
+        ))}
+
+        {/* Add Button */}
+        <div className={styles.addRow}>
+          <div className={styles.connectorCell}>
+            {group.children.length > 0 && (
+              <>
+                <div className={styles.treeLine} style={{ bottom: '50%' }} />
+                <div className={styles.treeConnector} />
+              </>
+            )}
+          </div>
+          <div className={styles.addButton}>
+            <Menu>
+              <MenuTrigger disableButtonEnhancement>
+                <Button appearance="outline" size="small" icon={<Add24Regular />}>
                   Add
-                  <ChevronDown className="h-3 w-3 ml-1" />
+                  <ChevronDown24Regular style={{ marginLeft: tokens.spacingHorizontalXS }} />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={addRule}>
-                  Add Rule
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={addGroup}>
-                  Add Group
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </MenuTrigger>
+              <MenuPopover>
+                <MenuList>
+                  <MenuItem onClick={addRule}>Add Rule</MenuItem>
+                  <MenuItem onClick={addGroup}>Add Group</MenuItem>
+                </MenuList>
+              </MenuPopover>
+            </Menu>
           </div>
         </div>
       </div>
 
-      {/* Inline Answer Set Section - Only at Root Level */}
+      {/* Inline Answer Set */}
       {isRoot && group.inlineAnswerSet && (
-        <Collapsible 
-          open={answerSetExpanded} 
-          onOpenChange={setAnswerSetExpanded}
-          className="border-t border-border"
-        >
-          <div className="flex items-center justify-between px-3 py-2">
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-7 text-xs">
-                {answerSetExpanded ? (
-                  <ChevronUp className="h-3 w-3 mr-1" />
-                ) : (
-                  <ChevronDown className="h-3 w-3 mr-1" />
-                )}
-                {answerSetExpanded ? 'Hide' : 'Show'} {isTextType ? 'Default Text Answer' : 'Answer Set'}
-              </Button>
-            </CollapsibleTrigger>
-          </div>
-          <CollapsibleContent className="px-3 pb-3">
-            <InlineAnswerSetEditor
-              answerSet={group.inlineAnswerSet}
-              onUpdate={(updated) => {
-                updateGroup({ inlineAnswerSet: updated });
-              }}
-              onAddFromExisting={onAddFromExisting}
-              questionType={questionType}
-            />
-          </CollapsibleContent>
-        </Collapsible>
+        <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke1}` }}>
+          <Accordion
+            openItems={answerSetExpanded}
+            onToggle={(_, data) => setAnswerSetExpanded(data.openItems as string[])}
+            collapsible
+          >
+            <AccordionItem value="answerSet">
+              <AccordionHeader size="small">
+                <Text size={200}>
+                  {answerSetExpanded.includes("answerSet") ? 'Hide' : 'Show'} {isTextType ? 'Default Text Answer' : 'Answer Set'}
+                </Text>
+              </AccordionHeader>
+              <AccordionPanel>
+                <InlineAnswerSetEditor
+                  answerSet={group.inlineAnswerSet}
+                  onUpdate={(updated) => {
+                    updateGroup({ inlineAnswerSet: updated });
+                  }}
+                  onAddFromExisting={onAddFromExisting}
+                  questionType={questionType}
+                />
+              </AccordionPanel>
+            </AccordionItem>
+          </Accordion>
+        </div>
       )}
     </div>
   );

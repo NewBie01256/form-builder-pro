@@ -1,24 +1,142 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState, useMemo } from "react";
+import {
+  Button,
+  Input,
+  Label,
+  Field,
+  Dropdown,
+  Option,
+  makeStyles,
+  tokens,
+  Text,
+  Accordion,
+  AccordionItem,
+  AccordionHeader,
+  AccordionPanel,
+} from "@fluentui/react-components";
+import {
+  Add24Regular,
+  DocumentText24Regular,
+  BranchFork24Regular,
+  QuestionCircle24Regular,
+  ArrowSync24Regular,
+  ChevronDown24Regular,
+  ChevronUp24Regular,
+  Settings24Regular,
+  Flash24Regular,
+  Layer24Regular,
+  Document24Regular,
+  Search24Regular,
+  Dismiss24Regular,
+} from "@fluentui/react-icons";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Plus, FileText, GitBranch, HelpCircle, RotateCcw, ChevronDown, ChevronUp, Settings, Zap, Layers, File, Search, X } from "lucide-react";
 import { Question, ConditionalBranch, Questionnaire, Page, Section } from "@/types/questionnaire";
 import { cn } from "@/lib/utils";
-import { useState, useMemo } from "react";
+
+const useStyles = makeStyles({
+  container: {
+    height: "100%",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  header: {
+    padding: tokens.spacingHorizontalL,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  scrollArea: {
+    flex: 1,
+    overflow: "auto",
+  },
+  content: {
+    padding: tokens.spacingHorizontalS,
+  },
+  treeItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+    borderRadius: tokens.borderRadiusMedium,
+    cursor: "pointer",
+    transition: "all 0.2s",
+    border: `1px solid transparent`,
+  },
+  treeItemActive: {
+    backgroundColor: tokens.colorBrandBackground2,
+    border: `1px solid ${tokens.colorBrandStroke1}`,
+    color: tokens.colorBrandForeground1,
+  },
+  treeItemPath: {
+    backgroundColor: tokens.colorBrandBackground2Hover,
+    border: `1px solid ${tokens.colorBrandStroke2}`,
+  },
+  treeItemHover: {
+    backgroundColor: tokens.colorNeutralBackground1Hover,
+  },
+  detailsBox: {
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
+    padding: tokens.spacingHorizontalM,
+    backgroundColor: tokens.colorNeutralBackground3,
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalM,
+  },
+  searchWrapper: {
+    position: "relative",
+    marginTop: tokens.spacingVerticalS,
+  },
+  searchIcon: {
+    position: "absolute",
+    left: tokens.spacingHorizontalS,
+    top: "50%",
+    transform: "translateY(-50%)",
+    color: tokens.colorNeutralForeground4,
+  },
+  searchInput: {
+    paddingLeft: "32px",
+    paddingRight: "32px",
+  },
+  clearButton: {
+    position: "absolute",
+    right: tokens.spacingHorizontalS,
+    top: "50%",
+    transform: "translateY(-50%)",
+    cursor: "pointer",
+    color: tokens.colorNeutralForeground4,
+  },
+  highlight: {
+    backgroundColor: tokens.colorPaletteYellowBackground2,
+    borderRadius: tokens.borderRadiusSmall,
+    padding: `0 ${tokens.spacingHorizontalXXS}`,
+  },
+  sectionItem: {
+    marginLeft: tokens.spacingHorizontalL,
+  },
+  questionItem: {
+    marginLeft: tokens.spacingHorizontalL,
+  },
+  branchItem: {
+    marginLeft: tokens.spacingHorizontalL,
+  },
+  treeLine: {
+    position: "absolute",
+    left: "8px",
+    width: "1px",
+    backgroundColor: tokens.colorNeutralStroke1,
+  },
+  treeConnector: {
+    position: "absolute",
+    left: "8px",
+    width: "12px",
+    height: "1px",
+    backgroundColor: tokens.colorNeutralStroke1,
+  },
+});
 
 interface SidebarProps {
   questionnaire: Questionnaire | null;
@@ -53,16 +171,15 @@ const Sidebar = ({
   onPublish,
   canPublish = false,
 }: SidebarProps) => {
-  const [detailsOpen, setDetailsOpen] = useState(true);
+  const styles = useStyles();
+  const [detailsOpen, setDetailsOpen] = useState<string[]>(["details"]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Helper to check if text matches search query
   const matchesSearch = (text: string | undefined): boolean => {
     if (!searchQuery.trim()) return true;
     return (text || '').toLowerCase().includes(searchQuery.toLowerCase());
   };
 
-  // Helper to highlight matching text
   const highlightText = (text: string | undefined): React.ReactNode => {
     const displayText = text || 'Untitled';
     if (!searchQuery.trim()) return displayText;
@@ -80,39 +197,34 @@ const Sidebar = ({
     return (
       <>
         {before}
-        <mark className="rounded-sm px-0.5" style={{ backgroundColor: 'hsl(var(--highlight))', color: 'hsl(var(--highlight-foreground))' }}>{match}</mark>
+        <mark className={styles.highlight}>{match}</mark>
         {after}
       </>
     );
   };
 
-  // Check if a branch or any of its descendants match the search
   const branchMatchesSearch = (branch: ConditionalBranch): boolean => {
     if (matchesSearch(branch.name)) return true;
     if (branch.questions.some(q => matchesSearch(q.text))) return true;
     return branch.childBranches.some(cb => branchMatchesSearch(cb));
   };
 
-  // Check if a section or any of its descendants match the search
   const sectionMatchesSearch = (section: Section): boolean => {
     if (matchesSearch(section.name)) return true;
     if (section.questions.some(q => matchesSearch(q.text))) return true;
     return section.branches.some(b => branchMatchesSearch(b));
   };
 
-  // Check if a page or any of its descendants match the search
   const pageMatchesSearch = (page: Page): boolean => {
     if (matchesSearch(page.name)) return true;
     return page.sections.some(s => sectionMatchesSearch(s));
   };
 
-  // Filter pages based on search
   const filteredPages = useMemo(() => {
     if (!questionnaire || !searchQuery.trim()) return questionnaire?.pages || [];
     return questionnaire.pages.filter(page => pageMatchesSearch(page));
   }, [questionnaire, searchQuery]);
 
-  // Find all ancestor branch IDs for a given branch or question
   const findAncestorBranchIds = (
     targetBranchId: string | null,
     targetQuestionId: string | null,
@@ -120,17 +232,12 @@ const Sidebar = ({
     ancestors: string[] = []
   ): string[] | null => {
     for (const branch of branches) {
-      // Check if this branch is the target
       if (targetBranchId && branch.id === targetBranchId) {
         return ancestors;
       }
-      
-      // Check if this branch contains the target question
       if (targetQuestionId && branch.questions.some(q => q.id === targetQuestionId)) {
         return [...ancestors, branch.id];
       }
-      
-      // Recurse into child branches
       const found = findAncestorBranchIds(
         targetBranchId,
         targetQuestionId,
@@ -142,12 +249,10 @@ const Sidebar = ({
     return null;
   };
 
-  // Get the page ID that contains the selected item
   const getSelectedPageId = (): string | null => {
     if (!questionnaire || (!selectedSectionId && !selectedQuestionId && !selectedBranchId)) {
       return null;
     }
-    
     for (const page of questionnaire.pages) {
       if (selectedSectionId && page.sections.some(s => s.id === selectedSectionId)) {
         return page.id;
@@ -158,33 +263,24 @@ const Sidebar = ({
 
   const selectedPageId = getSelectedPageId();
 
-  // Get ancestor branch IDs for highlighting the path
   const getAncestorBranchIds = (): string[] => {
     if (!questionnaire || !selectedSectionId) return [];
-    
     const section = questionnaire.pages
       .flatMap(p => p.sections)
       .find(s => s.id === selectedSectionId);
-    
     if (!section) return [];
-    
     const ancestors = findAncestorBranchIds(
       selectedBranchId,
       selectedQuestionId,
       section.branches
     );
-    
     return ancestors || [];
   };
 
   const ancestorBranchIds = getAncestorBranchIds();
 
-  // Check if a question has any action attached (question-level or answer-level)
   const questionHasAction = (question: Question): boolean => {
-    // Check question-level action record
     if (question.actionRecord) return true;
-    
-    // Check answer-level action records
     for (const answerSet of question.answerSets) {
       for (const answer of answerSet.answers) {
         if (answer.actionRecord) return true;
@@ -213,7 +309,6 @@ const Sidebar = ({
       ...branch.childBranches.map(cb => ({ type: 'branch' as const, item: cb }))
     ];
 
-    // Check if this branch is in the path to the selected item
     const isInPath = ancestorBranchIds.includes(branch.id);
     const isDirectlySelected = selectedBranchId === branch.id && !selectedQuestionId;
 
@@ -223,26 +318,24 @@ const Sidebar = ({
           <div className="flex" style={{ width: `${depth * 20}px` }}>
             {parentLines.map((showLine, i) => (
               <div key={i} className="w-5 relative">
-                {showLine && <div className="absolute left-2 top-0 bottom-0 w-px bg-border" />}
+                {showLine && <div className={cn(styles.treeLine, "top-0 bottom-0")} />}
               </div>
             ))}
           </div>
 
           {depth > 0 && (
             <div className="w-5 relative flex items-center">
-              <div className={cn("absolute left-2 w-px bg-border", isLast ? "top-0 h-1/2" : "top-0 bottom-0")} />
-              <div className="absolute left-2 top-1/2 w-3 h-px bg-border" />
+              <div className={cn(styles.treeLine, isLast ? "top-0 h-1/2" : "top-0 bottom-0")} />
+              <div className={cn(styles.treeConnector, "top-1/2")} />
             </div>
           )}
 
           <div
             className={cn(
-              "flex-1 flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors border",
-              isDirectlySelected
-                ? "bg-accent text-accent-foreground border-primary"
-                : isInPath
-                  ? "bg-primary/5 border-primary/40 text-primary/80"
-                  : "border-transparent hover:bg-accent"
+              styles.treeItem,
+              "flex-1",
+              isDirectlySelected && styles.treeItemActive,
+              isInPath && !isDirectlySelected && styles.treeItemPath
             )}
             onClick={() => {
               onSelectPage(pageId);
@@ -250,8 +343,8 @@ const Sidebar = ({
               onSelectBranch(branch.id);
             }}
           >
-            <GitBranch className={cn("h-4 w-4 shrink-0", isDirectlySelected || isInPath ? "text-primary" : "text-muted-foreground")} />
-            <span className="truncate text-sm font-medium">{highlightText(branch.name) || 'Untitled Branch'}</span>
+            <BranchFork24Regular primaryFill={isDirectlySelected || isInPath ? tokens.colorBrandForeground1 : tokens.colorNeutralForeground4} />
+            <Text size={200} weight="medium" truncate>{highlightText(branch.name) || 'Untitled Branch'}</Text>
           </div>
         </div>
 
@@ -265,21 +358,21 @@ const Sidebar = ({
                 <div className="flex" style={{ width: `${(depth + 1) * 20}px` }}>
                   {[...parentLines, !isLast].map((showLine, i) => (
                     <div key={i} className="w-5 relative">
-                      {showLine && <div className="absolute left-2 top-0 bottom-0 w-px bg-border" />}
+                      {showLine && <div className={cn(styles.treeLine, "top-0 bottom-0")} />}
                     </div>
                   ))}
                 </div>
 
                 <div className="w-5 relative flex items-center">
-                  <div className={cn("absolute left-2 w-px bg-border", isChildLast ? "top-0 h-1/2" : "top-0 bottom-0")} />
-                  <div className="absolute left-2 top-1/2 w-3 h-px bg-border" />
+                  <div className={cn(styles.treeLine, isChildLast ? "top-0 h-1/2" : "top-0 bottom-0")} />
+                  <div className={cn(styles.treeConnector, "top-1/2")} />
                 </div>
 
                 <div
                   className={cn(
-                    "flex-1 flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors",
-                    "hover:bg-accent",
-                    selectedQuestionId === child.item.id && "bg-accent text-accent-foreground"
+                    styles.treeItem,
+                    "flex-1",
+                    selectedQuestionId === child.item.id && styles.treeItemActive
                   )}
                   onClick={() => {
                     onSelectPage(pageId);
@@ -287,10 +380,10 @@ const Sidebar = ({
                     onSelectQuestion(child.item.id, branch.id);
                   }}
                 >
-                  <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="truncate text-sm flex-1">{highlightText(child.item.text) || 'Untitled Question'}</span>
+                  <QuestionCircle24Regular />
+                  <Text size={200} truncate style={{ flex: 1 }}>{highlightText(child.item.text) || 'Untitled Question'}</Text>
                   {questionHasAction(child.item) && (
-                    <Zap className="h-3 w-3 text-amber-500 shrink-0" />
+                    <Flash24Regular primaryFill={tokens.colorPaletteYellowForeground1} />
                   )}
                 </div>
               </div>
@@ -304,11 +397,9 @@ const Sidebar = ({
   };
 
   const renderSectionTree = (section: Section, pageId: string): JSX.Element => {
-    // Check if this section has any selected child (question or branch)
     const hasSelectedChild = selectedSectionId === section.id && (selectedQuestionId || selectedBranchId);
     const isSectionDirectlySelected = selectedSectionId === section.id && !selectedQuestionId && !selectedBranchId;
     
-    // Filter questions and branches based on search
     const filteredQuestions = searchQuery.trim() 
       ? section.questions.filter(q => matchesSearch(q.text))
       : section.questions;
@@ -317,7 +408,6 @@ const Sidebar = ({
       ? section.branches.filter(b => branchMatchesSearch(b))
       : section.branches;
 
-    // Don't render section if it has no matching children when searching
     const sectionDirectlyMatches = matchesSearch(section.name);
     const hasMatchingChildren = filteredQuestions.length > 0 || filteredBranches.length > 0;
     
@@ -326,53 +416,46 @@ const Sidebar = ({
     }
     
     return (
-      <div key={section.id} className="ml-4">
+      <div key={section.id} className={styles.sectionItem}>
         <div
           className={cn(
-            "flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors border",
-            isSectionDirectlySelected
-              ? "bg-primary/10 border-primary text-primary"
-              : hasSelectedChild
-                ? "bg-primary/5 border-primary/50 text-primary/80"
-                : "border-transparent hover:bg-accent"
+            styles.treeItem,
+            isSectionDirectlySelected && styles.treeItemActive,
+            hasSelectedChild && !isSectionDirectlySelected && styles.treeItemPath
           )}
           onClick={() => {
-            // Navigate to the page containing this section
             onSelectPage(pageId);
             onSelectSection(section.id);
           }}
         >
-          <Layers className={cn("h-4 w-4 shrink-0", isSectionDirectlySelected || hasSelectedChild ? "text-primary" : "text-muted-foreground")} />
-          <span className="truncate text-sm font-medium">{highlightText(section.name) || 'Untitled Section'}</span>
+          <Layer24Regular primaryFill={isSectionDirectlySelected || hasSelectedChild ? tokens.colorBrandForeground1 : tokens.colorNeutralForeground4} />
+          <Text size={200} weight="medium" truncate>{highlightText(section.name) || 'Untitled Section'}</Text>
         </div>
 
-        {/* Section Questions */}
         {filteredQuestions.map(q => (
           <div
             key={q.id}
             className={cn(
-              "flex items-center gap-2 px-2 py-2 ml-4 rounded-md cursor-pointer transition-colors",
-              "hover:bg-accent",
-              selectedQuestionId === q.id && selectedSectionId === section.id && "bg-accent text-accent-foreground"
+              styles.treeItem,
+              styles.questionItem,
+              selectedQuestionId === q.id && selectedSectionId === section.id && styles.treeItemActive
             )}
             onClick={() => {
-              // Navigate to the page containing this section
               onSelectPage(pageId);
               onSelectSection(section.id);
               onSelectQuestion(q.id, null);
             }}
           >
-            <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="truncate text-sm flex-1">{highlightText(q.text) || 'Untitled Question'}</span>
+            <QuestionCircle24Regular />
+            <Text size={200} truncate style={{ flex: 1 }}>{highlightText(q.text) || 'Untitled Question'}</Text>
             {questionHasAction(q) && (
-              <Zap className="h-3 w-3 text-amber-500 shrink-0" />
+              <Flash24Regular primaryFill={tokens.colorPaletteYellowForeground1} />
             )}
           </div>
         ))}
 
-        {/* Section Branches */}
         {filteredBranches.map((branch, idx) => (
-          <div key={branch.id} className="ml-4">
+          <div key={branch.id} className={styles.branchItem}>
             {renderBranchTree(branch, section.id, pageId, 0, idx === filteredBranches.length - 1, [])}
           </div>
         ))}
@@ -381,12 +464,10 @@ const Sidebar = ({
   };
 
   const renderPageTree = (page: Page): JSX.Element => {
-    // Check if this page contains the selected item but isn't the active page tab
     const isPageInPath = selectedPageId === page.id;
     const isPageActive = activePageId === page.id;
     const hasSelectedDescendant = isPageInPath && (selectedSectionId || selectedQuestionId || selectedBranchId);
 
-    // Filter sections based on search
     const filteredSections = searchQuery.trim()
       ? page.sections.filter(s => sectionMatchesSearch(s))
       : page.sections;
@@ -395,17 +476,14 @@ const Sidebar = ({
       <div key={page.id}>
         <div
           className={cn(
-            "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors border",
-            isPageActive
-              ? "bg-primary/10 border-primary text-primary"
-              : hasSelectedDescendant
-                ? "bg-primary/5 border-primary/40 text-primary/80"
-                : "border-transparent hover:bg-accent"
+            styles.treeItem,
+            isPageActive && styles.treeItemActive,
+            hasSelectedDescendant && !isPageActive && styles.treeItemPath
           )}
           onClick={() => onSelectPage(page.id)}
         >
-          <File className={cn("h-4 w-4 shrink-0", isPageActive || hasSelectedDescendant ? "text-primary" : "text-muted-foreground")} />
-          <span className="truncate text-sm font-medium">{highlightText(page.name) || 'Untitled Page'}</span>
+          <Document24Regular primaryFill={isPageActive || hasSelectedDescendant ? tokens.colorBrandForeground1 : tokens.colorNeutralForeground4} />
+          <Text size={200} weight="medium" truncate>{highlightText(page.name) || 'Untitled Page'}</Text>
         </div>
 
         {filteredSections.map(section => renderSectionTree(section, page.id))}
@@ -414,63 +492,55 @@ const Sidebar = ({
   };
 
   return (
-    <div className="h-full overflow-hidden flex flex-col bg-card">
-      <div className="p-4 border-b border-border flex items-center justify-between">
-        <h2 className="font-semibold text-sm text-foreground">Questionnaire Tree</h2>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <Text weight="semibold" size={300}>Questionnaire Tree</Text>
         {questionnaire && (
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+            appearance="subtle"
+            size="small"
+            icon={<ArrowSync24Regular />}
             onClick={onReset}
           >
-            <RotateCcw className="h-3 w-3 mr-1" />
             Reset
           </Button>
         )}
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-2">
+      <div className={styles.scrollArea}>
+        <div className={styles.content}>
           {questionnaire ? (
-            <div className="space-y-1">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalXS }}>
               {/* Questionnaire Header */}
-              <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/10">
-                <FileText className="h-4 w-4 text-primary shrink-0" />
-                <span className="truncate text-sm font-semibold text-primary">
+              <div className={cn(styles.treeItem, styles.treeItemActive)}>
+                <DocumentText24Regular primaryFill={tokens.colorBrandForeground1} />
+                <Text size={200} weight="semibold" truncate>
                   {questionnaire.name || 'Untitled Questionnaire'}
-                </span>
+                </Text>
               </div>
 
-              {/* Collapsible Questionnaire Details */}
-              <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <CollapsibleTrigger asChild>
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer hover:bg-accent transition-colors">
-                    <Settings className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-sm font-medium flex-1">Details</span>
-                    {detailsOpen ? (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="overflow-hidden">
-                  <div className="px-2 py-2 overflow-hidden min-w-0 w-full">
-                    {/* Entire Details Section in a Box */}
-                    <div className="border border-border rounded-lg p-3 bg-muted/30 space-y-3 overflow-hidden min-w-0 w-full">
-                      <div className="space-y-1 min-w-0">
-                        <Label className="text-xs text-muted-foreground">Name</Label>
+              {/* Collapsible Details */}
+              <Accordion
+                openItems={detailsOpen}
+                onToggle={(_, data) => setDetailsOpen(data.openItems as string[])}
+                collapsible
+              >
+                <AccordionItem value="details">
+                  <AccordionHeader icon={<Settings24Regular />} size="small">
+                    <Text size={200}>Details</Text>
+                  </AccordionHeader>
+                  <AccordionPanel>
+                    <div className={styles.detailsBox}>
+                      <Field label={<Label size="small">Name</Label>}>
                         <Input
                           placeholder="Questionnaire name"
                           value={questionnaire.name}
-                          onChange={(e) => onUpdateQuestionnaire({ ...questionnaire, name: e.target.value })}
-                          className="h-7 text-xs w-full min-w-0"
+                          onChange={(_, data) => onUpdateQuestionnaire({ ...questionnaire, name: data.value })}
+                          size="small"
                         />
-                      </div>
+                      </Field>
 
-                      <div className="space-y-1 min-w-0">
-                        <Label className="text-xs text-muted-foreground">Description</Label>
+                      <Field label={<Label size="small">Description</Label>}>
                         <AutoResizeTextarea
                           placeholder="Description"
                           value={questionnaire.description}
@@ -479,100 +549,96 @@ const Sidebar = ({
                           minRows={1}
                           maxRows={5}
                         />
-                      </div>
+                      </Field>
 
-                      <div className="space-y-1 min-w-0">
-                        <Label className="text-xs text-muted-foreground">Service Catalog</Label>
-                        <Select
-                          value={questionnaire.serviceCatalog}
-                          onValueChange={(value) => onUpdateQuestionnaire({ ...questionnaire, serviceCatalog: value })}
+                      <Field label={<Label size="small">Service Catalog</Label>}>
+                        <Dropdown
+                          placeholder="Select catalog"
+                          value={questionnaire.serviceCatalog || ''}
+                          selectedOptions={questionnaire.serviceCatalog ? [questionnaire.serviceCatalog] : []}
+                          onOptionSelect={(_, data) => onUpdateQuestionnaire({ ...questionnaire, serviceCatalog: data.optionValue as string })}
+                          size="small"
                         >
-                          <SelectTrigger className="h-7 text-xs w-full min-w-0">
-                            <SelectValue placeholder="Select catalog" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Catalog A">Catalog A</SelectItem>
-                            <SelectItem value="Catalog B">Catalog B</SelectItem>
-                            <SelectItem value="Catalog C">Catalog C</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                          <Option value="Catalog A">Catalog A</Option>
+                          <Option value="Catalog B">Catalog B</Option>
+                          <Option value="Catalog C">Catalog C</Option>
+                        </Dropdown>
+                      </Field>
 
-                      <div className="space-y-1 min-w-0">
-                        <Label className="text-xs text-muted-foreground">Status</Label>
-                        <Select
-                          value={questionnaire.status}
-                          onValueChange={(value) => onUpdateQuestionnaire({ ...questionnaire, status: value })}
+                      <Field label={<Label size="small">Status</Label>}>
+                        <Dropdown
+                          value={questionnaire.status || 'Draft'}
+                          selectedOptions={[questionnaire.status || 'Draft']}
+                          onOptionSelect={(_, data) => onUpdateQuestionnaire({ ...questionnaire, status: data.optionValue as string })}
+                          size="small"
                         >
-                          <SelectTrigger className="h-7 text-xs w-full min-w-0">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Draft">Draft</SelectItem>
-                            <SelectItem value="Active">Active</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                          <Option value="Draft">Draft</Option>
+                          <Option value="Active">Active</Option>
+                        </Dropdown>
+                      </Field>
 
                       <Button 
-                        size="sm" 
-                        className="w-full h-7 text-xs"
+                        appearance="primary"
+                        size="small"
                         onClick={onPublish}
                         disabled={!questionnaire?.name}
-                        title={!questionnaire?.name ? "Please add a name before publishing" : "Publish questionnaire"}
+                        style={{ width: '100%' }}
                       >
                         Publish
                       </Button>
                     </div>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
 
               {/* Search Box */}
-              <div className="relative mt-2">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <div className={styles.searchWrapper}>
+                <Search24Regular className={styles.searchIcon} />
                 <Input
                   placeholder="Search tree..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8 text-xs pl-8 pr-8"
+                  onChange={(_, data) => setSearchQuery(data.value)}
+                  size="small"
+                  className={styles.searchInput}
+                  style={{ paddingLeft: '32px' }}
                 />
                 {searchQuery && (
-                  <button
+                  <span
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className={styles.clearButton}
                   >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
+                    <Dismiss24Regular />
+                  </span>
                 )}
               </div>
 
               {/* Pages Tree */}
-              <div className="mt-2 space-y-0.5">
+              <div style={{ marginTop: tokens.spacingVerticalS }}>
                 {filteredPages.length > 0 ? (
                   filteredPages.map(page => renderPageTree(page))
                 ) : searchQuery ? (
-                  <div className="text-xs text-muted-foreground text-center py-4">
+                  <Text size={200} style={{ textAlign: 'center', padding: tokens.spacingVerticalL }}>
                     No results found for "{searchQuery}"
-                  </div>
+                  </Text>
                 ) : (
                   questionnaire.pages.map(page => renderPageTree(page))
                 )}
               </div>
             </div>
           ) : (
-            <div className="p-4">
+            <div style={{ padding: tokens.spacingHorizontalL }}>
               <Button
+                appearance="primary"
+                icon={<Add24Regular />}
                 onClick={onCreateQuestionnaire}
-                className="w-full"
+                style={{ width: '100%' }}
               >
-                <Plus className="h-4 w-4 mr-2" />
                 Create Questionnaire
               </Button>
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 };
