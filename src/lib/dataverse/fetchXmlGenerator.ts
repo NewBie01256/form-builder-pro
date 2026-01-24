@@ -9,6 +9,7 @@
 
 import type { DynamicValueConfig, DynamicValueFilter, DynamicValueFilterGroup } from '@/types/questionnaire';
 import { getEntityByLogicalName } from '@/data/dataverseEntities';
+import { parseLookupPath } from '@/data/dataverseEntities';
 
 /**
  * Maps internal operators to FetchXML condition operators
@@ -70,11 +71,31 @@ const escapeXml = (value: string): string => {
 
 /**
  * Generates a FetchXML condition element from a filter
+ * Handles both regular attributes and lookup paths (e.g., "primarycontactid/fullname")
  */
 const generateCondition = (filter: DynamicValueFilter, indent: string): string => {
   const operator = FETCHXML_OPERATOR_MAP[filter.operator] || 'eq';
   const isNullCheck = ['null', 'not-null'].includes(operator);
   
+  // Check if this is a lookup path expression
+  const lookupPath = parseLookupPath(filter.field);
+  
+  if (lookupPath) {
+    // For lookup expressions, we need to use link-entity in FetchXML
+    // This generates a comment indicating the lookup relationship
+    const { lookupField, targetField } = lookupPath;
+    const formattedValue = isNullCheck ? '' : formatFetchXmlValue(filter.value, filter.operator);
+    
+    if (isNullCheck) {
+      return `${indent}<!-- Lookup condition: ${lookupField}.${targetField} ${operator} -->
+${indent}<condition entityname="${lookupField}" attribute="${escapeXml(targetField)}" operator="${operator}" />`;
+    }
+    
+    return `${indent}<!-- Lookup condition: ${lookupField}.${targetField} ${operator} '${formattedValue}' -->
+${indent}<condition entityname="${lookupField}" attribute="${escapeXml(targetField)}" operator="${operator}" value="${escapeXml(formattedValue)}" />`;
+  }
+  
+  // Standard attribute condition
   if (isNullCheck) {
     return `${indent}<condition attribute="${escapeXml(filter.field)}" operator="${operator}" />`;
   }

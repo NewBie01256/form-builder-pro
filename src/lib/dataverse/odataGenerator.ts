@@ -8,7 +8,7 @@
  */
 
 import type { DynamicValueConfig, DynamicValueFilter, DynamicValueFilterGroup } from '@/types/questionnaire';
-import { getEntityByLogicalName } from '@/data/dataverseEntities';
+import { getEntityByLogicalName, parseLookupPath } from '@/data/dataverseEntities';
 
 /**
  * Maps internal operators to OData $filter operators/functions
@@ -38,11 +38,20 @@ const ODATA_OPERATOR_MAP: Record<string, { type: 'operator' | 'function'; value:
 
 /**
  * Generates an OData condition expression from a filter
+ * Handles both regular attributes and lookup paths (e.g., "primarycontactid/fullname")
  */
 const generateCondition = (filter: DynamicValueFilter): string => {
   const mapping = ODATA_OPERATOR_MAP[filter.operator] || { type: 'operator', value: 'eq' };
-  const field = filter.field;
+  let field = filter.field;
   const value = filter.value;
+  
+  // Check if this is a lookup path expression (e.g., "primarycontactid/fullname")
+  const lookupPath = parseLookupPath(filter.field);
+  if (lookupPath) {
+    // OData uses forward slash for navigation: _primarycontactid_value or expand syntax
+    // For filtering, we use the navigation property path directly
+    field = `${lookupPath.lookupField}/${lookupPath.targetField}`;
+  }
   
   // Handle null checks
   if (mapping.value === 'eq null') {
