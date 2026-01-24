@@ -170,18 +170,24 @@ const Sidebar = ({
   };
 
   const renderSectionTree = (section: Section, pageId: string): JSX.Element => {
+    // Check if this section has any selected child (question or branch)
+    const hasSelectedChild = selectedSectionId === section.id && (selectedQuestionId || selectedBranchId);
+    const isSectionDirectlySelected = selectedSectionId === section.id && !selectedQuestionId && !selectedBranchId;
+    
     return (
       <div key={section.id} className="ml-4">
         <div
           className={cn(
             "flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors border",
-            selectedSectionId === section.id && !selectedQuestionId && !selectedBranchId
+            isSectionDirectlySelected
               ? "bg-primary/10 border-primary text-primary"
-              : "border-transparent hover:bg-accent"
+              : hasSelectedChild
+                ? "bg-primary/5 border-primary/50 text-primary/80"
+                : "border-transparent hover:bg-accent"
           )}
           onClick={() => onSelectSection(section.id)}
         >
-          <Layers className={cn("h-4 w-4 shrink-0", selectedSectionId === section.id && !selectedQuestionId && !selectedBranchId ? "text-primary" : "text-muted-foreground")} />
+          <Layers className={cn("h-4 w-4 shrink-0", isSectionDirectlySelected || hasSelectedChild ? "text-primary" : "text-muted-foreground")} />
           <span className="truncate text-sm font-medium">{section.name || 'Untitled Section'}</span>
         </div>
 
