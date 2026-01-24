@@ -40,6 +40,8 @@
     --border-dashed: 214 32% 85%;
     --text-label: 215 16% 47%;
     --tree-line: 214 32% 88%;
+    --highlight: 48 96% 53%;
+    --highlight-foreground: 222 47% 11%;
   }
 
   .dark {
@@ -76,6 +78,8 @@
     --border-dashed: 217 33% 25%;
     --text-label: 215 20% 65%;
     --tree-line: 217 33% 25%;
+    --highlight: 48 96% 40%;
+    --highlight-foreground: 210 40% 98%;
   }
 }
 

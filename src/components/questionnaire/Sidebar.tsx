@@ -62,6 +62,30 @@ const Sidebar = ({
     return (text || '').toLowerCase().includes(searchQuery.toLowerCase());
   };
 
+  // Helper to highlight matching text
+  const highlightText = (text: string | undefined): React.ReactNode => {
+    const displayText = text || 'Untitled';
+    if (!searchQuery.trim()) return displayText;
+    
+    const query = searchQuery.toLowerCase();
+    const lowerText = displayText.toLowerCase();
+    const matchIndex = lowerText.indexOf(query);
+    
+    if (matchIndex === -1) return displayText;
+    
+    const before = displayText.slice(0, matchIndex);
+    const match = displayText.slice(matchIndex, matchIndex + searchQuery.length);
+    const after = displayText.slice(matchIndex + searchQuery.length);
+    
+    return (
+      <>
+        {before}
+        <mark className="rounded-sm px-0.5" style={{ backgroundColor: 'hsl(var(--highlight))', color: 'hsl(var(--highlight-foreground))' }}>{match}</mark>
+        {after}
+      </>
+    );
+  };
+
   // Check if a branch or any of its descendants match the search
   const branchMatchesSearch = (branch: ConditionalBranch): boolean => {
     if (matchesSearch(branch.name)) return true;
@@ -227,7 +251,7 @@ const Sidebar = ({
             }}
           >
             <GitBranch className={cn("h-4 w-4 shrink-0", isDirectlySelected || isInPath ? "text-primary" : "text-muted-foreground")} />
-            <span className="truncate text-sm font-medium">{branch.name || 'Untitled Branch'}</span>
+            <span className="truncate text-sm font-medium">{highlightText(branch.name) || 'Untitled Branch'}</span>
           </div>
         </div>
 
@@ -264,7 +288,7 @@ const Sidebar = ({
                   }}
                 >
                   <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="truncate text-sm flex-1">{child.item.text || 'Untitled Question'}</span>
+                  <span className="truncate text-sm flex-1">{highlightText(child.item.text) || 'Untitled Question'}</span>
                   {questionHasAction(child.item) && (
                     <Zap className="h-3 w-3 text-amber-500 shrink-0" />
                   )}
@@ -319,7 +343,7 @@ const Sidebar = ({
           }}
         >
           <Layers className={cn("h-4 w-4 shrink-0", isSectionDirectlySelected || hasSelectedChild ? "text-primary" : "text-muted-foreground")} />
-          <span className="truncate text-sm font-medium">{section.name || 'Untitled Section'}</span>
+          <span className="truncate text-sm font-medium">{highlightText(section.name) || 'Untitled Section'}</span>
         </div>
 
         {/* Section Questions */}
@@ -339,7 +363,7 @@ const Sidebar = ({
             }}
           >
             <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="truncate text-sm flex-1">{q.text || 'Untitled Question'}</span>
+            <span className="truncate text-sm flex-1">{highlightText(q.text) || 'Untitled Question'}</span>
             {questionHasAction(q) && (
               <Zap className="h-3 w-3 text-amber-500 shrink-0" />
             )}
@@ -381,7 +405,7 @@ const Sidebar = ({
           onClick={() => onSelectPage(page.id)}
         >
           <File className={cn("h-4 w-4 shrink-0", isPageActive || hasSelectedDescendant ? "text-primary" : "text-muted-foreground")} />
-          <span className="truncate text-sm font-medium">{page.name || 'Untitled Page'}</span>
+          <span className="truncate text-sm font-medium">{highlightText(page.name) || 'Untitled Page'}</span>
         </div>
 
         {filteredSections.map(section => renderSectionTree(section, page.id))}
