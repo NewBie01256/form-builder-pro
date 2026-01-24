@@ -1,5 +1,16 @@
-import { Label } from "@/components/ui/label";
+import { Label, makeStyles, tokens } from "@fluentui/react-components";
 import { cn } from "@/lib/utils";
+
+const useStyles = makeStyles({
+  container: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+  },
+  required: {
+    color: tokens.colorPaletteRedForeground1,
+  },
+});
 
 interface RequiredLabelProps {
   htmlFor?: string;
@@ -8,17 +19,19 @@ interface RequiredLabelProps {
   className?: string;
 }
 
-export const RequiredLabel = ({ 
-  htmlFor, 
-  children, 
-  required = true, 
-  className 
+export const RequiredLabel = ({
+  htmlFor,
+  children,
+  required = true,
+  className,
 }: RequiredLabelProps) => {
+  const styles = useStyles();
+  
   return (
-    <Label htmlFor={htmlFor} className={cn("flex items-center gap-1", className)}>
-      {children}
-      {required && <span className="text-destructive">*</span>}
-    </Label>
+    <div className={cn(styles.container, className)}>
+      <Label htmlFor={htmlFor}>{children}</Label>
+      {required && <span className={styles.required}>*</span>}
+    </div>
   );
 };
 

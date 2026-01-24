@@ -1,10 +1,70 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, X, FileText } from "lucide-react";
+import {
+  Button,
+  Input,
+  makeStyles,
+  tokens,
+} from "@fluentui/react-components";
+import {
+  Add24Regular,
+  Dismiss12Regular,
+  Document24Regular,
+} from "@fluentui/react-icons";
 import { Page } from "@/types/questionnaire";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/fluent";
+
+const useStyles = makeStyles({
+  container: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground3,
+    overflowX: "auto",
+  },
+  tab: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalM}`,
+    borderRadius: tokens.borderRadiusMedium,
+    cursor: "pointer",
+    border: `1px solid transparent`,
+    transition: "all 0.15s",
+  },
+  tabActive: {
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorBrandForeground1,
+    boxShadow: tokens.shadow4,
+  },
+  tabInactive: {
+    backgroundColor: "transparent",
+  },
+  tabIcon: {
+    flexShrink: 0,
+  },
+  tabName: {
+    fontSize: tokens.fontSizeBase200,
+    whiteSpace: "nowrap" as const,
+    minWidth: "60px",
+    userSelect: "none" as const,
+  },
+  deleteButton: {
+    opacity: 0,
+    transition: "opacity 0.15s",
+  },
+  tabHover: {
+    "& $deleteButton": {
+      opacity: 1,
+    },
+  },
+  input: {
+    width: "100px",
+    minWidth: "60px",
+  },
+});
 
 interface PageTabsProps {
   pages: Page[];
@@ -23,7 +83,9 @@ const PageTabs = ({
   onDeletePage,
   onUpdatePage,
 }: PageTabsProps) => {
+  const styles = useStyles();
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [hoveredPageId, setHoveredPageId] = useState<string | null>(null);
 
   const handleDoubleClick = (pageId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -41,34 +103,34 @@ const PageTabs = ({
   };
 
   return (
-    <div className="flex items-center gap-1 px-4 py-2 border-b bg-muted/30 overflow-x-auto">
+    <div className={styles.container}>
       {pages.map((page, index) => (
         <div
           key={page.id}
           className={cn(
-            "group flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors",
-            "border",
-            activePageId === page.id
-              ? "bg-primary/10 border-primary text-primary shadow-sm"
-              : "border-transparent hover:bg-background/50"
+            styles.tab,
+            activePageId === page.id ? styles.tabActive : styles.tabInactive
           )}
           onClick={() => onSelectPage(page.id)}
           onDoubleClick={(e) => handleDoubleClick(page.id, e)}
+          onMouseEnter={() => setHoveredPageId(page.id)}
+          onMouseLeave={() => setHoveredPageId(null)}
         >
-          <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Document24Regular className={styles.tabIcon} />
           {editingPageId === page.id ? (
             <Input
               value={page.name}
-              onChange={(e) => onUpdatePage(page.id, { name: e.target.value })}
+              onChange={(_, data) => onUpdatePage(page.id, { name: data.value })}
               onClick={(e) => e.stopPropagation()}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
-              className="h-6 w-24 px-1 text-sm border border-primary bg-background focus-visible:ring-1 focus-visible:ring-offset-0"
+              className={styles.input}
               placeholder={`Page ${index + 1}`}
+              size="small"
               autoFocus
             />
           ) : (
-            <span className="text-sm truncate min-w-[60px] select-none">
+            <span className={styles.tabName}>
               {page.name || `Page ${index + 1}`}
             </span>
           )}
@@ -76,13 +138,12 @@ const PageTabs = ({
             <ConfirmDialog
               trigger={
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  appearance="subtle"
+                  size="small"
+                  icon={<Dismiss12Regular />}
                   onClick={(e) => e.stopPropagation()}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
+                  style={{ opacity: hoveredPageId === page.id ? 1 : 0 }}
+                />
               }
               title="Delete Page"
               description={`Are you sure you want to delete "${page.name || `Page ${index + 1}`}"? This will remove all sections, questions, and branches within it. This action cannot be undone.`}
@@ -92,13 +153,11 @@ const PageTabs = ({
         </div>
       ))}
       <Button
-        variant="ghost"
-        size="sm"
+        appearance="subtle"
+        size="small"
+        icon={<Add24Regular />}
         onClick={onAddPage}
-        className="h-8 px-2 text-muted-foreground hover:text-foreground shrink-0"
-      >
-        <Plus className="h-4 w-4" />
-      </Button>
+      />
     </div>
   );
 };

@@ -1,18 +1,92 @@
 import { useState, useMemo } from "react";
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
+  DialogSurface,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Check } from "lucide-react";
+  DialogBody,
+  DialogContent,
+  Input,
+  Button,
+  Badge,
+  makeStyles,
+  tokens,
+  Text,
+} from "@fluentui/react-components";
+import { Search24Regular } from "@fluentui/react-icons";
 import { AnswerSet } from "@/types/questionnaire";
 import { sampleAnswerSets, getUniqueTags } from "@/data/sampleAnswerSets";
 import { cn } from "@/lib/utils";
+
+const useStyles = makeStyles({
+  surface: {
+    maxWidth: "672px",
+    maxHeight: "80vh",
+  },
+  content: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalM,
+  },
+  searchContainer: {
+    position: "relative" as const,
+    display: "flex",
+    alignItems: "center",
+  },
+  searchIcon: {
+    position: "absolute" as const,
+    left: tokens.spacingHorizontalM,
+    color: tokens.colorNeutralForeground3,
+  },
+  searchInput: {
+    paddingLeft: "40px",
+    width: "100%",
+  },
+  tagsContainer: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: tokens.spacingHorizontalS,
+  },
+  tagBadge: {
+    cursor: "pointer",
+    textTransform: "capitalize" as const,
+  },
+  listContainer: {
+    height: "400px",
+    overflowY: "auto" as const,
+    paddingRight: tokens.spacingHorizontalS,
+  },
+  listContent: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalS,
+  },
+  emptyState: {
+    textAlign: "center" as const,
+    padding: tokens.spacingVerticalXXL,
+    color: tokens.colorNeutralForeground3,
+  },
+  answerSetCard: {
+    padding: tokens.spacingVerticalM,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
+    cursor: "pointer",
+    transition: "all 0.15s",
+  },
+  answerSetCardHover: {
+    backgroundColor: tokens.colorNeutralBackground1Hover,
+  },
+  cardHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: tokens.spacingVerticalS,
+  },
+  answersContainer: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: tokens.spacingHorizontalXS,
+  },
+});
 
 interface AnswerSetPickerDialogProps {
   open: boolean;
@@ -25,8 +99,10 @@ const AnswerSetPickerDialog = ({
   onOpenChange,
   onSelect,
 }: AnswerSetPickerDialogProps) => {
+  const styles = useStyles();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const tags = useMemo(() => getUniqueTags(), []);
 
@@ -58,91 +134,86 @@ const AnswerSetPickerDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
-        <DialogHeader>
+    <Dialog open={open} onOpenChange={(_, data) => onOpenChange(data.open)}>
+      <DialogSurface className={styles.surface}>
+        <DialogBody>
           <DialogTitle>Add from Existing Answer Set</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search answer sets..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-
-          {/* Tag filters */}
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              variant={selectedTag === null ? "default" : "outline"}
-              className="cursor-pointer"
-              onClick={() => setSelectedTag(null)}
-            >
-              All
-            </Badge>
-            {tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant={selectedTag === tag ? "default" : "outline"}
-                className="cursor-pointer capitalize"
-                onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
-
-          {/* Answer set list */}
-          <ScrollArea className="h-[400px] pr-4">
-            <div className="space-y-2">
-              {filteredAnswerSets.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No answer sets found
-                </div>
-              ) : (
-                filteredAnswerSets.map((set) => (
-                  <div
-                    key={set.id}
-                    className={cn(
-                      "p-4 border border-border rounded-lg cursor-pointer transition-colors",
-                      "hover:bg-accent hover:border-accent"
-                    )}
-                    onClick={() => handleSelect(set)}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">{set.name}</span>
-                      <Badge variant="secondary" className="capitalize">
-                        {set.tag}
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {set.answers.slice(0, 5).map((ans) => (
-                        <Badge
-                          key={ans.id}
-                          variant="outline"
-                          className="text-xs"
-                        >
-                          {ans.label}
-                        </Badge>
-                      ))}
-                      {set.answers.length > 5 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{set.answers.length - 5} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
+          <DialogContent className={styles.content}>
+            {/* Search */}
+            <div className={styles.searchContainer}>
+              <Search24Regular className={styles.searchIcon} />
+              <Input
+                placeholder="Search answer sets..."
+                value={searchQuery}
+                onChange={(_, data) => setSearchQuery(data.value)}
+                className={styles.searchInput}
+              />
             </div>
-          </ScrollArea>
-        </div>
-      </DialogContent>
+
+            {/* Tag filters */}
+            <div className={styles.tagsContainer}>
+              <Badge
+                appearance={selectedTag === null ? "filled" : "outline"}
+                className={styles.tagBadge}
+                onClick={() => setSelectedTag(null)}
+              >
+                All
+              </Badge>
+              {tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  appearance={selectedTag === tag ? "filled" : "outline"}
+                  className={styles.tagBadge}
+                  onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+
+            {/* Answer set list */}
+            <div className={styles.listContainer}>
+              <div className={styles.listContent}>
+                {filteredAnswerSets.length === 0 ? (
+                  <div className={styles.emptyState}>No answer sets found</div>
+                ) : (
+                  filteredAnswerSets.map((set) => (
+                    <div
+                      key={set.id}
+                      className={cn(
+                        styles.answerSetCard,
+                        hoveredId === set.id && styles.answerSetCardHover
+                      )}
+                      onClick={() => handleSelect(set)}
+                      onMouseEnter={() => setHoveredId(set.id)}
+                      onMouseLeave={() => setHoveredId(null)}
+                    >
+                      <div className={styles.cardHeader}>
+                        <Text weight="semibold">{set.name}</Text>
+                        <Badge appearance="tint" style={{ textTransform: "capitalize" }}>
+                          {set.tag}
+                        </Badge>
+                      </div>
+                      <div className={styles.answersContainer}>
+                        {set.answers.slice(0, 5).map((ans) => (
+                          <Badge key={ans.id} appearance="outline" size="small">
+                            {ans.label}
+                          </Badge>
+                        ))}
+                        {set.answers.length > 5 && (
+                          <Badge appearance="outline" size="small">
+                            +{set.answers.length - 5} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </DialogBody>
+      </DialogSurface>
     </Dialog>
   );
 };

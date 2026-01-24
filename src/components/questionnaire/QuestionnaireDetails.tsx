@@ -1,15 +1,56 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Card,
+  CardHeader,
+  Input,
+  Label,
+  Button,
+  Dropdown,
+  Option,
+  makeStyles,
+  tokens,
+  Text,
+} from "@fluentui/react-components";
 import { Questionnaire } from "@/types/questionnaire";
+
+const useStyles = makeStyles({
+  card: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  content: {
+    padding: tokens.spacingVerticalM,
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalM,
+  },
+  detailsBox: {
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
+    padding: tokens.spacingVerticalM,
+    backgroundColor: tokens.colorNeutralBackground3,
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalM,
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: tokens.spacingHorizontalM,
+  },
+  field: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalXS,
+  },
+  statusSection: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: tokens.spacingVerticalM,
+  },
+  fullWidth: {
+    width: "100%",
+  },
+});
 
 interface QuestionnaireDetailsProps {
   questionnaire: Questionnaire;
@@ -18,83 +59,94 @@ interface QuestionnaireDetailsProps {
   canPublish?: boolean;
 }
 
-const QuestionnaireDetails = ({ questionnaire, onUpdate, onPublish, canPublish = false }: QuestionnaireDetailsProps) => {
+const QuestionnaireDetails = ({
+  questionnaire,
+  onUpdate,
+  onPublish,
+  canPublish = false,
+}: QuestionnaireDetailsProps) => {
+  const styles = useStyles();
+
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg">Questionnaire Details</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Card className={styles.card}>
+      <CardHeader
+        header={<Text weight="semibold" size={400}>Questionnaire Details</Text>}
+      />
+      <div className={styles.content}>
         {/* Details Box */}
-        <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+        <div className={styles.detailsBox}>
+          <div className={styles.grid}>
+            <div className={styles.field}>
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
                 placeholder="Enter questionnaire name"
                 value={questionnaire.name}
-                onChange={(e) => onUpdate({ ...questionnaire, name: e.target.value })}
+                onChange={(_, data) => onUpdate({ ...questionnaire, name: data.value })}
               />
             </div>
-            
-            <div className="space-y-2">
+
+            <div className={styles.field}>
               <Label htmlFor="catalog">Service Catalog</Label>
-              <Select
-                value={questionnaire.serviceCatalog}
-                onValueChange={(value) => onUpdate({ ...questionnaire, serviceCatalog: value })}
+              <Dropdown
+                id="catalog"
+                value={questionnaire.serviceCatalog || ""}
+                selectedOptions={questionnaire.serviceCatalog ? [questionnaire.serviceCatalog] : []}
+                onOptionSelect={(_, data) =>
+                  onUpdate({ ...questionnaire, serviceCatalog: data.optionValue || "" })
+                }
+                placeholder="Select catalog"
               >
-                <SelectTrigger id="catalog">
-                  <SelectValue placeholder="Select catalog" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Catalog A">Catalog A</SelectItem>
-                  <SelectItem value="Catalog B">Catalog B</SelectItem>
-                  <SelectItem value="Catalog C">Catalog C</SelectItem>
-                </SelectContent>
-              </Select>
+                <Option value="Catalog A">Catalog A</Option>
+                <Option value="Catalog B">Catalog B</Option>
+                <Option value="Catalog C">Catalog C</Option>
+              </Dropdown>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className={styles.field}>
             <Label htmlFor="description">Description</Label>
             <Input
               id="description"
               placeholder="Enter description"
               value={questionnaire.description}
-              onChange={(e) => onUpdate({ ...questionnaire, description: e.target.value })}
+              onChange={(_, data) => onUpdate({ ...questionnaire, description: data.value })}
             />
           </div>
         </div>
 
         {/* Status and Publish */}
-        <div className="space-y-3">
-          <div className="space-y-2">
+        <div className={styles.statusSection}>
+          <div className={styles.field}>
             <Label htmlFor="status">Status</Label>
-            <Select
+            <Dropdown
+              id="status"
               value={questionnaire.status}
-              onValueChange={(value) => onUpdate({ ...questionnaire, status: value })}
+              selectedOptions={[questionnaire.status]}
+              onOptionSelect={(_, data) =>
+                onUpdate({ ...questionnaire, status: data.optionValue || "Draft" })
+              }
             >
-              <SelectTrigger id="status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Draft">Draft</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-              </SelectContent>
-            </Select>
+              <Option value="Draft">Draft</Option>
+              <Option value="Active">Active</Option>
+            </Dropdown>
           </div>
-          
-          <Button 
-            onClick={onPublish} 
+
+          <Button
+            appearance="primary"
+            onClick={onPublish}
             disabled={!canPublish}
-            className="w-full"
-            title={!canPublish ? "Only records opened from Templates can be published back" : "Publish changes to the record"}
+            className={styles.fullWidth}
+            title={
+              !canPublish
+                ? "Only records opened from Templates can be published back"
+                : "Publish changes to the record"
+            }
           >
             Publish
           </Button>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 };
