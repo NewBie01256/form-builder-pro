@@ -252,6 +252,8 @@ export function DataverseOperationsPlayground() {
           .filter(fv => fv.field && fv.value)
           .reduce((acc, fv) => ({ ...acc, [fv.field]: fv.value }), {});
         return `// Create Record
+import { createCrudService, errorHandler } from '@/lib/dataverse/pcf';
+
 const crudService = createCrudService(context, {
   entityLogicalName: '${entityVar}'
 });
@@ -261,12 +263,24 @@ const result = await crudService.create(${JSON.stringify(dataObj, null, 2)});
 if (result.success) {
   console.log('Created:', result.data.id);
 } else {
-  console.error('Error:', result.error.message);
+  // Use errorHandler for consistent error handling
+  const userMessage = errorHandler.getUserMessage(result.error);
+  const isRetryable = errorHandler.isRetryable(result.error);
+  
+  if (errorHandler.isDuplicate(result.error)) {
+    showToast('A record with this data already exists', 'warning');
+  } else if (isRetryable) {
+    showToast('Temporary error. Please try again.', 'info');
+  } else {
+    showToast(userMessage, 'error');
+  }
 }`;
       }
       
       case 'retrieve':
         return `// Retrieve Record
+import { createCrudService, errorHandler } from '@/lib/dataverse/pcf';
+
 const crudService = createCrudService(context, {
   entityLogicalName: '${entityVar}'
 });
@@ -278,7 +292,15 @@ const result = await crudService.retrieve('${recordId || 'record-guid-here'}', {
 if (result.success) {
   console.log('Record:', result.data);
 } else {
-  console.error('Error:', result.error.message);
+  // Use errorHandler for consistent error handling
+  if (errorHandler.isNotFound(result.error)) {
+    showToast('Record not found or deleted', 'warning');
+    navigate('/list'); // Redirect to list
+  } else if (errorHandler.isAccessDenied(result.error)) {
+    showToast('You do not have permission', 'error');
+  } else {
+    showToast(errorHandler.getUserMessage(result.error), 'error');
+  }
 }`;
 
       case 'update': {
@@ -286,6 +308,8 @@ if (result.success) {
           .filter(fv => fv.field && fv.value)
           .reduce((acc, fv) => ({ ...acc, [fv.field]: fv.value }), {});
         return `// Update Record
+import { createCrudService, errorHandler } from '@/lib/dataverse/pcf';
+
 const crudService = createCrudService(context, {
   entityLogicalName: '${entityVar}'
 });
@@ -298,12 +322,24 @@ const result = await crudService.update(
 if (result.success) {
   console.log('Updated:', result.data.id);
 } else {
-  console.error('Error:', result.error.message);
+  // Use errorHandler for consistent error handling
+  const normalized = errorHandler.normalize(result.error, 'update', '${entityVar}');
+  
+  if (normalized.code === 'CONCURRENCY_ERROR') {
+    showToast('Record was modified. Refresh and retry.', 'warning');
+    refreshData();
+  } else if (normalized.code === 'VALIDATION_ERROR') {
+    showToast(\`Invalid data: \${normalized.message}\`, 'warning');
+  } else {
+    showToast(normalized.userMessage, 'error');
+  }
 }`;
       }
 
       case 'delete':
         return `// Delete Record
+import { createCrudService, errorHandler, handleError } from '@/lib/dataverse/pcf';
+
 const crudService = createCrudService(context, {
   entityLogicalName: '${entityVar}'
 });
@@ -311,46 +347,78 @@ const crudService = createCrudService(context, {
 const result = await crudService.delete('${recordId || 'record-guid-here'}');
 
 if (result.success) {
-  console.log('Deleted successfully');
+  showToast('Deleted successfully', 'success');
+  navigate('/list');
 } else {
-  console.error('Error:', result.error.message);
+  // Use handleError for declarative error handling
+  handleError(result.error, {
+    onNotFound: () => {
+      showToast('Record already deleted', 'info');
+      navigate('/list');
+    },
+    onAccessDenied: () => {
+      showToast('You cannot delete this record', 'error');
+    },
+    onUnknown: (err) => {
+      showToast(err.userMessage, 'error');
+    }
+  }, undefined);
 }`;
 
       case 'retrieveMultiple':
         if (useFetchXml) {
           return `// Retrieve Multiple (FetchXML)
+import { createQueryService, errorHandler, withSafeRetry } from '@/lib/dataverse/pcf';
+
 const queryService = createQueryService(context);
 
-const result = await queryService.executeFetchXml('${entityVar}', {
-  fetchXml: \`${fetchXml || '<fetch top="50"><entity name="' + entityVar + '"><all-attributes /></entity></fetch>'}\`
-});
+// Use withSafeRetry for automatic retry on network errors
+const result = await withSafeRetry(
+  () => queryService.executeFetchXml('${entityVar}', {
+    fetchXml: \`${fetchXml || '<fetch top="50"><entity name="' + entityVar + '"><all-attributes /></entity></fetch>'}\`
+  }),
+  { maxRetries: 3, operation: 'retrieveMultiple', entityType: '${entityVar}' }
+);
 
 if (result.success) {
   console.log('Records:', result.data.entities.length);
   console.log('More records:', result.data.moreRecords);
 } else {
-  console.error('Error:', result.error.message);
+  showToast(result.error.userMessage, 'error');
 }`;
         }
         return `// Retrieve Multiple (OData)
+import { createQueryService, errorHandler, withSafeRetry } from '@/lib/dataverse/pcf';
+
 const queryService = createQueryService(context);
 
-const result = await queryService.retrieveMultiple<Record>('${entityVar}', {
-  ${selectColumns ? `select: [${selectColumns.split(',').map(s => `'${s.trim()}'`).join(', ')}],` : '// select: ["field1", "field2"],'}
-  ${filterExpression ? `filter: "${filterExpression}",` : '// filter: "statecode eq 0",'}
-  ${orderBy ? `orderBy: "${orderBy}",` : '// orderBy: "name asc",'}
-  top: ${topCount || 50}
-});
+// Use withSafeRetry for automatic retry on network errors
+const result = await withSafeRetry(
+  () => queryService.retrieveMultiple<Record>('${entityVar}', {
+    ${selectColumns ? `select: [${selectColumns.split(',').map(s => `'${s.trim()}'`).join(', ')}],` : '// select: ["field1", "field2"],'}
+    ${filterExpression ? `filter: "${filterExpression}",` : '// filter: "statecode eq 0",'}
+    ${orderBy ? `orderBy: "${orderBy}",` : '// orderBy: "name asc",'}
+    top: ${topCount || 50}
+  }),
+  { maxRetries: 3, operation: 'retrieveMultiple', entityType: '${entityVar}' }
+);
 
 if (result.success) {
   console.log('Records:', result.data.entities.length);
   console.log('More records:', result.data.moreRecords);
 } else {
-  console.error('Error:', result.error.message);
+  // Check if retryable error persisted
+  if (errorHandler.isRetryable(result.error)) {
+    showToast('Network issues. Please try again later.', 'warning');
+  } else {
+    showToast(result.error.userMessage, 'error');
+  }
 }`;
 
       case 'count':
         return `// Count Records
+import { createQueryService, errorHandler } from '@/lib/dataverse/pcf';
+
 const queryService = createQueryService(context);
 
 const result = await queryService.count(
@@ -360,7 +428,8 @@ const result = await queryService.count(
 if (result.success) {
   console.log('Total count:', result.data);
 } else {
-  console.error('Error:', result.error.message);
+  // Use errorHandler for user-friendly messages
+  showToast(errorHandler.getUserMessage(result.error), 'error');
 }`;
 
       case 'errorHandling':
