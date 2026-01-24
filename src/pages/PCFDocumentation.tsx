@@ -201,6 +201,332 @@ const useStyles = makeStyles({
 });
 
 // Code snippets
+// ============================================================================
+// STEP-BY-STEP GUIDE CODE SNIPPETS
+// ============================================================================
+
+const GUIDE_STEP1_ENTITY_METADATA = `// STEP 1: Define the entity you want to query
+// In the Dynamic Values panel, select "Dataverse Entity"
+
+// The available entities are defined in:
+// src/data/dataverseEntities.ts
+
+// Example: To load all Accounts into a dropdown
+const entityLogicalName = 'account';  // This is what you select in the UI
+
+// Each entity has these key properties:
+// - logicalName: 'account' (internal name)
+// - displayName: 'Account' (shown in UI)
+// - primaryIdAttribute: 'accountid' (the GUID field)
+// - primaryNameAttribute: 'name' (the display name field)`;
+
+const GUIDE_STEP2_FIELD_MAPPING = `// STEP 2: Map fields for Value and Label
+
+// VALUE FIELD: What gets saved when user selects an option
+// Usually the primary key (GUID)
+const valueField = 'accountid';  // e.g., "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+
+// LABEL FIELD: What the user sees in the dropdown
+// Usually the primary name attribute
+const labelField = 'name';  // e.g., "Contoso Ltd"
+
+// Complete configuration:
+const dynamicConfig = {
+  tableName: 'account',      // Entity logical name
+  valueField: 'accountid',   // What gets stored
+  labelField: 'name',        // What user sees
+};`;
+
+const GUIDE_STEP3_ADD_FILTERS = `// STEP 3: Add filter conditions (optional but recommended)
+
+// Filter to show only ACTIVE accounts:
+const configWithFilter = {
+  tableName: 'account',
+  valueField: 'accountid',
+  labelField: 'name',
+  conditionGroup: {
+    matchType: 'AND',
+    children: [
+      {
+        type: 'filter',
+        field: 'statecode',
+        operator: 'eq',        // equals
+        value: '0'             // 0 = Active in Dataverse
+      }
+    ]
+  }
+};
+
+// Common filter operators:
+// 'eq'       - equals
+// 'ne'       - not equals
+// 'gt'       - greater than
+// 'lt'       - less than
+// 'contains' - contains text
+// 'null'     - is null/empty
+// 'not_null' - is not null/empty`;
+
+const GUIDE_STEP4_ORDERING = `// STEP 4: Set ordering for the dropdown options
+
+const configWithOrdering = {
+  tableName: 'account',
+  valueField: 'accountid',
+  labelField: 'name',
+  orderByField: 'name',       // Sort by name
+  orderDirection: 'asc',      // 'asc' or 'desc'
+  conditionGroup: {
+    matchType: 'AND',
+    children: [
+      { type: 'filter', field: 'statecode', operator: 'eq', value: '0' }
+    ]
+  }
+};
+
+// This generates:
+// OData:    $orderby=name asc
+// FetchXML: <order attribute="name" />`;
+
+const GUIDE_STEP5_EXECUTE_QUERY = `// STEP 5: Execute the query in your PCF control
+
+import { QueryService } from '@/lib/dataverse/pcf';
+import { generateFetchXml } from '@/lib/dataverse/fetchXmlGenerator';
+
+async function loadDropdownOptions(
+  context: ComponentFramework.Context<IInputs>,
+  config: DynamicValueConfig
+): Promise<Array<{ value: string; label: string }>> {
+  
+  // Initialize the query service
+  const queryService = new QueryService(context);
+  
+  // Generate FetchXML from your config
+  const fetchXml = generateFetchXml(config, { top: 500 });
+  
+  // Execute the query
+  const result = await queryService.executeFetchXml(
+    config.tableName,
+    { fetchXml }
+  );
+  
+  // Handle the result
+  if (!result.success) {
+    console.error('Query failed:', result.error.userMessage);
+    return [];
+  }
+  
+  // Transform to dropdown options
+  return result.data.entities.map(entity => ({
+    value: String(entity[config.valueField]),
+    label: String(entity[config.labelField])
+  }));
+}`;
+
+const GUIDE_COMPLETE_EXAMPLE = `// COMPLETE EXAMPLE: Load Accounts into a Dropdown
+
+import { QueryService } from '@/lib/dataverse/pcf';
+import { generateFetchXml } from '@/lib/dataverse/fetchXmlGenerator';
+import type { DynamicValueConfig } from '@/types/questionnaire';
+
+class AccountDropdownControl {
+  private queryService!: QueryService;
+  private container!: HTMLDivElement;
+  
+  public init(
+    context: ComponentFramework.Context<IInputs>,
+    container: HTMLDivElement
+  ): void {
+    this.queryService = new QueryService(context);
+    this.container = container;
+    
+    // Load and render the dropdown
+    this.loadAccounts();
+  }
+  
+  private async loadAccounts(): Promise<void> {
+    // 1. Define the Dynamic Value configuration
+    const config: DynamicValueConfig = {
+      tableName: 'account',           // Dataverse Entity
+      valueField: 'accountid',        // Value Attribute
+      labelField: 'name',             // Label Attribute
+      orderByField: 'name',           // Sort Field
+      orderDirection: 'asc',          // Sort Direction
+      conditionGroup: {               // Filters
+        matchType: 'AND',
+        children: [
+          {
+            type: 'filter',
+            field: 'statecode',       // Only active records
+            operator: 'eq',
+            value: '0'
+          }
+        ]
+      }
+    };
+    
+    // 2. Generate FetchXML query
+    const fetchXml = generateFetchXml(config, { top: 500 });
+    
+    // 3. Execute the query
+    const result = await this.queryService.executeFetchXml<{
+      accountid: string;
+      name: string;
+    }>('account', { fetchXml });
+    
+    if (!result.success) {
+      this.showError(result.error.userMessage);
+      return;
+    }
+    
+    // 4. Build the dropdown HTML
+    const select = document.createElement('select');
+    select.innerHTML = '<option value="">-- Select Account --</option>';
+    
+    for (const account of result.data.entities) {
+      const option = document.createElement('option');
+      option.value = account.accountid;
+      option.textContent = account.name;
+      select.appendChild(option);
+    }
+    
+    this.container.appendChild(select);
+  }
+  
+  private showError(message: string): void {
+    const error = document.createElement('div');
+    error.style.color = 'red';
+    error.textContent = message;
+    this.container.appendChild(error);
+  }
+}`;
+
+const GUIDE_INCIDENT_EXAMPLE = `// EXAMPLE: Load Open Cases (Incidents) with Priority
+
+const incidentConfig: DynamicValueConfig = {
+  tableName: 'incident',           // Cases/Incidents table
+  valueField: 'incidentid',
+  labelField: 'title',
+  orderByField: 'createdon',
+  orderDirection: 'desc',          // Newest first
+  conditionGroup: {
+    matchType: 'AND',
+    children: [
+      // Only active cases
+      { type: 'filter', field: 'statecode', operator: 'eq', value: '0' },
+      // Only high priority
+      { type: 'filter', field: 'prioritycode', operator: 'eq', value: '1' }
+    ]
+  }
+};
+
+// This generates FetchXML:
+// <fetch top="500">
+//   <entity name="incident">
+//     <attribute name="incidentid" />
+//     <attribute name="title" />
+//     <order attribute="createdon" descending="true" />
+//     <filter type="and">
+//       <condition attribute="statecode" operator="eq" value="0" />
+//       <condition attribute="prioritycode" operator="eq" value="1" />
+//     </filter>
+//   </entity>
+// </fetch>`;
+
+const GUIDE_CONTACT_LOOKUP_EXAMPLE = `// EXAMPLE: Filter Accounts by Contact's City (Lookup Filter)
+
+const accountsByContactCity: DynamicValueConfig = {
+  tableName: 'account',
+  valueField: 'accountid',
+  labelField: 'name',
+  orderByField: 'name',
+  orderDirection: 'asc',
+  conditionGroup: {
+    matchType: 'AND',
+    children: [
+      { type: 'filter', field: 'statecode', operator: 'eq', value: '0' },
+      // Lookup expression: filter by related contact's city
+      {
+        type: 'filter',
+        field: 'primarycontactid/address1_city',  // lookup/field syntax
+        operator: 'eq',
+        value: 'Seattle'
+      }
+    ]
+  }
+};
+
+// The lookup path "primarycontactid/address1_city" means:
+// 1. Follow the 'primarycontactid' lookup field to the Contact entity
+// 2. Filter on the 'address1_city' field of that Contact
+
+// This generates:
+// OData:    $filter=primarycontactid/address1_city eq 'Seattle'
+// FetchXML: <link-entity name="contact" from="contactid" to="primarycontactid">
+//             <filter>
+//               <condition attribute="address1_city" operator="eq" value="Seattle" />
+//             </filter>
+//           </link-entity>`;
+
+const GUIDE_TEAM_EXAMPLE = `// EXAMPLE: Load Teams for Assignment Dropdown
+
+const teamConfig: DynamicValueConfig = {
+  tableName: 'team',
+  valueField: 'teamid',
+  labelField: 'name',
+  orderByField: 'name',
+  orderDirection: 'asc',
+  conditionGroup: {
+    matchType: 'AND',
+    children: [
+      // Only business-owned teams (not default/system teams)
+      { type: 'filter', field: 'teamtype', operator: 'eq', value: '0' }
+    ]
+  }
+};`;
+
+const GUIDE_PRODUCT_EXAMPLE = `// EXAMPLE: Load Active Products with Price
+
+const productConfig: DynamicValueConfig = {
+  tableName: 'product',
+  valueField: 'productid',
+  labelField: 'name',
+  orderByField: 'name',
+  orderDirection: 'asc',
+  conditionGroup: {
+    matchType: 'AND',
+    children: [
+      // Only active products
+      { type: 'filter', field: 'statecode', operator: 'eq', value: '0' },
+      // With price greater than 0
+      { type: 'filter', field: 'price', operator: 'gt', value: '0' }
+    ]
+  }
+};`;
+
+const GUIDE_UI_MAPPING = `// UI FIELD MAPPING REFERENCE
+
+// In the "Configure Dynamic Values" panel:
+
+// ┌─────────────────────────────────────────────────────────────┐
+// │  Dataverse Entity    │  tableName: 'account'               │
+// │                      │  (Select from dropdown)              │
+// ├─────────────────────────────────────────────────────────────┤
+// │  Value Attribute     │  valueField: 'accountid'            │
+// │                      │  (Usually the primary key GUID)      │
+// ├─────────────────────────────────────────────────────────────┤
+// │  Label Attribute     │  labelField: 'name'                 │
+// │                      │  (What users see in dropdown)        │
+// ├─────────────────────────────────────────────────────────────┤
+// │  Sort Field          │  orderByField: 'name'               │
+// │  Sort Direction      │  orderDirection: 'asc' | 'desc'     │
+// ├─────────────────────────────────────────────────────────────┤
+// │  Conditions          │  conditionGroup: { ... }            │
+// │  (Add Filter)        │  Each row = one filter condition     │
+// └─────────────────────────────────────────────────────────────┘`;
+
+// ============================================================================
+// ORIGINAL CODE SNIPPETS
+// ============================================================================
+
 const CODE_IMPORT_SERVICES = `import {
   // Services
   CrudService,
@@ -925,6 +1251,14 @@ const PCFDocumentation = () => {
       ],
     },
     {
+      title: "Step-by-Step Guides",
+      links: [
+        { id: "guide-dropdown", label: "📖 Dynamic Dropdown" },
+        { id: "guide-filters", label: "📖 Adding Filters" },
+        { id: "guide-examples", label: "📖 Real Examples" },
+      ],
+    },
+    {
       title: "Core Services",
       links: [
         { id: "base-service", label: "BaseDataverseService" },
@@ -1104,6 +1438,121 @@ const PCFDocumentation = () => {
 
           <Title3>Basic Control Setup</Title3>
           <CodeBlock code={CODE_BASIC_SETUP} language="typescript" />
+        </section>
+
+        <Divider />
+
+        {/* ================================================================ */}
+        {/* STEP-BY-STEP GUIDES SECTION */}
+        {/* ================================================================ */}
+
+        {/* Guide: Dynamic Dropdown */}
+        <section id="guide-dropdown" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <Title2>📖 Step-by-Step: Load Data into Dynamic Dropdown</Title2>
+          </div>
+          <Body1>
+            This guide shows exactly how to populate a questionnaire Choice field
+            with live Dataverse data using the Dynamic Values configuration.
+          </Body1>
+
+          <div className={styles.successBox}>
+            <Checkmark24Regular />
+            <Body1>
+              <strong>Use Case:</strong> You want a dropdown that shows all active Accounts
+              from Dataverse instead of hardcoded options.
+            </Body1>
+          </div>
+
+          <Title3>Step 1: Select the Dataverse Entity</Title3>
+          <Body1>
+            In the "Configure Dynamic Values" panel, select which Dataverse table to query.
+          </Body1>
+          <CodeBlock code={GUIDE_STEP1_ENTITY_METADATA} language="typescript" />
+
+          <Title3>Step 2: Map Value and Label Fields</Title3>
+          <Body1>
+            Define what gets stored (value) and what users see (label).
+          </Body1>
+          <CodeBlock code={GUIDE_STEP2_FIELD_MAPPING} language="typescript" />
+
+          <Title3>Step 3: Add Filter Conditions</Title3>
+          <Body1>
+            Filter records to show only relevant options (e.g., active records only).
+          </Body1>
+          <CodeBlock code={GUIDE_STEP3_ADD_FILTERS} language="typescript" />
+
+          <Title3>Step 4: Set Ordering</Title3>
+          <Body1>
+            Define how options should be sorted in the dropdown.
+          </Body1>
+          <CodeBlock code={GUIDE_STEP4_ORDERING} language="typescript" />
+
+          <Title3>Step 5: Execute the Query</Title3>
+          <Body1>
+            Load the data in your PCF control using the QueryService.
+          </Body1>
+          <CodeBlock code={GUIDE_STEP5_EXECUTE_QUERY} language="typescript" />
+
+          <Title3>UI Field Mapping Reference</Title3>
+          <Body1>
+            Quick reference showing how UI fields map to configuration properties.
+          </Body1>
+          <CodeBlock code={GUIDE_UI_MAPPING} language="text" />
+        </section>
+
+        <Divider />
+
+        {/* Guide: Adding Filters */}
+        <section id="guide-filters" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <Title2>📖 Step-by-Step: Complex Filtering</Title2>
+          </div>
+          <Body1>
+            Learn how to add complex filter conditions including lookup field filtering.
+          </Body1>
+
+          <Title3>Filter by Lookup Field (Related Entity)</Title3>
+          <Body1>
+            Filter accounts by their primary contact's city - this requires a lookup expression.
+          </Body1>
+          <CodeBlock code={GUIDE_CONTACT_LOOKUP_EXAMPLE} language="typescript" />
+
+          <div className={styles.warningBox}>
+            <Warning24Regular />
+            <div>
+              <Body1 style={{ fontWeight: 600 }}>Lookup Path Syntax</Body1>
+              <Body1>
+                Use <code className={styles.inlineCode}>lookupfield/targetfield</code> format.
+                The lookup field must exist on the source entity and point to the target entity
+                containing the field you want to filter on.
+              </Body1>
+            </div>
+          </div>
+        </section>
+
+        <Divider />
+
+        {/* Guide: Real Examples */}
+        <section id="guide-examples" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <Title2>📖 Real-World Examples</Title2>
+          </div>
+          <Body1>
+            Copy-paste ready configurations for common Dataverse entities.
+          </Body1>
+
+          <Title3>Complete Example: Account Dropdown Control</Title3>
+          <CodeBlock code={GUIDE_COMPLETE_EXAMPLE} language="typescript" />
+
+          <Title3>Example: Open Cases (Incidents) by Priority</Title3>
+          <CodeBlock code={GUIDE_INCIDENT_EXAMPLE} language="typescript" />
+
+          <Title3>Example: Teams for Assignment</Title3>
+          <CodeBlock code={GUIDE_TEAM_EXAMPLE} language="typescript" />
+
+          <Title3>Example: Active Products with Price</Title3>
+          <CodeBlock code={GUIDE_PRODUCT_EXAMPLE} language="typescript" />
         </section>
 
         <Divider />
