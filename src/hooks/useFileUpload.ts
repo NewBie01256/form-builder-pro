@@ -5,9 +5,9 @@
  */
 
 import { useRef, useCallback, useState } from 'react';
-import { Result, success, failure, tryCatch } from '@/lib/core/result';
+import { tryCatch } from '@/lib/core/result';
 import { createLogger } from '@/lib/core/logger';
-import { toast } from 'sonner';
+import { useFluentToast } from './useFluentToast';
 
 const logger = createLogger('FileUpload');
 
@@ -44,6 +44,7 @@ export const useFileUpload = <T>(
   const inputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const toast = useFluentToast();
 
   const handleError = useCallback((message: string) => {
     setError(message);
@@ -52,7 +53,7 @@ export const useFileUpload = <T>(
       toast.error(message);
     }
     onError?.(message);
-  }, [onError, showToast]);
+  }, [onError, showToast, toast]);
 
   const handleChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -79,7 +80,7 @@ export const useFileUpload = <T>(
     } else {
       handleError(result.error.message || 'Failed to parse file');
     }
-  }, [parser, onSuccess, maxSizeBytes, handleError, showToast]);
+  }, [parser, onSuccess, maxSizeBytes, handleError, showToast, toast]);
 
   const triggerUpload = useCallback(() => {
     inputRef.current?.click();
@@ -93,10 +94,6 @@ export const useFileUpload = <T>(
     setIsLoading(false);
   }, []);
 
-  // Attach the handler to the input ref
-  // This is done via the parent component rendering the hidden input
-  const attachedRef = useRef<HTMLInputElement>(null);
-  
   return {
     inputRef,
     triggerUpload,

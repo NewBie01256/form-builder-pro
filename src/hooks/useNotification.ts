@@ -1,11 +1,11 @@
 /**
  * useNotification Hook
  * 
- * Wrapper around toast notifications for consistent messaging.
+ * Wrapper around Fluent UI toast notifications for consistent messaging.
  */
 
 import { useCallback } from 'react';
-import { toast } from 'sonner';
+import { useFluentToast } from './useFluentToast';
 
 export interface NotificationOptions {
   description?: string;
@@ -20,44 +20,31 @@ export interface NotificationOptions {
  * Notification service for consistent toast messaging
  */
 export const useNotification = () => {
+  const toast = useFluentToast();
+
   const success = useCallback((message: string, options?: NotificationOptions) => {
-    toast.success(message, {
-      description: options?.description,
-      duration: options?.duration,
-      action: options?.action,
-    });
-  }, []);
+    toast.success(message, options?.description);
+  }, [toast]);
 
   const error = useCallback((message: string, options?: NotificationOptions) => {
-    toast.error(message, {
-      description: options?.description,
-      duration: options?.duration ?? 5000,
-      action: options?.action,
-    });
-  }, []);
+    toast.error(message, options?.description);
+  }, [toast]);
 
   const warning = useCallback((message: string, options?: NotificationOptions) => {
-    toast.warning(message, {
-      description: options?.description,
-      duration: options?.duration,
-      action: options?.action,
-    });
-  }, []);
+    toast.warning(message, options?.description);
+  }, [toast]);
 
   const info = useCallback((message: string, options?: NotificationOptions) => {
-    toast.info(message, {
-      description: options?.description,
-      duration: options?.duration,
-      action: options?.action,
-    });
-  }, []);
+    toast.info(message, options?.description);
+  }, [toast]);
 
   const loading = useCallback((message: string) => {
-    return toast.loading(message);
-  }, []);
+    toast.info(message);
+    return message;
+  }, [toast]);
 
-  const dismiss = useCallback((toastId?: string | number) => {
-    toast.dismiss(toastId);
+  const dismiss = useCallback((_toastId?: string | number) => {
+    // Fluent UI toasts auto-dismiss, no manual dismiss needed
   }, []);
 
   const promise = useCallback(<T,>(
@@ -68,8 +55,11 @@ export const useNotification = () => {
       error: string;
     }
   ): void => {
-    toast.promise(promiseFn, messages);
-  }, []);
+    toast.info(messages.loading);
+    promiseFn
+      .then(() => toast.success(messages.success))
+      .catch(() => toast.error(messages.error));
+  }, [toast]);
 
   return {
     success,
@@ -80,38 +70,4 @@ export const useNotification = () => {
     dismiss,
     promise,
   };
-};
-
-/**
- * Standalone notification functions (for use outside React components)
- */
-export const notify = {
-  success: (message: string, options?: NotificationOptions) => {
-    toast.success(message, {
-      description: options?.description,
-      duration: options?.duration,
-      action: options?.action,
-    });
-  },
-  error: (message: string, options?: NotificationOptions) => {
-    toast.error(message, {
-      description: options?.description,
-      duration: options?.duration ?? 5000,
-      action: options?.action,
-    });
-  },
-  warning: (message: string, options?: NotificationOptions) => {
-    toast.warning(message, {
-      description: options?.description,
-      duration: options?.duration,
-      action: options?.action,
-    });
-  },
-  info: (message: string, options?: NotificationOptions) => {
-    toast.info(message, {
-      description: options?.description,
-      duration: options?.duration,
-      action: options?.action,
-    });
-  },
 };
