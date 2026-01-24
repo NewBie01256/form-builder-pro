@@ -208,7 +208,7 @@ const OPERATIONS: Array<{
   { type: 'retrieve', label: 'Retrieve', icon: <Search16Regular />, description: 'Get record by ID' },
   { type: 'update', label: 'Update', icon: <Edit16Regular />, description: 'Update existing record' },
   { type: 'delete', label: 'Delete', icon: <Delete16Regular />, description: 'Delete record by ID' },
-  { type: 'retrieveMultiple', label: 'Query', icon: <Database16Regular />, description: 'Query multiple records' },
+  { type: 'retrieveMultiple', label: 'Retrieve Multiple', icon: <Database16Regular />, description: 'Query multiple records' },
   { type: 'count', label: 'Count', icon: <Info16Regular />, description: 'Count records' },
 ];
 
