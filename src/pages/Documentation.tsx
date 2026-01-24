@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Card,
@@ -207,10 +208,25 @@ const useStyles = makeStyles({
     paddingInline: tokens.spacingHorizontalS,
     textDecoration: "none",
     borderRadius: tokens.borderRadiusSmall,
+    borderLeft: "2px solid transparent",
+    transition: "all 0.15s ease-in-out",
     "&:hover": {
       color: tokens.colorNeutralForeground1,
       backgroundColor: tokens.colorNeutralBackground3,
     },
+  },
+  navLinkActive: {
+    display: "block",
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorBrandForeground1,
+    fontWeight: tokens.fontWeightSemibold,
+    paddingBlock: tokens.spacingVerticalXS,
+    paddingInline: tokens.spacingHorizontalS,
+    textDecoration: "none",
+    borderRadius: tokens.borderRadiusSmall,
+    borderLeft: `2px solid ${tokens.colorBrandForeground1}`,
+    backgroundColor: tokens.colorBrandBackground2,
+    transition: "all 0.15s ease-in-out",
   },
   navSection: {
     fontSize: tokens.fontSizeBase100,
@@ -521,6 +537,8 @@ const useStyles = makeStyles({
 
 const Documentation = () => {
   const styles = useStyles();
+  const [activeSection, setActiveSection] = useState<string>("overview");
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const navLinks = [
     { type: "section", label: "Getting Started" },
@@ -551,6 +569,57 @@ const Documentation = () => {
     { href: "#glossary", label: "Glossary" },
   ];
 
+  // Get section IDs for scroll spy
+  const sectionIds = navLinks
+    .filter((link) => link.href)
+    .map((link) => link.href!.replace("#", ""));
+
+  // Set up IntersectionObserver for scroll-spy
+  useEffect(() => {
+    const observerOptions: IntersectionObserverInit = {
+      root: null,
+      rootMargin: "-80px 0px -60% 0px",
+      threshold: 0,
+    };
+
+    const observerCallback: IntersectionObserverCallback = (entries) => {
+      // Find the entry that is intersecting and closest to the top
+      const visibleEntries = entries.filter((entry) => entry.isIntersecting);
+      if (visibleEntries.length > 0) {
+        // Sort by position in the document (top to bottom)
+        const sorted = visibleEntries.sort(
+          (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
+        );
+        setActiveSection(sorted[0].target.id);
+      }
+    };
+
+    observerRef.current = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Observe all section elements
+    sectionIds.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) {
+        observerRef.current?.observe(element);
+      }
+    });
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, []);
+
+  // Handle smooth scrolling when clicking nav links
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const targetId = href.replace("#", "");
+    const element = document.getElementById(targetId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      setActiveSection(targetId);
+    }
+  };
+
   return (
     <div className={styles.page}>
       {/* Header */}
@@ -577,7 +646,16 @@ const Documentation = () => {
                 link.type === "section" ? (
                   <div key={index} className={styles.navSection}>{link.label}</div>
                 ) : (
-                  <a key={link.href} href={link.href} className={styles.navLink}>
+                  <a 
+                    key={link.href} 
+                    href={link.href} 
+                    onClick={(e) => handleNavClick(e, link.href!)}
+                    className={
+                      activeSection === link.href?.replace("#", "") 
+                        ? styles.navLinkActive 
+                        : styles.navLink
+                    }
+                  >
                     {link.label}
                   </a>
                 )
