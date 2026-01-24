@@ -354,6 +354,170 @@ class PCFErrorHandler implements IErrorHandler {
 }
 
 // ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Retry options for transient error handling
+ */
+export interface RetryOptions {
+  maxRetries?: number;
+  baseDelayMs?: number;
+  maxDelayMs?: number;
+  backoffMultiplier?: number;
+  onRetry?: (attempt: number, error: unknown, delay: number) => void;
+}
+
+const DEFAULT_RETRY_OPTIONS: Required<Omit<RetryOptions, 'onRetry'>> = {
+  maxRetries: 3,
+  baseDelayMs: 1000,
+  maxDelayMs: 10000,
+  backoffMultiplier: 2,
+};
+
+/**
+ * Execute an operation with automatic retry on transient errors
+ */
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  options?: RetryOptions
+): Promise<T> {
+  const handler = getErrorHandler();
+  const opts = { ...DEFAULT_RETRY_OPTIONS, ...options };
+  
+  let lastError: unknown;
+  
+  for (let attempt = 0; attempt <= opts.maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      
+      // Don't retry if not retryable or last attempt
+      if (!handler.isRetryable(error) || attempt === opts.maxRetries) {
+        throw error;
+      }
+      
+      // Calculate delay with exponential backoff
+      const delay = Math.min(
+        opts.baseDelayMs * Math.pow(opts.backoffMultiplier, attempt),
+        opts.maxDelayMs
+      );
+      
+      // Notify caller of retry
+      opts.onRetry?.(attempt + 1, error, delay);
+      
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError;
+}
+
+/**
+ * Result type for safe operations
+ */
+export type SafeResult<T> = 
+  | { success: true; data: T }
+  | { success: false; error: NormalizedError };
+
+/**
+ * Execute an operation safely, returning a Result instead of throwing
+ */
+export async function withSafeExecution<T>(
+  operation: () => Promise<T>,
+  context?: {
+    operation?: OperationType;
+    entityType?: string;
+    recordId?: string;
+  }
+): Promise<SafeResult<T>> {
+  const handler = getErrorHandler();
+  
+  try {
+    const data = await operation();
+    return { success: true, data };
+  } catch (error) {
+    const normalized = handler.normalize(
+      error,
+      context?.operation,
+      context?.entityType,
+      context?.recordId
+    );
+    return { success: false, error: normalized };
+  }
+}
+
+/**
+ * Combine retry and safe execution
+ */
+export async function withSafeRetry<T>(
+  operation: () => Promise<T>,
+  options?: RetryOptions & {
+    operation?: OperationType;
+    entityType?: string;
+    recordId?: string;
+  }
+): Promise<SafeResult<T>> {
+  return withSafeExecution(
+    () => withRetry(operation, options),
+    {
+      operation: options?.operation,
+      entityType: options?.entityType,
+      recordId: options?.recordId,
+    }
+  );
+}
+
+/**
+ * Handle error with custom handlers for each error type
+ */
+export interface ErrorHandlers<T> {
+  onNotFound?: () => T;
+  onAccessDenied?: () => T;
+  onDuplicate?: () => T;
+  onValidation?: (message: string) => T;
+  onConcurrency?: () => T;
+  onTimeout?: () => T;
+  onRateLimited?: () => T;
+  onNetwork?: () => T;
+  onUnknown?: (error: NormalizedError) => T;
+}
+
+export function handleError<T>(
+  error: unknown,
+  handlers: ErrorHandlers<T>,
+  defaultValue: T
+): T {
+  const handler = getErrorHandler();
+  const code = handler.getErrorCode(error);
+  const normalized = handler.normalize(error);
+  
+  switch (code) {
+    case 'NOT_FOUND':
+      return handlers.onNotFound?.() ?? defaultValue;
+    case 'ACCESS_DENIED':
+      return handlers.onAccessDenied?.() ?? defaultValue;
+    case 'DUPLICATE_RECORD':
+      return handlers.onDuplicate?.() ?? defaultValue;
+    case 'VALIDATION_ERROR':
+    case 'INVALID_ARGUMENT':
+      return handlers.onValidation?.(normalized.message) ?? defaultValue;
+    case 'CONCURRENCY_ERROR':
+      return handlers.onConcurrency?.() ?? defaultValue;
+    case 'TIMEOUT':
+      return handlers.onTimeout?.() ?? defaultValue;
+    case 'RATE_LIMITED':
+      return handlers.onRateLimited?.() ?? defaultValue;
+    case 'NETWORK_ERROR':
+      return handlers.onNetwork?.() ?? defaultValue;
+    default:
+      return handlers.onUnknown?.(normalized) ?? defaultValue;
+  }
+}
+
+// ============================================================================
 // Factory & Singleton
 // ============================================================================
 
