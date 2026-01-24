@@ -55,6 +55,73 @@ const Sidebar = ({
 }: SidebarProps) => {
   const [detailsOpen, setDetailsOpen] = useState(true);
 
+  // Find all ancestor branch IDs for a given branch or question
+  const findAncestorBranchIds = (
+    targetBranchId: string | null,
+    targetQuestionId: string | null,
+    branches: ConditionalBranch[],
+    ancestors: string[] = []
+  ): string[] | null => {
+    for (const branch of branches) {
+      // Check if this branch is the target
+      if (targetBranchId && branch.id === targetBranchId) {
+        return ancestors;
+      }
+      
+      // Check if this branch contains the target question
+      if (targetQuestionId && branch.questions.some(q => q.id === targetQuestionId)) {
+        return [...ancestors, branch.id];
+      }
+      
+      // Recurse into child branches
+      const found = findAncestorBranchIds(
+        targetBranchId,
+        targetQuestionId,
+        branch.childBranches,
+        [...ancestors, branch.id]
+      );
+      if (found) return found;
+    }
+    return null;
+  };
+
+  // Get the page ID that contains the selected item
+  const getSelectedPageId = (): string | null => {
+    if (!questionnaire || (!selectedSectionId && !selectedQuestionId && !selectedBranchId)) {
+      return null;
+    }
+    
+    for (const page of questionnaire.pages) {
+      if (selectedSectionId && page.sections.some(s => s.id === selectedSectionId)) {
+        return page.id;
+      }
+    }
+    return null;
+  };
+
+  const selectedPageId = getSelectedPageId();
+
+  // Get ancestor branch IDs for highlighting the path
+  const getAncestorBranchIds = (): string[] => {
+    if (!questionnaire || !selectedSectionId) return [];
+    
+    const section = questionnaire.pages
+      .flatMap(p => p.sections)
+      .find(s => s.id === selectedSectionId);
+    
+    if (!section) return [];
+    
+    const ancestors = findAncestorBranchIds(
+      selectedBranchId,
+      selectedQuestionId,
+      section.branches
+    );
+    
+    return ancestors || [];
+  };
+
+  const ancestorBranchIds = getAncestorBranchIds();
+
   // Check if a question has any action attached (question-level or answer-level)
   const questionHasAction = (question: Question): boolean => {
     // Check question-level action record
@@ -89,6 +156,10 @@ const Sidebar = ({
       ...branch.childBranches.map(cb => ({ type: 'branch' as const, item: cb }))
     ];
 
+    // Check if this branch is in the path to the selected item
+    const isInPath = ancestorBranchIds.includes(branch.id);
+    const isDirectlySelected = selectedBranchId === branch.id && !selectedQuestionId;
+
     return (
       <div key={branch.id} className="relative">
         <div className="flex items-stretch">
@@ -109,9 +180,12 @@ const Sidebar = ({
 
           <div
             className={cn(
-              "flex-1 flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors",
-              "hover:bg-accent",
-              selectedBranchId === branch.id && !selectedQuestionId && "bg-accent text-accent-foreground"
+              "flex-1 flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors border",
+              isDirectlySelected
+                ? "bg-accent text-accent-foreground border-primary"
+                : isInPath
+                  ? "bg-primary/5 border-primary/40 text-primary/80"
+                  : "border-transparent hover:bg-accent"
             )}
             onClick={() => {
               onSelectPage(pageId);
@@ -119,7 +193,7 @@ const Sidebar = ({
               onSelectBranch(branch.id);
             }}
           >
-            <GitBranch className="h-4 w-4 text-muted-foreground shrink-0" />
+            <GitBranch className={cn("h-4 w-4 shrink-0", isDirectlySelected || isInPath ? "text-primary" : "text-muted-foreground")} />
             <span className="truncate text-sm font-medium">{branch.name || 'Untitled Branch'}</span>
           </div>
         </div>
@@ -233,18 +307,25 @@ const Sidebar = ({
   };
 
   const renderPageTree = (page: Page): JSX.Element => {
+    // Check if this page contains the selected item but isn't the active page tab
+    const isPageInPath = selectedPageId === page.id;
+    const isPageActive = activePageId === page.id;
+    const hasSelectedDescendant = isPageInPath && (selectedSectionId || selectedQuestionId || selectedBranchId);
+    
     return (
       <div key={page.id}>
         <div
           className={cn(
             "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors border",
-            activePageId === page.id
+            isPageActive
               ? "bg-primary/10 border-primary text-primary"
-              : "border-transparent hover:bg-accent"
+              : hasSelectedDescendant
+                ? "bg-primary/5 border-primary/40 text-primary/80"
+                : "border-transparent hover:bg-accent"
           )}
           onClick={() => onSelectPage(page.id)}
         >
-          <File className={cn("h-4 w-4 shrink-0", activePageId === page.id ? "text-primary" : "text-muted-foreground")} />
+          <File className={cn("h-4 w-4 shrink-0", isPageActive || hasSelectedDescendant ? "text-primary" : "text-muted-foreground")} />
           <span className="truncate text-sm font-medium">{page.name || 'Untitled Page'}</span>
         </div>
 
