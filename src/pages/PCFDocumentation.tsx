@@ -22,6 +22,7 @@ import {
   Warning24Regular,
   Checkmark24Regular,
   ArrowRight16Regular,
+  Folder16Regular,
 } from "@fluentui/react-icons";
 import { useState, useEffect, useRef } from "react";
 
@@ -193,6 +194,25 @@ const useStyles = makeStyles({
     flex: "1 1 280px",
     minWidth: "280px",
   },
+  codePath: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+    backgroundColor: tokens.colorNeutralBackground4,
+    padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+    borderRadius: tokens.borderRadiusSmall,
+    fontFamily: "monospace",
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground2,
+    marginLeft: tokens.spacingHorizontalM,
+    fontWeight: tokens.fontWeightRegular,
+  },
+  sectionHeader: {
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: tokens.spacingHorizontalS,
+  },
 });
 
 const PCFDocumentation = () => {
@@ -323,9 +343,13 @@ const PCFDocumentation = () => {
           </div>
         </header>
 
-        {/* Overview Section */}
         <section id="overview" className={styles.section}>
-          <Title2>Overview</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>Overview</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/
+            </span>
+          </div>
           <Body1>
             The PCF Dataverse Wrapper provides a clean abstraction layer for
             interacting with Microsoft Dataverse from Power Apps Component
@@ -363,9 +387,13 @@ const PCFDocumentation = () => {
 
         <Divider />
 
-        {/* Architecture Section */}
         <section id="architecture" className={styles.section}>
-          <Title2>Architecture</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>Architecture</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/ARCHITECTURE.md
+            </span>
+          </div>
           <Body1>
             The wrapper follows a layered architecture with clear separation of
             concerns:
@@ -420,9 +448,13 @@ const PCFDocumentation = () => {
 
         <Divider />
 
-        {/* Setup Section */}
         <section id="setup" className={styles.section}>
-          <Title2>Setup & Installation</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>Setup & Installation</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/index.ts
+            </span>
+          </div>
 
           <Title3>Importing Services</Title3>
           <div className={styles.codeBlock}>
@@ -498,9 +530,13 @@ export class MyAccountControl implements ComponentFramework.StandardControl<IInp
 
         <Divider />
 
-        {/* BaseDataverseService Section */}
         <section id="base-service" className={styles.section}>
-          <Title2>BaseDataverseService</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>BaseDataverseService</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/BaseDataverseService.ts
+            </span>
+          </div>
           <Body1>
             The abstract base class providing shared functionality for all
             Dataverse services.
@@ -590,9 +626,13 @@ const options: ODataOptions = {
 
         <Divider />
 
-        {/* CrudService Section */}
         <section id="crud-service" className={styles.section}>
-          <Title2>CrudService</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>CrudService</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/CrudService.ts
+            </span>
+          </div>
           <Body1>
             Type-safe CRUD operations for a specific entity type.
           </Body1>
@@ -711,9 +751,13 @@ if (deleteResult.success) {
 
         <Divider />
 
-        {/* QueryService Section */}
         <section id="query-service" className={styles.section}>
-          <Title2>QueryService</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>QueryService</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/QueryService.ts
+            </span>
+          </div>
           <Body1>
             Advanced querying capabilities including OData, FetchXML, and
             convenience methods.
@@ -837,9 +881,13 @@ if (firstResult.success && firstResult.data) {
 
         <Divider />
 
-        {/* ErrorHandler Section */}
         <section id="error-handler" className={styles.section}>
-          <Title2>ErrorHandler</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>ErrorHandler</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/ErrorHandler.ts
+            </span>
+          </div>
           <Body1>
             Normalizes Dataverse errors into consistent, actionable error
             objects.
@@ -967,9 +1015,13 @@ if (!result.success) {
 
         <Divider />
 
-        {/* Result Pattern Section */}
         <section id="result-pattern" className={styles.section}>
-          <Title2>Result Pattern</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>Result Pattern</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/types.ts
+            </span>
+          </div>
           <Body1>
             All service methods return a discriminated union type that enforces
             error handling at compile time.
@@ -1033,9 +1085,13 @@ async function loadAccount(id: string): Promise<Account | null> {
 
         <Divider />
 
-        {/* Dynamic Values Section */}
         <section id="dynamic-values" className={styles.section}>
-          <Title2>Dynamic Values Integration</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>Dynamic Values Integration</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/types/questionnaire.ts
+            </span>
+          </div>
           <Body1>
             Connect questionnaire Choice/MultiSelect fields to live Dataverse
             data using the Dynamic Values configuration.
@@ -1201,9 +1257,13 @@ class DynamicDropdownControl {
 
         <Divider />
 
-        {/* FetchXML Generator Section */}
         <section id="fetchxml" className={styles.section}>
-          <Title2>FetchXML Generator</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>FetchXML Generator</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/fetchXmlGenerator.ts
+            </span>
+          </div>
           <Body1>
             Generate FetchXML queries from Dynamic Value configurations.
           </Body1>
@@ -1246,9 +1306,13 @@ const fetchXml = generateFetchXml(config, {
 
         <Divider />
 
-        {/* OData Generator Section */}
         <section id="odata" className={styles.section}>
-          <Title2>OData Generator</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>OData Generator</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/odataGenerator.ts
+            </span>
+          </div>
           <Body1>
             Generate OData query URLs from Dynamic Value configurations.
           </Body1>
@@ -1284,9 +1348,13 @@ const parts = generateODataParts(config, { top: 50 });
 
         <Divider />
 
-        {/* PCF Lifecycle Section */}
         <section id="pcf-lifecycle" className={styles.section}>
-          <Title2>PCF Lifecycle Best Practices</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>PCF Lifecycle Best Practices</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/SamplePCFControl.ts
+            </span>
+          </div>
 
           <Title3>init() - Initialization</Title3>
           <div className={styles.codeBlock}>
@@ -1356,9 +1424,13 @@ const parts = generateODataParts(config, { top: 50 });
 
         <Divider />
 
-        {/* Security Section */}
         <section id="security" className={styles.section}>
-          <Title2>Security Considerations</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>Security Considerations</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/PCF_CODING_STANDARDS.md
+            </span>
+          </div>
 
           <div className={styles.warningBox}>
             <Warning24Regular />
@@ -1414,9 +1486,13 @@ element.textContent = untrustedData;`}
 
         <Divider />
 
-        {/* Performance Section */}
         <section id="performance" className={styles.section}>
-          <Title2>Performance Optimization</Title2>
+          <div className={styles.sectionHeader}>
+            <Title2>Performance Optimization</Title2>
+            <span className={styles.codePath}>
+              <Folder16Regular /> src/lib/dataverse/pcf/PRODUCTION_CHECKLIST.md
+            </span>
+          </div>
 
           <Title3>Query Optimization</Title3>
           <div className={styles.codeBlock}>
