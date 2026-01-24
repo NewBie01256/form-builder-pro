@@ -170,6 +170,7 @@ export interface Question {
   dateConfig?: DateConfig;
   ratingConfig?: RatingConfig;
   textAreaConfig?: TextAreaConfig;
+  actionRecord?: ActionRecord;
 }
 
 export interface ConditionalBranch {
