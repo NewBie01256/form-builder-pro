@@ -1,14 +1,32 @@
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Input,
+  Switch,
+  Label,
+  Dropdown,
+  Option,
+  makeStyles,
+  tokens,
+} from "@fluentui/react-components";
 import { Question, Answer, QuestionType } from "@/types/questionnaire";
+
+const useStyles = makeStyles({
+  container: {
+    height: "32px",
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+  },
+  input: {
+    minWidth: "150px",
+  },
+  dropdown: {
+    minWidth: "150px",
+  },
+  label: {
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground3,
+  },
+});
 
 interface DynamicRuleValueInputProps {
   questionType: QuestionType;
@@ -34,110 +52,117 @@ const DynamicRuleValueInput = ({
   value,
   onChange,
   disabled = false,
-  placeholder = "Enter value"
+  placeholder = "Enter value",
 }: DynamicRuleValueInputProps) => {
+  const styles = useStyles();
+  
   // Choice-based types show a dropdown of available answers
-  const isChoiceType = ['Choice', 'Dropdown', 'MultiSelect', 'RadioButton'].includes(questionType);
+  const isChoiceType = ["Choice", "Dropdown", "MultiSelect", "RadioButton"].includes(questionType);
 
   if (isChoiceType) {
+    const selectedAnswer = answers.find((a) => a.id === value);
     return (
-      <Select
-        value={value}
-        onValueChange={onChange}
+      <Dropdown
+        value={selectedAnswer?.label || ""}
+        selectedOptions={value ? [value] : []}
+        onOptionSelect={(_, data) => onChange(data.optionValue || "")}
         disabled={disabled}
+        placeholder="Select answer"
+        className={styles.dropdown}
+        size="small"
       >
-        <SelectTrigger className="h-8 text-sm">
-          <SelectValue placeholder="Select answer" />
-        </SelectTrigger>
-        <SelectContent>
-          {answers.map(ans => (
-            <SelectItem key={ans.id} value={ans.id}>
-              {ans.label || 'Untitled Answer'}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {answers.map((ans) => (
+          <Option key={ans.id} value={ans.id}>
+            {ans.label || "Untitled Answer"}
+          </Option>
+        ))}
+      </Dropdown>
     );
   }
 
-  if (questionType === 'Text' || questionType === 'TextArea') {
+  if (questionType === "Text" || questionType === "TextArea") {
     return (
       <Input
         type="text"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(_, data) => onChange(data.value)}
         disabled={disabled}
         placeholder={placeholder}
-        className="h-8 text-sm"
+        className={styles.input}
+        size="small"
       />
     );
   }
 
-  if (questionType === 'Number') {
+  if (questionType === "Number") {
     return (
       <Input
         type="number"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(_, data) => onChange(data.value)}
         disabled={disabled}
         placeholder="Enter number"
-        className="h-8 text-sm"
+        className={styles.input}
+        size="small"
       />
     );
   }
 
-  if (questionType === 'Decimal') {
+  if (questionType === "Decimal") {
     return (
       <Input
         type="number"
         step="0.01"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(_, data) => onChange(data.value)}
         disabled={disabled}
         placeholder="Enter decimal"
-        className="h-8 text-sm"
+        className={styles.input}
+        size="small"
       />
     );
   }
 
-  if (questionType === 'Date') {
+  if (questionType === "Date") {
     return (
       <Input
         type="date"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(_, data) => onChange(data.value)}
         disabled={disabled}
-        className="h-8 text-sm"
+        className={styles.input}
+        size="small"
       />
     );
   }
 
-  if (questionType === 'Boolean') {
+  if (questionType === "Boolean") {
     return (
-      <div className="flex items-center gap-2 h-8">
+      <div className={styles.container}>
         <Switch
-          checked={value === 'true'}
-          onCheckedChange={(checked) => onChange(checked ? 'true' : 'false')}
+          checked={value === "true"}
+          onChange={(_, data) => onChange(data.checked ? "true" : "false")}
           disabled={disabled}
         />
-        <Label className="text-sm text-muted-foreground">
-          {value === 'true' ? 'Yes' : value === 'false' ? 'No' : 'Select'}
+        <Label className={styles.label}>
+          {value === "true" ? "Yes" : value === "false" ? "No" : "Select"}
         </Label>
       </div>
     );
   }
 
-  if (questionType === 'Rating') {
+  if (questionType === "Rating") {
     return (
       <Input
         type="number"
         min={1}
         max={10}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(_, data) => onChange(data.value)}
         disabled={disabled}
         placeholder="Enter rating"
-        className="h-8 text-sm"
+        className={styles.input}
+        size="small"
       />
     );
   }
@@ -147,10 +172,11 @@ const DynamicRuleValueInput = ({
     <Input
       type="text"
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(_, data) => onChange(data.value)}
       disabled={disabled}
       placeholder={placeholder}
-      className="h-8 text-sm"
+      className={styles.input}
+      size="small"
     />
   );
 };
