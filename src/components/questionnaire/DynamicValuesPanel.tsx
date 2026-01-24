@@ -9,7 +9,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Plus, Trash2, FolderPlus } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { X, Plus, Trash2, FolderPlus, Check, ChevronsUpDown, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Re-export types from questionnaire.ts for backward compatibility
@@ -253,6 +266,7 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
   const [filterGroup, setFilterGroup] = useState<DynamicValueFilterGroup>(createEmptyFilterGroup());
   const [orderByField, setOrderByField] = useState('');
   const [orderDirection, setOrderDirection] = useState<'asc' | 'desc'>('asc');
+  const [tableSearchOpen, setTableSearchOpen] = useState(false);
 
   // Sync state with config prop when panel opens or config changes
   useEffect(() => {
@@ -304,21 +318,58 @@ const DynamicValuesPanel = ({ isOpen, onClose, config, onSave }: DynamicValuesPa
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Table Selection */}
+        {/* Table Selection - Searchable Lookup */}
         <div className="space-y-2">
           <Label className="text-sm font-semibold">Data Source Table</Label>
-          <Select value={tableName} onValueChange={handleTableChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a table..." />
-            </SelectTrigger>
-            <SelectContent>
-              {SAMPLE_TABLES.map(table => (
-                <SelectItem key={table.name} value={table.name}>
-                  {table.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={tableSearchOpen} onOpenChange={setTableSearchOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={tableSearchOpen}
+                className="w-full justify-between font-normal"
+              >
+                {tableName ? (
+                  <span className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-muted-foreground" />
+                    {tableName}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">Search tables...</span>
+                )}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search tables..." />
+                <CommandList>
+                  <CommandEmpty>No table found.</CommandEmpty>
+                  <CommandGroup>
+                    {SAMPLE_TABLES.map((table) => (
+                      <CommandItem
+                        key={table.name}
+                        value={table.name}
+                        onSelect={(currentValue) => {
+                          handleTableChange(currentValue);
+                          setTableSearchOpen(false);
+                        }}
+                      >
+                        <Database className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {table.name}
+                        <Check
+                          className={cn(
+                            "ml-auto h-4 w-4",
+                            tableName === table.name ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <p className="text-xs text-muted-foreground">
             Select the database table from which dynamic values will be fetched.
           </p>
