@@ -124,6 +124,9 @@ const Documentation = () => {
                 <a href="#troubleshooting" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                   Troubleshooting
                 </a>
+                <a href="#glossary" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                  Glossary
+                </a>
               </nav>
             </ScrollArea>
           </aside>
@@ -5082,6 +5085,399 @@ const Documentation = () => {
                       <div className="flex items-center gap-2">
                         <CheckSquare className="h-3 w-3 text-primary" />
                         <span>Re-open Preview after changes</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Glossary */}
+            <section id="glossary">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <FileText className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle>Glossary</CardTitle>
+                      <CardDescription>
+                        Key terms and definitions used throughout the Questionnaire Builder
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-muted-foreground">
+                    Reference guide for understanding the terminology used in the Questionnaire Builder.
+                  </p>
+                  
+                  {/* Core Structure Terms */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Layers className="h-4 w-4 text-primary" />
+                      Core Structure
+                    </h4>
+                    <div className="grid gap-3">
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <Badge variant="outline" className="shrink-0 mt-0.5">Questionnaire</Badge>
+                          <div>
+                            <p className="text-sm">
+                              The root container holding all pages, metadata (name, description, version), and configuration. 
+                              A questionnaire represents a complete form that end-users fill out.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <Badge variant="outline" className="shrink-0 mt-0.5">Page</Badge>
+                          <div>
+                            <p className="text-sm">
+                              A top-level container grouping related sections. Pages appear as tabs in the builder and as 
+                              sequential screens in the executor. Each page can contain multiple sections.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <Badge variant="outline" className="shrink-0 mt-0.5">Section</Badge>
+                          <div>
+                            <p className="text-sm">
+                              A collapsible container within a page that groups questions and branches by topic or category. 
+                              Sections help organize content and can be conditionally shown/hidden.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <Badge variant="outline" className="shrink-0 mt-0.5">Question</Badge>
+                          <div>
+                            <p className="text-sm">
+                              An individual input field that collects user responses. Questions have a type (e.g., Text, Choice, Date), 
+                              validation rules, and one or more answer sets defining available options.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Answer Terms */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <ListChecks className="h-4 w-4 text-cyan-500" />
+                      Answers & Answer Sets
+                    </h4>
+                    <div className="grid gap-3">
+                      <div className="p-4 rounded-lg border bg-cyan-500/5 border-cyan-500/20">
+                        <div className="flex items-start gap-3">
+                          <Badge className="bg-cyan-500 shrink-0 mt-0.5">Answer</Badge>
+                          <div>
+                            <p className="text-sm">
+                              The atomic unit of a selectable option. Contains a <strong>label</strong> (displayed to users), 
+                              <strong>value</strong> (stored in responses), <strong>active</strong> status, and optional <strong>Action Record</strong>.
+                            </p>
+                            <div className="mt-2 p-2 rounded bg-background text-xs font-mono">
+                              {"{ label: \"High\", value: \"high\", active: true }"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-cyan-500/5 border-cyan-500/20">
+                        <div className="flex items-start gap-3">
+                          <Badge className="bg-cyan-500 shrink-0 mt-0.5">Answer Set</Badge>
+                          <div>
+                            <p className="text-sm">
+                              A named container holding multiple answers. Each answer set has a <strong>name</strong>, <strong>tag</strong> (unique identifier), 
+                              and <strong>isDefault</strong> flag. Choice-type questions can have multiple answer sets, with one marked as default.
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                              <Badge variant="outline">Contains: answers[]</Badge>
+                              <Badge variant="outline">Optional: dynamicConfig</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-orange-500/5 border-orange-500/20">
+                        <div className="flex items-start gap-3">
+                          <Badge className="bg-orange-500 shrink-0 mt-0.5">Inline Answer Set</Badge>
+                          <div>
+                            <p className="text-sm">
+                              An answer set embedded directly within an Answer-Level Rule Group. Unlike standard answer sets attached to questions, 
+                              inline sets are triggered by specific rule conditions and swap in to replace the default options.
+                            </p>
+                            <div className="mt-2 text-xs text-muted-foreground">
+                              <strong>Used in:</strong> Answer-Level Conditional Branching
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-blue-500/5 border-blue-500/20">
+                        <div className="flex items-start gap-3">
+                          <Badge className="bg-blue-500 shrink-0 mt-0.5">Dynamic Values</Badge>
+                          <div>
+                            <p className="text-sm">
+                              A configuration that populates answer options from an external data source (database table) instead of static entries. 
+                              Supports field mapping (label/value), filtering, and sorting. Available only for choice-based question types.
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                              <Badge variant="outline">tableName</Badge>
+                              <Badge variant="outline">labelField</Badge>
+                              <Badge variant="outline">valueField</Badge>
+                              <Badge variant="outline">filterGroup</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-teal-500/5 border-teal-500/20">
+                        <div className="flex items-start gap-3">
+                          <Badge className="bg-teal-500 shrink-0 mt-0.5">Action Record</Badge>
+                          <div>
+                            <p className="text-sm">
+                              ITSM-specific metadata attached to an answer, defining categorization and priority. Includes operation categories (3 tiers), 
+                              product categories (3 tiers), impact level, and urgency level. Used for ticket routing and escalation.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Branching Terms */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <GitBranch className="h-4 w-4 text-purple-500" />
+                      Branching & Conditions
+                    </h4>
+                    <div className="grid gap-3">
+                      <div className="p-4 rounded-lg border bg-purple-500/5 border-purple-500/20">
+                        <div className="flex items-start gap-3">
+                          <Badge className="bg-purple-500 shrink-0 mt-0.5">Conditional Branch</Badge>
+                          <div>
+                            <p className="text-sm">
+                              A container for questions that appears only when specific conditions are met. Branches can be nested infinitely, 
+                              creating complex decision trees. Each branch has a name, rule group, and can contain questions and child branches.
+                            </p>
+                            <div className="mt-2 text-xs text-muted-foreground">
+                              <strong>Also called:</strong> Question-Level Branching
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-rose-500/5 border-rose-500/20">
+                        <div className="flex items-start gap-3">
+                          <Badge className="bg-rose-500 shrink-0 mt-0.5">Rule Group</Badge>
+                          <div>
+                            <p className="text-sm">
+                              A container for conditional rules with AND/OR logic. Rule groups can be nested to create complex boolean expressions. 
+                              The <strong>matchType</strong> determines if all rules must match (AND) or any rule can match (OR).
+                            </p>
+                            <div className="mt-2 p-2 rounded bg-background text-xs font-mono">
+                              {"{ matchType: \"AND\", children: [rule1, rule2, nestedGroup] }"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-rose-500/5 border-rose-500/20">
+                        <div className="flex items-start gap-3">
+                          <Badge className="bg-rose-500 shrink-0 mt-0.5">Question-Level Rule</Badge>
+                          <div>
+                            <p className="text-sm">
+                              A rule that controls branch visibility based on a previous question's answer. Specifies: source question, answer set, 
+                              operator (equals, contains, greater_than, etc.), and target answer value.
+                            </p>
+                            <div className="mt-2 text-xs text-muted-foreground">
+                              <strong>Controls:</strong> Show/hide entire branches and their nested content
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-amber-500/5 border-amber-500/20">
+                        <div className="flex items-start gap-3">
+                          <Badge className="bg-amber-500 shrink-0 mt-0.5">Answer-Level Rule Group</Badge>
+                          <div>
+                            <p className="text-sm">
+                              Similar to Rule Group but specifically for swapping answer sets. When conditions match, displays an inline answer set 
+                              instead of the default. The first matching group wins; if none match, the default answer set is used.
+                            </p>
+                            <div className="mt-2 text-xs text-muted-foreground">
+                              <strong>Contains:</strong> Rules + Inline Answer Set
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Question Types Terms */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <HelpCircle className="h-4 w-4 text-primary" />
+                      Question Types
+                    </h4>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-sm mb-1">Choice-Based Types</div>
+                        <p className="text-xs text-muted-foreground">
+                          Questions with selectable options from answer sets. Support Dynamic Values and answer-level branching.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="secondary" className="text-xs">Choice</Badge>
+                          <Badge variant="secondary" className="text-xs">Dropdown</Badge>
+                          <Badge variant="secondary" className="text-xs">RadioButton</Badge>
+                          <Badge variant="secondary" className="text-xs">MultiSelect</Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-sm mb-1">Simple Types</div>
+                        <p className="text-xs text-muted-foreground">
+                          Questions with direct value input. Store default value in first answer's value field.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="secondary" className="text-xs">Text</Badge>
+                          <Badge variant="secondary" className="text-xs">TextArea</Badge>
+                          <Badge variant="secondary" className="text-xs">Number</Badge>
+                          <Badge variant="secondary" className="text-xs">Decimal</Badge>
+                          <Badge variant="secondary" className="text-xs">Date</Badge>
+                          <Badge variant="secondary" className="text-xs">Boolean</Badge>
+                          <Badge variant="secondary" className="text-xs">Rating</Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-sm mb-1">File Types</div>
+                        <p className="text-xs text-muted-foreground">
+                          Questions for file uploads or downloads. Configure allowed extensions, size limits, and file counts.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="secondary" className="text-xs">Document</Badge>
+                          <Badge variant="secondary" className="text-xs">DownloadableDocument</Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 rounded-lg border">
+                        <div className="font-medium text-sm mb-1">Special Formats</div>
+                        <p className="text-xs text-muted-foreground">
+                          Enhanced input types with additional configuration options.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="secondary" className="text-xs">Rich Text (TipTap)</Badge>
+                          <Badge variant="secondary" className="text-xs">Regex Validation</Badge>
+                          <Badge variant="secondary" className="text-xs">Star/Smiley Rating</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Operators */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-primary" />
+                      Operators
+                    </h4>
+                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="p-3 rounded-lg border text-center">
+                        <div className="font-mono text-sm font-medium">equals</div>
+                        <p className="text-xs text-muted-foreground mt-1">Exact match</p>
+                      </div>
+                      <div className="p-3 rounded-lg border text-center">
+                        <div className="font-mono text-sm font-medium">not_equals</div>
+                        <p className="text-xs text-muted-foreground mt-1">Not equal to</p>
+                      </div>
+                      <div className="p-3 rounded-lg border text-center">
+                        <div className="font-mono text-sm font-medium">contains</div>
+                        <p className="text-xs text-muted-foreground mt-1">Includes substring</p>
+                      </div>
+                      <div className="p-3 rounded-lg border text-center">
+                        <div className="font-mono text-sm font-medium">not_contains</div>
+                        <p className="text-xs text-muted-foreground mt-1">Excludes substring</p>
+                      </div>
+                      <div className="p-3 rounded-lg border text-center">
+                        <div className="font-mono text-sm font-medium">greater_than</div>
+                        <p className="text-xs text-muted-foreground mt-1">Numeric {">"}</p>
+                      </div>
+                      <div className="p-3 rounded-lg border text-center">
+                        <div className="font-mono text-sm font-medium">less_than</div>
+                        <p className="text-xs text-muted-foreground mt-1">Numeric {"<"}</p>
+                      </div>
+                      <div className="p-3 rounded-lg border text-center">
+                        <div className="font-mono text-sm font-medium">starts_with</div>
+                        <p className="text-xs text-muted-foreground mt-1">Prefix match</p>
+                      </div>
+                      <div className="p-3 rounded-lg border text-center">
+                        <div className="font-mono text-sm font-medium">ends_with</div>
+                        <p className="text-xs text-muted-foreground mt-1">Suffix match</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* UI Terms */}
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <LayoutGrid className="h-4 w-4 text-primary" />
+                      Interface Terms
+                    </h4>
+                    <div className="grid gap-3">
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <Badge variant="outline" className="shrink-0 mt-0.5">Builder</Badge>
+                          <p className="text-sm">
+                            The main editing interface where questionnaires are designed. Features a sidebar tree view and main workspace for editing.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <Badge variant="outline" className="shrink-0 mt-0.5">Executor</Badge>
+                          <p className="text-sm">
+                            The runtime interface where end-users fill out questionnaires. Handles navigation, validation, conditional rendering, and response export.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <Badge variant="outline" className="shrink-0 mt-0.5">Preview</Badge>
+                          <p className="text-sm">
+                            Opens the Executor with current questionnaire data for testing. Uses session storage for instant data transfer without file export.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <Badge variant="outline" className="shrink-0 mt-0.5">Draft</Badge>
+                          <p className="text-sm">
+                            A saved work-in-progress questionnaire stored in localStorage. Drafts preserve all configuration and can be resumed later.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
