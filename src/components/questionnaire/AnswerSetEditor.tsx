@@ -127,11 +127,11 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
     }
   };
 
-  // Helper to count total filters in a group (including nested)
-  const countFilters = (group: DynamicValueFilterGroup): number => {
+  // Helper to count total conditions in a group (including nested)
+  const countConditions = (group: DynamicValueFilterGroup): number => {
     return group.children.reduce((count, child) => {
       if (child.type === 'filter') return count + 1;
-      return count + countFilters(child);
+      return count + countConditions(child);
     }, 0);
   };
 
@@ -776,17 +776,17 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                 </div>
               </div>
 
-              {/* Filters Summary */}
-              {dynamicConfig.filterGroup.children.length > 0 && (
+              {/* Conditions Summary */}
+              {(dynamicConfig.conditionGroup || dynamicConfig.filterGroup)?.children?.length > 0 && (
                 <div className="flex items-start gap-3">
                   <Filter className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                   <div className="flex flex-wrap items-center gap-1">
-                    <span className="text-sm text-muted-foreground">Filters:</span>
+                    <span className="text-sm text-muted-foreground">Conditions:</span>
                     <Badge variant="outline" className="text-xs">
-                      {countFilters(dynamicConfig.filterGroup)} condition{countFilters(dynamicConfig.filterGroup) !== 1 ? 's' : ''}
+                      {countConditions(dynamicConfig.conditionGroup || dynamicConfig.filterGroup!)} condition{countConditions(dynamicConfig.conditionGroup || dynamicConfig.filterGroup!) !== 1 ? 's' : ''}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      ({dynamicConfig.filterGroup.matchType})
+                      ({(dynamicConfig.conditionGroup || dynamicConfig.filterGroup)?.matchType})
                     </span>
                   </div>
                 </div>
