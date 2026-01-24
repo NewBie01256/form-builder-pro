@@ -10,6 +10,7 @@ import {
   Badge,
   Divider,
   Link,
+  Button,
 } from "@fluentui/react-components";
 import { Link as RouterLink } from "react-router-dom";
 import {
@@ -21,6 +22,7 @@ import {
   Checkmark24Regular,
   ArrowRight16Regular,
   Folder16Regular,
+  Play24Regular,
 } from "@fluentui/react-icons";
 import { useState, useEffect, useRef } from "react";
 
@@ -2056,6 +2058,15 @@ const PCFDocumentation = () => {
             <Badge appearance="filled" color="brand">PCF Safe</Badge>
             <Badge appearance="filled" color="informative">Result Pattern</Badge>
           </div>
+          <RouterLink to="/docs/pcf/playground" style={{ textDecoration: 'none', marginTop: tokens.spacingVerticalM }}>
+            <Button 
+              appearance="primary" 
+              icon={<Play24Regular />}
+              size="large"
+            >
+              Open Operations Playground
+            </Button>
+          </RouterLink>
         </header>
 
         {/* Overview Section */}
