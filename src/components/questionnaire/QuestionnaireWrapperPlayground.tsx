@@ -374,10 +374,19 @@ export function QuestionnaireWrapperPlayground() {
     <div className={styles.container}>
       <div className={styles.infoBox}>
         <Info24Regular />
-        <Text>
-          The <strong>QuestionnaireWrapper</strong> class provides programmatic access to questionnaire data 
-          in the standard export format. Select a sample questionnaire and method to test.
-        </Text>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalS }}>
+          <Text>
+            The <strong>QuestionnaireWrapper</strong> class provides programmatic access to questionnaire data 
+            in the standard export format. Select a sample questionnaire and method to test.
+          </Text>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+            <strong>Questionnaire Parameter Structure:</strong> The constructor accepts a <code>Questionnaire</code> object 
+            containing <code>name</code>, <code>description</code>, <code>status</code>, <code>version</code>, <code>serviceCatalog</code>, 
+            and <code>pages[]</code>. Each <code>Page</code> contains <code>Section[]</code>, 
+            which holds <code>Question[]</code> and <code>ConditionalBranch[]</code>. Questions include <code>AnswerSet[]</code>, 
+            <code>conditionGroup</code>, and optional <code>actionRecord</code> for ITSM integration.
+          </Text>
+        </div>
       </div>
 
       <div className={styles.grid}>
