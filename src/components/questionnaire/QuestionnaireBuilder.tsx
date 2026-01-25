@@ -208,7 +208,7 @@ interface ValidationErrors {
 const QuestionnaireBuilder = () => {
   const styles = useStyles();
   const toast = useFluentToast();
-  const { createQuestionnaireRecord, isPCFEnvironment } = useDataverse();
+  const { createQuestionnaireRecord, updateQuestionnaireRecord, isPCFEnvironment } = useDataverse();
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [activePageId, setActivePageId] = useState<string | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
@@ -220,6 +220,7 @@ const QuestionnaireBuilder = () => {
   const [publishedRecords, setPublishedRecords] = useState<Record<string, PublishedRecord>>(loadPublishedRecords());
   const [publishValidationErrors, setPublishValidationErrors] = useState<ValidationErrors | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [dataverseRecordId, setDataverseRecordId] = useState<string | null>(null);
 
   // Load drafts from localStorage on mount
   useEffect(() => {
@@ -860,22 +861,36 @@ const QuestionnaireBuilder = () => {
       updatedAt: new Date().toLocaleDateString()
     };
     
-    // Create Dataverse record using QuestionnaireWrapper
+    // Create or update Dataverse record using QuestionnaireWrapper
     setIsPublishing(true);
     try {
       const publishedQuestionnaire = { ...questionnaire, status: 'Active' as const };
       const wrapper = new QuestionnaireWrapper(publishedQuestionnaire);
       const dataverseRecord = wrapper.toDataverseRecord();
       
-      const result = await createQuestionnaireRecord(dataverseRecord);
-      
-      if (!result.success) {
-        toast.error(`Failed to create Dataverse record: ${result.error.userMessage}`);
-        console.error('Dataverse publish error:', result.error);
-        // Continue with local storage even if Dataverse fails
+      if (dataverseRecordId) {
+        // Update existing record
+        const result = await updateQuestionnaireRecord(dataverseRecordId, dataverseRecord);
+        
+        if (!result.success) {
+          toast.error(`Failed to update Dataverse record: ${result.error.userMessage}`);
+          console.error('Dataverse update error:', result.error);
+        } else {
+          console.log('Updated Dataverse record:', dataverseRecordId);
+          toast.success(`Updated Dataverse record: ${dataverseRecordId}`);
+        }
       } else {
-        console.log('Created Dataverse record:', result.data.id);
-        toast.success(`Published to Dataverse: ${result.data.id}`);
+        // Create new record
+        const result = await createQuestionnaireRecord(dataverseRecord);
+        
+        if (!result.success) {
+          toast.error(`Failed to create Dataverse record: ${result.error.userMessage}`);
+          console.error('Dataverse publish error:', result.error);
+        } else {
+          console.log('Created Dataverse record:', result.data.id);
+          toast.success(`Published to Dataverse: ${result.data.id}`);
+          setDataverseRecordId(result.data.id);
+        }
       }
     } catch (err) {
       console.error('Unexpected error publishing to Dataverse:', err);
@@ -908,6 +923,7 @@ const QuestionnaireBuilder = () => {
     setSelectedBranchId(null);
     setEditingDraftId(null);
     setEditingRecordId(null);
+    setDataverseRecordId(null);
   };
 
   const countQuestionsInBranch = (branch: ConditionalBranch): number => {
