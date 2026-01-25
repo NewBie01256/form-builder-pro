@@ -35,8 +35,10 @@ import {
   Shield24Regular,
   ArrowRight16Regular,
   Checkmark16Regular,
+  DocumentBriefcase24Regular,
 } from "@fluentui/react-icons";
 import { DataverseOperationsPlayground } from "@/components/dataverse";
+import { QuestionnaireWrapperPlayground } from "@/components/questionnaire/QuestionnaireWrapperPlayground";
 import { CodeBlock } from "@/features/pcf-docs";
 
 const useStyles = makeStyles({
@@ -470,7 +472,10 @@ export default function DataversePlaygroundPage() {
           onTabSelect={(_, data) => setActiveTab(data.value as string)}
         >
           <Tab value="playground" icon={<Play24Regular />}>
-            Interactive Playground
+            Dataverse Playground
+          </Tab>
+          <Tab value="wrapper" icon={<DocumentBriefcase24Regular />}>
+            Questionnaire Wrapper
           </Tab>
           <Tab value="guide" icon={<DocumentText24Regular />}>
             Step-by-Step Guide
@@ -483,6 +488,10 @@ export default function DataversePlaygroundPage() {
         {activeTab === "playground" ? (
           <div className={styles.playgroundWrapper}>
             <DataverseOperationsPlayground />
+          </div>
+        ) : activeTab === "wrapper" ? (
+          <div className={styles.playgroundWrapper}>
+            <QuestionnaireWrapperPlayground />
           </div>
         ) : (
           <div className={styles.docsWrapper}>
