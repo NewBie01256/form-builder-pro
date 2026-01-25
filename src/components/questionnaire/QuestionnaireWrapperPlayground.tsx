@@ -119,6 +119,7 @@ type WrapperMethod =
   | 'getRawQuestionnaire'
   | 'getMetadata'
   | 'toBlob'
+  | 'toDataverseRecord'
   | 'fromId'
   | 'fromName'
   | 'listAll';
@@ -127,6 +128,7 @@ const METHODS: { id: WrapperMethod; label: string; description: string }[] = [
   { id: 'fromId', label: 'fromId()', description: 'Load questionnaire by ID from localStorage' },
   { id: 'fromName', label: 'fromName()', description: 'Load questionnaire by name from localStorage' },
   { id: 'listAll', label: 'listAll()', description: 'List all available questionnaires' },
+  { id: 'toDataverseRecord', label: 'toDataverseRecord()', description: 'Generate Dataverse ctna_questionnaire record' },
   { id: 'toJSON', label: 'toJSON()', description: 'Returns full export format' },
   { id: 'toJSONString', label: 'toJSONString()', description: 'Returns formatted JSON string' },
   { id: 'getRawQuestionnaire', label: 'getRawQuestionnaire()', description: 'Returns raw questionnaire object' },
@@ -331,6 +333,15 @@ export function QuestionnaireWrapperPlayground() {
         };
         break;
       }
+      case 'toDataverseRecord': {
+        const record = wrapper.toDataverseRecord();
+        result = {
+          _entityName: 'ctna_questionnaire',
+          _description: 'Ready to create in Dataverse via CrudService.create()',
+          record,
+        };
+        break;
+      }
       case 'toJSON':
         result = wrapper.toJSON();
         break;
@@ -424,6 +435,36 @@ allItems.forEach(item => {
 // Load a specific one
 if (allItems.length > 0) {
   const result = QuestionnaireWrapper.fromId(allItems[0].id);
+}`;
+
+      case 'toDataverseRecord':
+        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+import { CrudService } from '@/lib/dataverse/pcf/CrudService';
+
+// Generate Dataverse record for ctna_questionnaire entity
+const wrapper = new QuestionnaireWrapper(questionnaire);
+const record = wrapper.toDataverseRecord();
+
+/**
+ * Record structure:
+ * {
+ *   ctna_name: string,           // Display name
+ *   ctna_description: string,    // Designer notes (multiline)
+ *   ctna_status: number,         // 100000000=Draft, 100000001=Published
+ *   ctna_version: string,        // Semantic version e.g. "1.0.0"
+ *   ctna_schemaversion: string,  // JSON schema version e.g. "1.0"
+ *   ctna_definitionjson: string  // Full questionnaire JSON tree
+ * }
+ */
+
+// Create record in Dataverse
+const crudService = new CrudService(context.webAPI);
+const result = await crudService.create("ctna_questionnaire", record);
+
+if (result.success) {
+  console.log("Created record:", result.data.id);
+} else {
+  console.error("Failed:", result.error);
 }`;
 
       case 'toJSON':
