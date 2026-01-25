@@ -374,18 +374,57 @@ export function QuestionnaireWrapperPlayground() {
     <div className={styles.container}>
       <div className={styles.infoBox}>
         <Info24Regular />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalS }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalM, flex: 1 }}>
           <Text>
             The <strong>QuestionnaireWrapper</strong> class provides programmatic access to questionnaire data 
             in the standard export format. Select a sample questionnaire and method to test.
           </Text>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-            <strong>Questionnaire Parameter Structure:</strong> The constructor accepts a <code>Questionnaire</code> object 
-            containing <code>name</code>, <code>description</code>, <code>status</code>, <code>version</code>, <code>serviceCatalog</code>, 
-            and <code>pages[]</code>. Each <code>Page</code> contains <code>Section[]</code>, 
-            which holds <code>Question[]</code> and <code>ConditionalBranch[]</code>. Questions include <code>AnswerSet[]</code>, 
-            <code>conditionGroup</code>, and optional <code>actionRecord</code> for ITSM integration.
-          </Text>
+          
+          <div>
+            <Text weight="semibold" block style={{ marginBottom: tokens.spacingVerticalXS }}>
+              Questionnaire Parameter Structure
+            </Text>
+            <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+              The constructor accepts a <code>Questionnaire</code> object with the following hierarchy:
+              <br />• <strong>Questionnaire</strong>: <code>name</code>, <code>description</code>, <code>status</code>, <code>version</code>, <code>serviceCatalog</code>, <code>pages[]</code>
+              <br />• <strong>Page</strong>: <code>id</code>, <code>name</code>, <code>description</code>, <code>sections[]</code>
+              <br />• <strong>Section</strong>: <code>id</code>, <code>name</code>, <code>questions[]</code>, <code>branches[]</code>
+              <br />• <strong>Question</strong>: <code>id</code>, <code>text</code>, <code>type</code>, <code>required</code>, <code>answerSets[]</code>, <code>conditionGroup</code>, <code>actionRecord</code>
+            </Text>
+          </div>
+
+          <div>
+            <Text weight="semibold" block style={{ marginBottom: tokens.spacingVerticalXS }}>
+              Usage Example
+            </Text>
+            <CodeBlock 
+              language="typescript" 
+              code={`import { Questionnaire } from "@/types/questionnaire";
+import { QuestionnaireWrapper } from "@/lib/QuestionnaireWrapper";
+
+const questionnaire: Questionnaire = {
+  name: "IT Support Request",
+  description: "Hardware/software support form",
+  status: "Published",
+  version: "1.0",
+  serviceCatalog: "IT Services",
+  pages: [{
+    id: "page-1",
+    name: "Request Details",
+    sections: [{
+      id: "section-1",
+      name: "Issue Information",
+      questions: [/* Question objects */],
+      branches: [/* ConditionalBranch objects */]
+    }]
+  }]
+};
+
+const wrapper = new QuestionnaireWrapper(questionnaire);
+const exportJson = wrapper.toJSON();
+const metadata = wrapper.getMetadata();`} 
+            />
+          </div>
         </div>
       </div>
 
