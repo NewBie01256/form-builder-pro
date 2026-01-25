@@ -1,5 +1,18 @@
 import { Questionnaire } from "@/types/questionnaire";
 import { ExportedQuestionnaire, buildExportData } from "./questionnaireExport";
+import { DraftService, SavedDraft } from "./storage/draftService";
+import { PublishedService, PublishedRecord } from "./storage/publishedService";
+import { Result, success, failure } from "./core/result";
+
+/**
+ * Lookup result containing the questionnaire and its source
+ */
+export interface QuestionnaireLookupResult {
+  questionnaire: Questionnaire;
+  source: 'draft' | 'published';
+  id: string;
+  name: string;
+}
 
 /**
  * Generic wrapper class for Questionnaire operations.
@@ -7,9 +20,11 @@ import { ExportedQuestionnaire, buildExportData } from "./questionnaireExport";
  */
 export class QuestionnaireWrapper {
   private questionnaire: Questionnaire;
+  private sourceInfo?: { source: 'draft' | 'published'; id: string };
 
-  constructor(questionnaire: Questionnaire) {
+  constructor(questionnaire: Questionnaire, sourceInfo?: { source: 'draft' | 'published'; id: string }) {
     this.questionnaire = questionnaire;
+    this.sourceInfo = sourceInfo;
   }
 
   /**
@@ -56,6 +71,13 @@ export class QuestionnaireWrapper {
   }
 
   /**
+   * Returns the source info if loaded via fromId or fromName
+   */
+  getSourceInfo(): { source: 'draft' | 'published'; id: string } | undefined {
+    return this.sourceInfo;
+  }
+
+  /**
    * Creates a Blob suitable for file download or API transmission.
    */
   toBlob(): Blob {
@@ -74,6 +96,113 @@ export class QuestionnaireWrapper {
    */
   static fromExport(exported: ExportedQuestionnaire): QuestionnaireWrapper {
     return new QuestionnaireWrapper(exported.questionnaire);
+  }
+
+  /**
+   * Load questionnaire from localStorage by ID.
+   * Searches both drafts and published records.
+   * 
+   * @example
+   * const result = QuestionnaireWrapper.fromId("draft-abc123");
+   * if (result.success) {
+   *   const wrapper = result.data;
+   *   console.log(wrapper.toJSON());
+   * }
+   */
+  static fromId(id: string): Result<QuestionnaireWrapper, Error> {
+    // Check drafts first
+    const draft = DraftService.findById(id);
+    if (draft) {
+      return success(new QuestionnaireWrapper(
+        draft.questionnaire,
+        { source: 'draft', id: draft.id }
+      ));
+    }
+
+    // Check published records
+    const published = PublishedService.findById(id);
+    if (published) {
+      return success(new QuestionnaireWrapper(
+        published.questionnaire,
+        { source: 'published', id: published.metadata.id }
+      ));
+    }
+
+    return failure(new Error(`Questionnaire not found with ID: ${id}`));
+  }
+
+  /**
+   * Load questionnaire from localStorage by name.
+   * Searches both drafts and published records.
+   * Returns the first match found (published records take priority).
+   * 
+   * @example
+   * const result = QuestionnaireWrapper.fromName("IT Support Request");
+   * if (result.success) {
+   *   const wrapper = result.data;
+   *   console.log(wrapper.getMetadata());
+   * }
+   */
+  static fromName(name: string): Result<QuestionnaireWrapper, Error> {
+    const normalizedName = name.toLowerCase().trim();
+
+    // Check published records first (they take priority)
+    const publishedRecords = PublishedService.getAll();
+    const publishedMatch = publishedRecords.find(
+      r => r.questionnaire.name.toLowerCase().trim() === normalizedName
+    );
+    if (publishedMatch) {
+      return success(new QuestionnaireWrapper(
+        publishedMatch.questionnaire,
+        { source: 'published', id: publishedMatch.metadata.id }
+      ));
+    }
+
+    // Check drafts
+    const drafts = DraftService.loadAll();
+    const draftMatch = drafts.find(
+      d => d.questionnaire.name.toLowerCase().trim() === normalizedName
+    );
+    if (draftMatch) {
+      return success(new QuestionnaireWrapper(
+        draftMatch.questionnaire,
+        { source: 'draft', id: draftMatch.id }
+      ));
+    }
+
+    return failure(new Error(`Questionnaire not found with name: ${name}`));
+  }
+
+  /**
+   * List all available questionnaires from localStorage.
+   * Returns both drafts and published records.
+   */
+  static listAll(): QuestionnaireLookupResult[] {
+    const results: QuestionnaireLookupResult[] = [];
+
+    // Add published records
+    const publishedRecords = PublishedService.getAll();
+    for (const record of publishedRecords) {
+      results.push({
+        questionnaire: record.questionnaire,
+        source: 'published',
+        id: record.metadata.id,
+        name: record.questionnaire.name,
+      });
+    }
+
+    // Add drafts
+    const drafts = DraftService.loadAll();
+    for (const draft of drafts) {
+      results.push({
+        questionnaire: draft.questionnaire,
+        source: 'draft',
+        id: draft.id,
+        name: draft.questionnaire.name,
+      });
+    }
+
+    return results;
   }
 }
 

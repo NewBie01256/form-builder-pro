@@ -118,9 +118,15 @@ type WrapperMethod =
   | 'toJSONString'
   | 'getRawQuestionnaire'
   | 'getMetadata'
-  | 'toBlob';
+  | 'toBlob'
+  | 'fromId'
+  | 'fromName'
+  | 'listAll';
 
 const METHODS: { id: WrapperMethod; label: string; description: string }[] = [
+  { id: 'fromId', label: 'fromId()', description: 'Load questionnaire by ID from localStorage' },
+  { id: 'fromName', label: 'fromName()', description: 'Load questionnaire by name from localStorage' },
+  { id: 'listAll', label: 'listAll()', description: 'List all available questionnaires' },
   { id: 'toJSON', label: 'toJSON()', description: 'Returns full export format' },
   { id: 'toJSONString', label: 'toJSONString()', description: 'Returns formatted JSON string' },
   { id: 'getRawQuestionnaire', label: 'getRawQuestionnaire()', description: 'Returns raw questionnaire object' },
@@ -272,6 +278,59 @@ export function QuestionnaireWrapperPlayground() {
     let result: unknown;
     
     switch (selectedMethod) {
+      case 'fromId': {
+        // Demo: Try to load from the first available saved questionnaire
+        const allItems = QuestionnaireWrapper.listAll();
+        if (allItems.length > 0) {
+          const firstItem = allItems[0];
+          const loadResult = QuestionnaireWrapper.fromId(firstItem.id);
+          if (loadResult.success) {
+            result = {
+              success: true,
+              source: loadResult.data.getSourceInfo(),
+              metadata: loadResult.data.getMetadata(),
+              message: `Loaded "${firstItem.name}" from ${firstItem.source}`,
+            };
+          } else {
+            result = { success: false, error: loadResult.error.message };
+          }
+        } else {
+          result = { 
+            success: false, 
+            error: 'No saved questionnaires found. Save a draft or publish a questionnaire first.',
+            hint: 'Go to the Questionnaire Builder and save a draft to test this method.',
+          };
+        }
+        break;
+      }
+      case 'fromName': {
+        // Demo: Try to load using the sample questionnaire name
+        const loadResult = QuestionnaireWrapper.fromName(questionnaire.name);
+        if (loadResult.success) {
+          result = {
+            success: true,
+            source: loadResult.data.getSourceInfo(),
+            metadata: loadResult.data.getMetadata(),
+            message: `Found "${questionnaire.name}" in localStorage`,
+          };
+        } else {
+          result = { 
+            success: false, 
+            error: loadResult.error.message,
+            hint: `Save a questionnaire named "${questionnaire.name}" to test this method.`,
+          };
+        }
+        break;
+      }
+      case 'listAll': {
+        const allItems = QuestionnaireWrapper.listAll();
+        result = {
+          totalCount: allItems.length,
+          drafts: allItems.filter(i => i.source === 'draft').map(i => ({ id: i.id, name: i.name })),
+          published: allItems.filter(i => i.source === 'published').map(i => ({ id: i.id, name: i.name })),
+        };
+        break;
+      }
       case 'toJSON':
         result = wrapper.toJSON();
         break;
@@ -320,54 +379,112 @@ export function QuestionnaireWrapperPlayground() {
   };
 
   const codePreview = useMemo(() => {
-    const lines = [
-      `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';`,
-      ``,
-      `// Create wrapper from questionnaire`,
-      `const wrapper = new QuestionnaireWrapper(questionnaire);`,
-      ``,
-    ];
-
     switch (selectedMethod) {
-      case 'toJSON':
-        lines.push(`// Get full export format (ExportedQuestionnaire)`);
-        lines.push(`const exportData = wrapper.toJSON();`);
-        lines.push(`console.log(exportData.version);       // "1.0"`);
-        lines.push(`console.log(exportData.exportedAt);    // ISO timestamp`);
-        lines.push(`console.log(exportData.questionnaire); // Full questionnaire`);
-        break;
-      case 'toJSONString':
-        lines.push(`// Get formatted JSON string`);
-        lines.push(`const jsonString = wrapper.toJSONString();`);
-        lines.push(`const compactJson = wrapper.toJSONString(0); // No indentation`);
-        break;
-      case 'getRawQuestionnaire':
-        lines.push(`// Get raw questionnaire object`);
-        lines.push(`const raw = wrapper.getRawQuestionnaire();`);
-        lines.push(`console.log(raw.name);`);
-        lines.push(`console.log(raw.pages.length);`);
-        break;
-      case 'getMetadata':
-        lines.push(`// Get questionnaire metadata`);
-        lines.push(`const metadata = wrapper.getMetadata();`);
-        lines.push(`console.log(metadata.name);`);
-        lines.push(`console.log(metadata.version);`);
-        lines.push(`console.log(metadata.status);`);
-        break;
-      case 'toBlob':
-        lines.push(`// Create Blob for download or API transmission`);
-        lines.push(`const blob = wrapper.toBlob();`);
-        lines.push(``);
-        lines.push(`// Download as file`);
-        lines.push(`const url = URL.createObjectURL(blob);`);
-        lines.push(`const link = document.createElement('a');`);
-        lines.push(`link.href = url;`);
-        lines.push(`link.download = 'questionnaire.json';`);
-        lines.push(`link.click();`);
-        break;
-    }
+      case 'fromId':
+        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
 
-    return lines.join('\n');
+// Load questionnaire by ID from localStorage (drafts or published)
+const result = QuestionnaireWrapper.fromId("draft-abc123");
+
+if (result.success) {
+  const wrapper = result.data;
+  console.log(wrapper.getMetadata());    // { name, status, ... }
+  console.log(wrapper.getSourceInfo());  // { source: 'draft', id: '...' }
+  const json = wrapper.toJSON();         // Full export format
+} else {
+  console.error(result.error.message);   // "Questionnaire not found..."
+}`;
+
+      case 'fromName':
+        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+
+// Load questionnaire by name from localStorage
+const result = QuestionnaireWrapper.fromName("IT Support Request");
+
+if (result.success) {
+  const wrapper = result.data;
+  const exportJson = wrapper.toJSON();
+  console.log(exportJson.questionnaire.name);  // "IT Support Request"
+} else {
+  console.error(result.error.message);
+}`;
+
+      case 'listAll':
+        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+
+// List all available questionnaires from localStorage
+const allItems = QuestionnaireWrapper.listAll();
+
+allItems.forEach(item => {
+  console.log(item.name);    // Questionnaire name
+  console.log(item.id);      // Unique ID
+  console.log(item.source);  // 'draft' or 'published'
+});
+
+// Load a specific one
+if (allItems.length > 0) {
+  const result = QuestionnaireWrapper.fromId(allItems[0].id);
+}`;
+
+      case 'toJSON':
+        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+
+// Get full export format (ExportedQuestionnaire)
+const wrapper = new QuestionnaireWrapper(questionnaire);
+const exportData = wrapper.toJSON();
+
+console.log(exportData.version);       // "1.0"
+console.log(exportData.exportedAt);    // ISO timestamp
+console.log(exportData.questionnaire); // Full questionnaire`;
+
+      case 'toJSONString':
+        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+
+const wrapper = new QuestionnaireWrapper(questionnaire);
+
+// Get formatted JSON string
+const jsonString = wrapper.toJSONString();
+const compactJson = wrapper.toJSONString(0); // No indentation`;
+
+      case 'getRawQuestionnaire':
+        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+
+const wrapper = new QuestionnaireWrapper(questionnaire);
+
+// Get raw questionnaire object (without export metadata)
+const raw = wrapper.getRawQuestionnaire();
+console.log(raw.name);
+console.log(raw.pages.length);`;
+
+      case 'getMetadata':
+        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+
+const wrapper = new QuestionnaireWrapper(questionnaire);
+
+// Get questionnaire metadata
+const metadata = wrapper.getMetadata();
+console.log(metadata.name);
+console.log(metadata.version);
+console.log(metadata.status);`;
+
+      case 'toBlob':
+        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+
+const wrapper = new QuestionnaireWrapper(questionnaire);
+
+// Create Blob for download or API transmission
+const blob = wrapper.toBlob();
+
+// Download as file
+const url = URL.createObjectURL(blob);
+const link = document.createElement('a');
+link.href = url;
+link.download = 'questionnaire.json';
+link.click();`;
+
+      default:
+        return '';
+    }
   }, [selectedMethod]);
 
   return (
@@ -395,34 +512,32 @@ export function QuestionnaireWrapperPlayground() {
 
           <div>
             <Text weight="semibold" block style={{ marginBottom: tokens.spacingVerticalXS }}>
-              Usage Example
+              Usage Examples
             </Text>
             <CodeBlock 
               language="typescript" 
-              code={`import { Questionnaire } from "@/types/questionnaire";
-import { QuestionnaireWrapper } from "@/lib/QuestionnaireWrapper";
+              code={`import { QuestionnaireWrapper } from "@/lib/QuestionnaireWrapper";
 
-const questionnaire: Questionnaire = {
-  name: "IT Support Request",
-  description: "Hardware/software support form",
-  status: "Published",
-  version: "1.0",
-  serviceCatalog: "IT Services",
-  pages: [{
-    id: "page-1",
-    name: "Request Details",
-    sections: [{
-      id: "section-1",
-      name: "Issue Information",
-      questions: [/* Question objects */],
-      branches: [/* ConditionalBranch objects */]
-    }]
-  }]
-};
+// Option 1: Load by ID from localStorage
+const byIdResult = QuestionnaireWrapper.fromId("draft-abc123");
+if (byIdResult.success) {
+  const wrapper = byIdResult.data;
+  const json = wrapper.toJSON();  // Full export format
+}
 
-const wrapper = new QuestionnaireWrapper(questionnaire);
-const exportJson = wrapper.toJSON();
-const metadata = wrapper.getMetadata();`} 
+// Option 2: Load by Name from localStorage
+const byNameResult = QuestionnaireWrapper.fromName("IT Support Request");
+if (byNameResult.success) {
+  const metadata = byNameResult.data.getMetadata();
+}
+
+// Option 3: List all available questionnaires
+const allItems = QuestionnaireWrapper.listAll();
+// Returns: [{ id, name, source: 'draft'|'published', questionnaire }]
+
+// Option 4: Create directly from Questionnaire object
+const wrapper = new QuestionnaireWrapper(myQuestionnaire);
+const exportJson = wrapper.toJSON();`} 
             />
           </div>
         </div>
