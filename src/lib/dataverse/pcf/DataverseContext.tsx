@@ -45,6 +45,7 @@ export interface DataverseContextValue {
   // Questionnaire CRUD operations
   createQuestionnaireRecord: (record: DataverseQuestionnaireRecord) => Promise<DataverseResult<CreateResult>>;
   updateQuestionnaireRecord: (recordId: string, record: Partial<DataverseQuestionnaireRecord>) => Promise<DataverseResult<EntityReference>>;
+  deactivateQuestionnaireRecord: (recordId: string) => Promise<DataverseResult<EntityReference>>;
   
   // Context update (for PCF lifecycle)
   updatePCFContext: (context: IPCFContext) => void;
@@ -378,6 +379,33 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
     return crudService.update(recordId, record as unknown as Record<string, unknown>);
   }, []);
 
+  // Deactivate questionnaire record in Dataverse
+  const deactivateQuestionnaireRecord = useCallback(async (
+    recordId: string
+  ): Promise<DataverseResult<EntityReference>> => {
+    const context = pcfContextRef.current;
+    if (!context) {
+      return {
+        success: false,
+        error: {
+          code: 'UNKNOWN',
+          message: 'Dataverse context not initialized',
+          userMessage: 'Dataverse context not initialized',
+          isRetryable: false,
+        },
+      };
+    }
+
+    const crudService = new CrudService(context, {
+      entityLogicalName: 'ctna_questionnaire',
+    });
+
+    // Set status to Inactive
+    return crudService.update(recordId, {
+      ctna_status: 'Inactive',
+    });
+  }, []);
+
   const value = useMemo<DataverseContextValue>(() => ({
     isPCFEnvironment,
     isInitialized,
@@ -391,6 +419,7 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
     executeQuery,
     createQuestionnaireRecord,
     updateQuestionnaireRecord,
+    deactivateQuestionnaireRecord,
     updatePCFContext,
   }), [
     isPCFEnvironment,
@@ -405,6 +434,7 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
     executeQuery,
     createQuestionnaireRecord,
     updateQuestionnaireRecord,
+    deactivateQuestionnaireRecord,
     updatePCFContext,
   ]);
 
