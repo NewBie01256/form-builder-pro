@@ -13,6 +13,8 @@ import {
   mergeClasses,
 } from "@/components/fluent";
 import { exportQuestionnaire, buildExportData, parseQuestionnaireFile } from "@/lib/questionnaireExport";
+import { QuestionnaireWrapper } from "@/lib/QuestionnaireWrapper";
+import { useDataverse } from "@/lib/dataverse/pcf/DataverseContext";
 import {
   Question,
   ConditionalBranch,
@@ -206,6 +208,7 @@ interface ValidationErrors {
 const QuestionnaireBuilder = () => {
   const styles = useStyles();
   const toast = useFluentToast();
+  const { createQuestionnaireRecord, isPCFEnvironment } = useDataverse();
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [activePageId, setActivePageId] = useState<string | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
@@ -216,6 +219,7 @@ const QuestionnaireBuilder = () => {
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [publishedRecords, setPublishedRecords] = useState<Record<string, PublishedRecord>>(loadPublishedRecords());
   const [publishValidationErrors, setPublishValidationErrors] = useState<ValidationErrors | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Load drafts from localStorage on mount
   useEffect(() => {
@@ -699,8 +703,8 @@ const QuestionnaireBuilder = () => {
     setEditingRecordId(record.id);
   };
 
-  const handlePublish = () => {
-    if (!questionnaire) return;
+  const handlePublish = async () => {
+    if (!questionnaire || isPublishing) return;
     
     // Categorized validation errors
     const errors: ValidationErrors = {
@@ -856,7 +860,31 @@ const QuestionnaireBuilder = () => {
       updatedAt: new Date().toLocaleDateString()
     };
     
-    // Store the full questionnaire
+    // Create Dataverse record using QuestionnaireWrapper
+    setIsPublishing(true);
+    try {
+      const publishedQuestionnaire = { ...questionnaire, status: 'Active' as const };
+      const wrapper = new QuestionnaireWrapper(publishedQuestionnaire);
+      const dataverseRecord = wrapper.toDataverseRecord();
+      
+      const result = await createQuestionnaireRecord(dataverseRecord);
+      
+      if (!result.success) {
+        toast.error(`Failed to create Dataverse record: ${result.error.userMessage}`);
+        console.error('Dataverse publish error:', result.error);
+        // Continue with local storage even if Dataverse fails
+      } else {
+        console.log('Created Dataverse record:', result.data.id);
+        toast.success(`Published to Dataverse: ${result.data.id}`);
+      }
+    } catch (err) {
+      console.error('Unexpected error publishing to Dataverse:', err);
+      toast.error('Unexpected error publishing to Dataverse');
+    } finally {
+      setIsPublishing(false);
+    }
+    
+    // Store the full questionnaire in localStorage
     setPublishedRecords(prev => ({
       ...prev,
       [publishedMetadata.id]: {
