@@ -3,6 +3,8 @@ import { ExportedQuestionnaire, buildExportData } from "./questionnaireExport";
 import { DraftService, SavedDraft } from "./storage/draftService";
 import { PublishedService, PublishedRecord } from "./storage/publishedService";
 import { Result, success, failure } from "./core/result";
+import { CrudService } from "./dataverse/pcf/CrudService";
+import type { IPCFContext } from "./dataverse/pcf/types";
 
 /**
  * Lookup result containing the questionnaire and its source
@@ -147,6 +149,65 @@ export class QuestionnaireWrapper {
     return new QuestionnaireWrapper(exported.questionnaire);
   }
 
+  /**
+   * Load questionnaire from Dataverse by record ID.
+   * Retrieves the ctna_questionnaire record and parses the DefinitionJson field.
+   * 
+   * @param context - The PCF context (containing webAPI)
+   * @param recordId - The Dataverse record GUID
+   * 
+   * @example
+   * const result = await QuestionnaireWrapper.fromDataverseRecord(context, "12345678-1234-1234-1234-123456789abc");
+   * if (result.success) {
+   *   const wrapper = result.data;
+   *   console.log(wrapper.getMetadata());
+   * }
+   */
+  static async fromDataverseRecord(
+    context: IPCFContext,
+    recordId: string
+  ): Promise<Result<QuestionnaireWrapper, Error>> {
+    try {
+      const crudService = new CrudService(context, {
+        entityLogicalName: "ctna_questionnaire",
+      });
+      
+      const result = await crudService.retrieve(recordId, {
+        select: [
+          "ctna_name",
+          "ctna_description", 
+          "ctna_status",
+          "ctna_version",
+          "ctna_schemaversion",
+          "ctna_definitionjson"
+        ],
+      });
+
+      if (!result.success) {
+        return failure(new Error(result.error.userMessage || "Failed to retrieve record"));
+      }
+
+      const record = result.data;
+      const definitionJson = record.ctna_definitionjson as string | undefined;
+      
+      if (!definitionJson) {
+        return failure(new Error("Record has no DefinitionJson data"));
+      }
+
+      // Parse the DefinitionJson to get the full questionnaire
+      const questionnaire: Questionnaire = JSON.parse(definitionJson);
+      
+      return success(new QuestionnaireWrapper(
+        questionnaire,
+        { source: 'published', id: recordId }
+      ));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error loading from Dataverse";
+      return failure(new Error(message));
+    }
+  }
+
+  /**
   /**
    * Load questionnaire from localStorage by ID.
    * Searches both drafts and published records.
