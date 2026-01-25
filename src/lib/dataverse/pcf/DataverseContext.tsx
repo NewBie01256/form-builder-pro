@@ -8,11 +8,13 @@
  * In production (deployed to Dataverse), uses real PCF context.
  */
 
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef, type ReactNode } from 'react';
 import { MetadataService, type EntityInfo, type FieldInfo } from './MetadataService';
 import { DynamicValuesService, type DropdownOption } from './DynamicValuesService';
-import type { IPCFContext, IPCFWebApi, IPCFUtility, EntityMetadata, AttributeMetadata } from './types';
+import { CrudService } from './CrudService';
+import type { IPCFContext, IPCFWebApi, IPCFUtility, EntityMetadata, AttributeMetadata, DataverseResult, CreateResult } from './types';
 import type { DynamicValueConfig } from '@/types/questionnaire';
+import type { DataverseQuestionnaireRecord } from '@/lib/QuestionnaireWrapper';
 
 // ============================================================================
 // Context Types
@@ -39,6 +41,9 @@ export interface DataverseContextValue {
   
   // Dynamic values execution
   executeQuery: (config: DynamicValueConfig) => Promise<DropdownOption[]>;
+  
+  // Questionnaire CRUD operations
+  createQuestionnaireRecord: (record: DataverseQuestionnaireRecord) => Promise<DataverseResult<CreateResult>>;
   
   // Context update (for PCF lifecycle)
   updatePCFContext: (context: IPCFContext) => void;
@@ -217,6 +222,9 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
   // Services
   const [metadataService, setMetadataService] = useState<MetadataService | null>(null);
   const [dynamicValuesService, setDynamicValuesService] = useState<DynamicValuesService | null>(null);
+  
+  // Store the current PCF context for CRUD operations
+  const pcfContextRef = useRef<IPCFContext | null>(null);
 
   // Initialize services
   useEffect(() => {
@@ -239,6 +247,7 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
       };
     }
 
+    pcfContextRef.current = context;
     setMetadataService(new MetadataService(context));
     setDynamicValuesService(new DynamicValuesService(context));
     setIsInitialized(true);
@@ -314,9 +323,34 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
 
   // Update PCF context
   const updatePCFContext = useCallback((context: IPCFContext) => {
+    pcfContextRef.current = context;
     metadataService?.updateContext(context);
     dynamicValuesService?.updateContext(context);
   }, [metadataService, dynamicValuesService]);
+
+  // Create questionnaire record in Dataverse
+  const createQuestionnaireRecord = useCallback(async (
+    record: DataverseQuestionnaireRecord
+  ): Promise<DataverseResult<CreateResult>> => {
+    const context = pcfContextRef.current;
+    if (!context) {
+      return {
+        success: false,
+        error: {
+          code: 'UNKNOWN',
+          message: 'Dataverse context not initialized',
+          userMessage: 'Dataverse context not initialized',
+          isRetryable: false,
+        },
+      };
+    }
+
+    const crudService = new CrudService(context, {
+      entityLogicalName: 'ctna_questionnaire',
+    });
+
+    return crudService.create(record as unknown as Record<string, unknown>);
+  }, []);
 
   const value = useMemo<DataverseContextValue>(() => ({
     isPCFEnvironment,
@@ -329,6 +363,7 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
     getEntityFields,
     getLookupTargetFields,
     executeQuery,
+    createQuestionnaireRecord,
     updatePCFContext,
   }), [
     isPCFEnvironment,
@@ -341,6 +376,7 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
     getEntityFields,
     getLookupTargetFields,
     executeQuery,
+    createQuestionnaireRecord,
     updatePCFContext,
   ]);
 
