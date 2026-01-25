@@ -15,6 +15,32 @@ export interface QuestionnaireLookupResult {
 }
 
 /**
+ * Status choice values for Dataverse ctna_questionnaire entity
+ */
+export enum DataverseQuestionnaireStatus {
+  Draft = 100000000,
+  Published = 100000001,
+}
+
+/**
+ * Dataverse record structure for ctna_questionnaire entity
+ */
+export interface DataverseQuestionnaireRecord {
+  /** Display name (ctna_name) */
+  ctna_name: string;
+  /** Designer notes (ctna_description) */
+  ctna_description: string;
+  /** Draft/Published status choice (ctna_status) */
+  ctna_status: DataverseQuestionnaireStatus;
+  /** Semantic version e.g. "1.0.0" (ctna_version) */
+  ctna_version: string;
+  /** JSON schema version e.g. "1.0" (ctna_schemaversion) */
+  ctna_schemaversion: string;
+  /** Full questionnaire JSON tree (ctna_definitionjson) */
+  ctna_definitionjson: string;
+}
+
+/**
  * Generic wrapper class for Questionnaire operations.
  * Provides programmatic access to questionnaire data in the standard export format.
  */
@@ -75,6 +101,29 @@ export class QuestionnaireWrapper {
    */
   getSourceInfo(): { source: 'draft' | 'published'; id: string } | undefined {
     return this.sourceInfo;
+  }
+
+  /**
+   * Converts the questionnaire to a Dataverse-compatible record for ctna_questionnaire entity.
+   * 
+   * @example
+   * const record = wrapper.toDataverseRecord();
+   * await crudService.create("ctna_questionnaire", record);
+   */
+  toDataverseRecord(): DataverseQuestionnaireRecord {
+    const exportData = this.toJSON();
+    const status = this.questionnaire.status?.toLowerCase() === 'published' 
+      ? DataverseQuestionnaireStatus.Published 
+      : DataverseQuestionnaireStatus.Draft;
+
+    return {
+      ctna_name: this.questionnaire.name || 'Untitled Questionnaire',
+      ctna_description: this.questionnaire.description || '',
+      ctna_status: status,
+      ctna_version: this.questionnaire.version || '1.0.0',
+      ctna_schemaversion: exportData.version,
+      ctna_definitionjson: JSON.stringify(exportData.questionnaire),
+    };
   }
 
   /**
