@@ -12,6 +12,7 @@ import React, { createContext, useContext, useState, useCallback, useMemo, useEf
 import { MetadataService, type EntityInfo, type FieldInfo } from './MetadataService';
 import { DynamicValuesService, type DropdownOption } from './DynamicValuesService';
 import { CrudService } from './CrudService';
+import { QueryService } from './QueryService';
 import type { IPCFContext, IPCFWebApi, IPCFUtility, EntityMetadata, AttributeMetadata, DataverseResult, CreateResult, EntityReference } from './types';
 import type { DynamicValueConfig } from '@/types/questionnaire';
 import type { DataverseQuestionnaireRecord } from '@/lib/QuestionnaireWrapper';
@@ -19,6 +20,18 @@ import type { DataverseQuestionnaireRecord } from '@/lib/QuestionnaireWrapper';
 // ============================================================================
 // Context Types
 // ============================================================================
+
+/** Metadata for questionnaire list display */
+export interface QuestionnaireListItem {
+  id: string;
+  name: string;
+  description?: string;
+  status: string;
+  version: string;
+  schemaVersion: string;
+  createdOn?: string;
+  modifiedOn?: string;
+}
 
 export interface DataverseContextValue {
   /** Whether running in actual PCF environment */
@@ -46,6 +59,7 @@ export interface DataverseContextValue {
   createQuestionnaireRecord: (record: DataverseQuestionnaireRecord) => Promise<DataverseResult<CreateResult>>;
   updateQuestionnaireRecord: (recordId: string, record: Partial<DataverseQuestionnaireRecord>) => Promise<DataverseResult<EntityReference>>;
   deactivateQuestionnaireRecord: (recordId: string) => Promise<DataverseResult<EntityReference>>;
+  listQuestionnairesFromDataverse: () => Promise<DataverseResult<QuestionnaireListItem[]>>;
   
   // Context update (for PCF lifecycle)
   updatePCFContext: (context: IPCFContext) => void;
@@ -406,6 +420,62 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
     });
   }, []);
 
+  // List all questionnaire records from Dataverse
+  const listQuestionnairesFromDataverse = useCallback(async (): Promise<DataverseResult<QuestionnaireListItem[]>> => {
+    const context = pcfContextRef.current;
+    if (!context) {
+      return {
+        success: false,
+        error: {
+          code: 'UNKNOWN',
+          message: 'Dataverse context not initialized',
+          userMessage: 'Dataverse context not initialized',
+          isRetryable: false,
+        },
+      };
+    }
+
+    const queryService = new QueryService(context);
+
+    const result = await queryService.retrieveMultiple<Record<string, unknown>>(
+      'ctna_questionnaire',
+      {
+        select: [
+          'ctna_questionnaireid',
+          'ctna_name',
+          'ctna_description',
+          'ctna_status',
+          'ctna_version',
+          'ctna_schemaversion',
+          'createdon',
+          'modifiedon',
+        ],
+        filter: "ctna_status ne 'Inactive'",
+        orderBy: 'modifiedon desc',
+      }
+    );
+
+    if (!result.success) {
+      return result as DataverseResult<QuestionnaireListItem[]>;
+    }
+
+    const items: QuestionnaireListItem[] = result.data.entities.map((entity) => ({
+      id: String(entity.ctna_questionnaireid || ''),
+      name: String(entity.ctna_name || ''),
+      description: entity.ctna_description ? String(entity.ctna_description) : undefined,
+      status: String(entity.ctna_status || ''),
+      version: String(entity.ctna_version || '1.0'),
+      schemaVersion: String(entity.ctna_schemaversion || '1.0'),
+      createdOn: entity.createdon ? String(entity.createdon) : undefined,
+      modifiedOn: entity.modifiedon ? String(entity.modifiedon) : undefined,
+    }));
+
+    return {
+      success: true,
+      data: items,
+    };
+  }, []);
+
   const value = useMemo<DataverseContextValue>(() => ({
     isPCFEnvironment,
     isInitialized,
@@ -420,6 +490,7 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
     createQuestionnaireRecord,
     updateQuestionnaireRecord,
     deactivateQuestionnaireRecord,
+    listQuestionnairesFromDataverse,
     updatePCFContext,
   }), [
     isPCFEnvironment,
@@ -435,6 +506,7 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
     createQuestionnaireRecord,
     updateQuestionnaireRecord,
     deactivateQuestionnaireRecord,
+    listQuestionnairesFromDataverse,
     updatePCFContext,
   ]);
 
