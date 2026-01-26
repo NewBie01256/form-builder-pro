@@ -249,8 +249,8 @@ const QuestionnaireBuilder = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [dataverseRecordId, setDataverseRecordId] = useState<string | null>(null);
   
-  // Resizable sidebar state - default 30% of viewport
-  const [sidebarWidth, setSidebarWidth] = useState(() => Math.round(window.innerWidth * 0.3));
+  // Resizable sidebar state - default 40% of viewport
+  const [sidebarWidth, setSidebarWidth] = useState(() => Math.round(window.innerWidth * 0.4));
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
