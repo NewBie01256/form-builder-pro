@@ -4,7 +4,8 @@
  * Provides state-based navigation for PCF controls.
  */
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import * as React from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { ViewState, NavigationState } from './types';
 
 interface NavigationContextValue {
