@@ -223,8 +223,12 @@ const DataverseContext = createContext<DataverseContextValue | null>(null);
 
 export interface DataverseProviderProps {
   children: ReactNode;
-  /** Optional PCF context (if already available) */
-  pcfContext?: IPCFContext;
+  /** 
+   * Optional PCF context (ComponentFramework.Context<IInputs>).
+   * Accepts 'unknown' to avoid type conflicts with PCF's complex context type.
+   * The provider extracts webAPI and utils internally.
+   */
+  pcfContext?: unknown;
 }
 
 export function DataverseProvider({ children, pcfContext }: DataverseProviderProps) {
@@ -247,7 +251,21 @@ export function DataverseProvider({ children, pcfContext }: DataverseProviderPro
     let context: IPCFContext;
 
     if (pcfContext) {
-      context = pcfContext;
+      // Extract webAPI and utils from the PCF context
+      // ComponentFramework.Context has these properties but with different type signatures
+      const ctx = pcfContext as { webAPI?: unknown; utils?: unknown };
+      if (ctx.webAPI && ctx.utils) {
+        context = {
+          webAPI: ctx.webAPI as IPCFWebApi,
+          utils: ctx.utils as IPCFUtility,
+        };
+      } else {
+        // Fallback to mock if properties not found
+        context = {
+          webAPI: createMockWebApi(),
+          utils: createMockUtility(),
+        };
+      }
     } else if (isPCFEnvironment) {
       // Use real Xrm context
       const xrm = (window as unknown as { Xrm: { WebApi: IPCFWebApi; Utility: IPCFUtility } }).Xrm;
