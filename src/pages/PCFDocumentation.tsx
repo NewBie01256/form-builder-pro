@@ -11,7 +11,6 @@ import {
   Divider,
   Link,
 } from "@fluentui/react-components";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
   ArrowLeft24Regular,
   Database24Regular,
@@ -24,6 +23,7 @@ import {
   Document24Regular,
   Warning24Regular,
 } from "@fluentui/react-icons";
+import { useNavigation } from "@/lib/navigation";
 
 const useStyles = makeStyles({
   container: {
@@ -49,6 +49,10 @@ const useStyles = makeStyles({
     textDecoration: "none",
     marginBottom: tokens.spacingVerticalL,
     fontSize: tokens.fontSizeBase300,
+    cursor: "pointer",
+    background: "none",
+    border: "none",
+    padding: 0,
     "&:hover": {
       textDecoration: "underline",
     },
@@ -148,17 +152,17 @@ const useStyles = makeStyles({
 
 const PCFDocumentation = () => {
   const styles = useStyles();
-  const navigate = useNavigate();
+  const { navigate } = useNavigation();
 
   return (
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerContent}>
-          <RouterLink to="/docs" className={styles.backLink}>
+          <button onClick={() => navigate('docs')} className={styles.backLink}>
             <ArrowLeft24Regular />
             Back to Documentation
-          </RouterLink>
+          </button>
           <Title1>PCF Dataverse Wrapper</Title1>
           <Body1>
             Production-ready TypeScript services for Microsoft Dataverse integration
@@ -192,7 +196,7 @@ const PCFDocumentation = () => {
               size="large"
               icon={<Play24Filled />}
               className={styles.heroButton}
-              onClick={() => navigate('/docs/pcf/playground')}
+              onClick={() => navigate('docs-playground')}
             >
               Open Operations Playground
             </Button>
@@ -320,10 +324,10 @@ const PCFDocumentation = () => {
         {/* Footer */}
         <Divider />
         <div className={styles.footer}>
-          <RouterLink to="/docs" className={styles.backLink}>
+          <button onClick={() => navigate('docs')} className={styles.backLink}>
             <ArrowLeft24Regular />
             Back to Main Documentation
-          </RouterLink>
+          </button>
           <Link
             href="https://learn.microsoft.com/en-us/power-apps/developer/component-framework/overview"
             target="_blank"

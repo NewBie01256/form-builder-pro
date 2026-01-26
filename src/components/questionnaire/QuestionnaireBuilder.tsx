@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigation } from '@/lib/navigation';
 import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X, Upload, GripVertical, Code } from "lucide-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { 
@@ -208,6 +208,7 @@ interface ValidationErrors {
 const QuestionnaireBuilder = () => {
   const styles = useStyles();
   const toast = useFluentToast();
+  const { navigate } = useNavigation();
   const { createQuestionnaireRecord, updateQuestionnaireRecord, isPCFEnvironment } = useDataverse();
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [activePageId, setActivePageId] = useState<string | null>(null);
@@ -1418,11 +1419,9 @@ const QuestionnaireBuilder = () => {
                       <p style={{ color: tokens.colorNeutralForeground3 }}>Manage your IT Service Management questionnaires</p>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                      <Link to="/docs">
-                        <Button appearance="secondary" size="large" icon={<BookOpen className="h-4 w-4" />}>
-                          Documentation
-                        </Button>
-                      </Link>
+                      <Button appearance="secondary" size="large" icon={<BookOpen className="h-4 w-4" />} onClick={() => navigate('docs')}>
+                        Documentation
+                      </Button>
                       <Button 
                         appearance="secondary"
                         size="large"

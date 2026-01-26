@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigation } from "@/lib/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
@@ -537,6 +537,7 @@ const useStyles = makeStyles({
 
 const Documentation = () => {
   const styles = useStyles();
+  const { navigate } = useNavigation();
   const [activeSection, setActiveSection] = useState<string>("overview");
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -625,19 +626,15 @@ const Documentation = () => {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <Link to="/">
-            <Button appearance="subtle" icon={<ArrowLeft className="h-4 w-4" />}>
-              Back to Builder
-            </Button>
-          </Link>
+          <Button appearance="subtle" icon={<ArrowLeft className="h-4 w-4" />} onClick={() => navigate('home')}>
+            Back to Builder
+          </Button>
           <div className={styles.headerTitle}>
             <Text weight="semibold" size={400}>Questionnaire Builder Documentation</Text>
           </div>
-          <Link to="/docs/pcf">
-            <Button appearance="primary" icon={<Database className="h-4 w-4" />}>
-              PCF Technical Docs
-            </Button>
-          </Link>
+          <Button appearance="primary" icon={<Database className="h-4 w-4" />} onClick={() => navigate('docs-pcf')}>
+            PCF Technical Docs
+          </Button>
         </div>
       </header>
 

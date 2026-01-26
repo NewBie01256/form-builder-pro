@@ -1,32 +1,42 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { 
   FluentThemeProvider, 
   Toaster,
 } from "@/components/fluent";
 import { DataverseProvider } from "@/lib/dataverse/pcf";
+import { NavigationProvider, useNavigation, ViewState } from "@/lib/navigation";
 import Index from "./pages/Index";
 import Documentation from "./pages/Documentation";
 import PCFDocumentation from "./pages/PCFDocumentation";
 import DataversePlayground from "./pages/DataversePlayground";
 import Execute from "./pages/Execute";
-import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const ViewRouter = () => {
+  const { currentView } = useNavigation();
+  
+  switch (currentView) {
+    case 'home':
+      return <Index />;
+    case 'docs':
+      return <Documentation />;
+    case 'docs-pcf':
+      return <PCFDocumentation />;
+    case 'docs-playground':
+      return <DataversePlayground />;
+    case 'execute':
+      return <Execute />;
+    default:
+      return <Index />;
+  }
+};
+
 const AppContent = () => (
-  <BrowserRouter>
+  <>
     <Toaster toasterId="global-toaster" />
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/docs" element={<Documentation />} />
-      <Route path="/docs/pcf" element={<PCFDocumentation />} />
-      <Route path="/docs/pcf/playground" element={<DataversePlayground />} />
-      <Route path="/execute" element={<Execute />} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  </BrowserRouter>
+    <ViewRouter />
+  </>
 );
 
 const App = () => {
@@ -34,7 +44,9 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <FluentThemeProvider>
         <DataverseProvider>
-          <AppContent />
+          <NavigationProvider>
+            <AppContent />
+          </NavigationProvider>
         </DataverseProvider>
       </FluentThemeProvider>
     </QueryClientProvider>
