@@ -1,42 +1,44 @@
-/// <reference types="react" />
-/// <reference types="react-dom" />
+import type * as React from 'react';
 
 // Type declarations for react-syntax-highlighter (PCF build compatibility)
 declare module 'react-syntax-highlighter' {
-  import * as React from 'react';
+  import type { FC, CSSProperties, HTMLAttributes, ElementType, RefAttributes } from 'react';
   
   interface SyntaxHighlighterProps {
     children: string;
     language?: string;
-    style?: Record<string, React.CSSProperties>;
+    style?: Record<string, CSSProperties>;
     showLineNumbers?: boolean;
     wrapLines?: boolean;
-    customStyle?: React.CSSProperties;
-    codeTagProps?: React.HTMLAttributes<HTMLElement>;
-    lineNumberStyle?: React.CSSProperties | ((lineNumber: number) => React.CSSProperties);
+    customStyle?: CSSProperties;
+    codeTagProps?: HTMLAttributes<HTMLElement>;
+    lineNumberStyle?: CSSProperties | ((lineNumber: number) => CSSProperties);
     startingLineNumber?: number;
-    lineProps?: React.HTMLAttributes<HTMLElement> | ((lineNumber: number) => React.HTMLAttributes<HTMLElement>);
-    PreTag?: React.ElementType;
-    CodeTag?: React.ElementType;
+    lineProps?: HTMLAttributes<HTMLElement> | ((lineNumber: number) => HTMLAttributes<HTMLElement>);
+    PreTag?: ElementType;
+    CodeTag?: ElementType;
     useInlineStyles?: boolean;
   }
   
-  export const Prism: React.FC<SyntaxHighlighterProps>;
-  export const Light: React.FC<SyntaxHighlighterProps>;
-  export default React.FC<SyntaxHighlighterProps>;
+  export const Prism: FC<SyntaxHighlighterProps>;
+  export const Light: FC<SyntaxHighlighterProps>;
+  const SyntaxHighlighter: FC<SyntaxHighlighterProps>;
+  export default SyntaxHighlighter;
 }
 
 declare module 'react-syntax-highlighter/dist/esm/styles/prism' {
-  const oneDark: Record<string, React.CSSProperties>;
-  const vscDarkPlus: Record<string, React.CSSProperties>;
-  const tomorrow: Record<string, React.CSSProperties>;
-  const prism: Record<string, React.CSSProperties>;
+  import type { CSSProperties } from 'react';
+  const oneDark: Record<string, CSSProperties>;
+  const vscDarkPlus: Record<string, CSSProperties>;
+  const tomorrow: Record<string, CSSProperties>;
+  const prism: Record<string, CSSProperties>;
   export { oneDark, vscDarkPlus, tomorrow, prism };
 }
 
 declare module 'react-syntax-highlighter/dist/esm/styles/hljs' {
-  const vs2015: Record<string, React.CSSProperties>;
-  const docco: Record<string, React.CSSProperties>;
+  import type { CSSProperties } from 'react';
+  const vs2015: Record<string, CSSProperties>;
+  const docco: Record<string, CSSProperties>;
   export { vs2015, docco };
 }
 
@@ -44,7 +46,6 @@ declare module 'react-syntax-highlighter/dist/esm/styles/hljs' {
 export {};
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     type Element = React.JSX.Element;
     type ElementClass = React.JSX.ElementClass;
