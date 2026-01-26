@@ -14,8 +14,8 @@ import { DynamicValuesService, type DropdownOption } from './DynamicValuesServic
 import { CrudService } from './CrudService';
 import { QueryService } from './QueryService';
 import type { IPCFContext, IPCFWebApi, IPCFUtility, EntityMetadata, AttributeMetadata, DataverseResult, CreateResult, EntityReference } from './types';
-import type { DynamicValueConfig } from '@/types/questionnaire';
-import type { DataverseQuestionnaireRecord } from '@/lib/QuestionnaireWrapper';
+import type { DynamicValueConfig } from '../../../types/questionnaire';
+import type { DataverseQuestionnaireRecord } from '../../QuestionnaireWrapper';
 
 // ============================================================================
 // Context Types
