@@ -448,13 +448,13 @@ npm install react-syntax-highlighter`}
             <div className={styles.codeContainer}>
               <CodeBlock
                 code={`# From the Questionnaire Studio source project root
-# Copy entire src folder to PCF project
+# Copy entire src folder to your PCF control folder
 
 # Windows (PowerShell)
-Copy-Item -Path "src" -Destination "path/to/QuestionnaireStudio/src" -Recurse
+Copy-Item -Path "src" -Destination "path/to/QuestionnaireStudioControl/src" -Recurse
 
 # macOS/Linux
-cp -r src/ path/to/QuestionnaireStudio/src/
+cp -r src/ path/to/QuestionnaireStudioControl/src/
 
 # ──────────────────────────────────────
 # Files to EXCLUDE (Vite-specific, not needed in PCF)
