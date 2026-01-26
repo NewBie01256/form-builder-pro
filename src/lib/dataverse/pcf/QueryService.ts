@@ -115,7 +115,7 @@ function extractEntityFromFetchXml(fetchXml: string): string {
 // ============================================================================
 
 export class QueryService extends BaseDataverseService {
-  constructor(context: IPCFContext, config?: BaseServiceConfig) {
+  constructor(context: IPCFContext | unknown, config?: BaseServiceConfig) {
     super(context, {
       ...config,
       logger: config?.logger ?? createLogger('QueryService'),
@@ -676,7 +676,7 @@ export class QueryService extends BaseDataverseService {
  * @returns Configured QueryService instance
  */
 export function createQueryService(
-  context: IPCFContext,
+  context: IPCFContext | unknown,
   config?: BaseServiceConfig
 ): QueryService {
   return new QueryService(context, config);

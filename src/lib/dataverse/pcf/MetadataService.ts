@@ -65,7 +65,7 @@ export class MetadataService extends BaseDataverseService {
   private _entitiesCacheTime: number = 0;
   private readonly _cacheValidityMs = 5 * 60 * 1000; // 5 minutes
 
-  constructor(context: IPCFContext, config?: BaseServiceConfig) {
+  constructor(context: IPCFContext | unknown, config?: BaseServiceConfig) {
     super(context, config);
   }
 
@@ -281,7 +281,7 @@ export class MetadataService extends BaseDataverseService {
 // ============================================================================
 
 export function createMetadataService(
-  context: IPCFContext,
+  context: IPCFContext | unknown,
   config?: BaseServiceConfig
 ): MetadataService {
   return new MetadataService(context, config);
