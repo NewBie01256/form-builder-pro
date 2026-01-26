@@ -7,9 +7,9 @@
  * @see https://learn.microsoft.com/en-us/power-apps/developer/data-platform/fetchxml/overview
  */
 
-import type { DynamicValueConfig, DynamicValueFilter, DynamicValueFilterGroup } from '@/types/questionnaire';
-import { getEntityByLogicalName } from '@/data/dataverseEntities';
-import { parseLookupPath } from '@/data/dataverseEntities';
+import type { DynamicValueConfig, DynamicValueFilter, DynamicValueFilterGroup } from '../../types/questionnaire';
+import { getEntityByLogicalName } from '../../data/dataverseEntities';
+import { parseLookupPath } from '../../data/dataverseEntities';
 
 /**
  * Maps internal operators to FetchXML condition operators

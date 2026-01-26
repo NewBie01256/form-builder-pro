@@ -170,7 +170,7 @@ import {
   BaseDataverseService,
   type IPCFContext,
   type DataverseResult,
-} from '@/lib/dataverse/pcf';
+} from '../lib/dataverse/pcf';
 
 // The 'context' parameter is provided by Dynamics 365 at runtime
 // context.webAPI is connected to YOUR CRM environment
@@ -260,7 +260,7 @@ import {
   withSafeExecution,      // Result pattern wrapper
   withSafeRetry,          // Combined retry + safe execution
   handleError,            // Declarative error handlers
-} from '@/lib/dataverse/pcf';
+} from '../lib/dataverse/pcf';
 
 const crudService = createCrudService(context, { entityLogicalName: 'account' });
 
@@ -388,7 +388,7 @@ const CODE_STEP6_PCF = `// ═════════════════�
 // ═══════════════════════════════════════════════════════════════════════════
 
 import type { IInputs, IOutputs } from './generated/ManifestTypes';
-import { createCrudService, createQueryService } from '@/lib/dataverse/pcf';
+import { createCrudService, createQueryService } from '../lib/dataverse/pcf';
 
 export class MyPCFControl implements ComponentFramework.StandardControl<IInputs, IOutputs> {
   private crudService!: ReturnType<typeof createCrudService>;

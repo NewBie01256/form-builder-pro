@@ -11,7 +11,7 @@ import {
   Question, 
   ConditionalBranch,
   AnswerSet,
-} from '@/types/questionnaire';
+} from '../../types/questionnaire';
 
 /**
  * Callback type for traversal functions

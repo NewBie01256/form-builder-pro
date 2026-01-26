@@ -5,8 +5,8 @@
  */
 
 import { useRef, useCallback, useState } from 'react';
-import { tryCatch } from '@/lib/core/result';
-import { createLogger } from '@/lib/core/logger';
+import { tryCatch } from '../lib/core/result';
+import { createLogger } from '../lib/core/logger';
 import { useFluentToast } from './useFluentToast';
 
 const logger = createLogger('FileUpload');

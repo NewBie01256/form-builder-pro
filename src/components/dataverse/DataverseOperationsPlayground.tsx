@@ -252,7 +252,7 @@ export function DataverseOperationsPlayground() {
           .filter(fv => fv.field && fv.value)
           .reduce((acc, fv) => ({ ...acc, [fv.field]: fv.value }), {});
         return `// Create Record
-import { createCrudService, errorHandler } from '@/lib/dataverse/pcf';
+import { createCrudService, errorHandler } from '../lib/dataverse/pcf';
 
 const crudService = createCrudService(context, {
   entityLogicalName: '${entityVar}'
@@ -279,7 +279,7 @@ if (result.success) {
       
       case 'retrieve':
         return `// Retrieve Record
-import { createCrudService, errorHandler } from '@/lib/dataverse/pcf';
+import { createCrudService, errorHandler } from '../lib/dataverse/pcf';
 
 const crudService = createCrudService(context, {
   entityLogicalName: '${entityVar}'
@@ -308,7 +308,7 @@ if (result.success) {
           .filter(fv => fv.field && fv.value)
           .reduce((acc, fv) => ({ ...acc, [fv.field]: fv.value }), {});
         return `// Update Record
-import { createCrudService, errorHandler } from '@/lib/dataverse/pcf';
+import { createCrudService, errorHandler } from '../lib/dataverse/pcf';
 
 const crudService = createCrudService(context, {
   entityLogicalName: '${entityVar}'
@@ -338,7 +338,7 @@ if (result.success) {
 
       case 'delete':
         return `// Delete Record
-import { createCrudService, errorHandler, handleError } from '@/lib/dataverse/pcf';
+import { createCrudService, errorHandler, handleError } from '../lib/dataverse/pcf';
 
 const crudService = createCrudService(context, {
   entityLogicalName: '${entityVar}'
@@ -368,7 +368,7 @@ if (result.success) {
       case 'retrieveMultiple':
         if (useFetchXml) {
           return `// Retrieve Multiple (FetchXML)
-import { createQueryService, errorHandler, withSafeRetry } from '@/lib/dataverse/pcf';
+import { createQueryService, errorHandler, withSafeRetry } from '../lib/dataverse/pcf';
 
 const queryService = createQueryService(context);
 
@@ -388,7 +388,7 @@ if (result.success) {
 }`;
         }
         return `// Retrieve Multiple (OData)
-import { createQueryService, errorHandler, withSafeRetry } from '@/lib/dataverse/pcf';
+import { createQueryService, errorHandler, withSafeRetry } from '../lib/dataverse/pcf';
 
 const queryService = createQueryService(context);
 
@@ -417,7 +417,7 @@ if (result.success) {
 
       case 'count':
         return `// Count Records
-import { createQueryService, errorHandler } from '@/lib/dataverse/pcf';
+import { createQueryService, errorHandler } from '../lib/dataverse/pcf';
 
 const queryService = createQueryService(context);
 
@@ -446,7 +446,7 @@ import {
   withSafeRetry,          // Combined retry + safe execution
   handleError,            // Switch-case helper
   type NormalizedError,
-} from '@/lib/dataverse/pcf';
+} from '../lib/dataverse/pcf';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 1. BASIC ERROR HANDLING - Using errorHandler singleton

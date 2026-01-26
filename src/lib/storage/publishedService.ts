@@ -4,7 +4,7 @@
  * Manages published questionnaire persistence.
  */
 
-import { Questionnaire } from '@/types/questionnaire';
+import { Questionnaire } from '../../types/questionnaire';
 import { createStorageService, getWithFallback } from './storageService';
 import { StorageKeys, QuestionnaireStatus } from '../questionnaire/constants';
 import { calculateQuestionnaireStats } from '../questionnaire/stats';
