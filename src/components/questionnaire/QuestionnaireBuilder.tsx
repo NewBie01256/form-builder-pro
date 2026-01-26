@@ -1,8 +1,29 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigation } from '../../lib/navigation';
-import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X, Upload, GripVertical, Code } from "lucide-react";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import {
+  Add24Regular,
+  QuestionCircle24Regular,
+  Layer24Regular,
+  Document24Regular,
+  Clock24Regular,
+  ErrorCircle24Regular,
+  Settings24Regular,
+  Edit24Regular,
+  BranchFork24Regular,
+  TaskListSquareLtr24Regular,
+  Flash24Regular,
+  DocumentMultiple24Regular,
+  Save24Regular,
+  Delete24Regular,
+  Book24Regular,
+  ArrowDownload24Regular,
+  Play24Regular,
+  Dismiss24Regular,
+  ArrowUpload24Regular,
+  ReOrder24Regular,
+  Code24Regular,
+} from "@fluentui/react-icons";
 import { 
   ConfirmDialog, 
   Button, 
@@ -1180,9 +1201,9 @@ const QuestionnaireBuilder = () => {
     setSelectedBranchId(null);
   };
 
-  const handleSelectQuestion = (questionId: string, branchId?: string) => {
+  const handleSelectQuestion = (questionId: string, branchId: string | null) => {
     setSelectedQuestionId(questionId);
-    setSelectedBranchId(branchId || null);
+    setSelectedBranchId(branchId);
   };
 
   const handleSelectBranch = (branchId: string) => {
@@ -1208,21 +1229,22 @@ const QuestionnaireBuilder = () => {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'Incident':
-        return <AlertCircle className="h-5 w-5" />;
+        return <ErrorCircle24Regular />;
       case 'Service Request':
-        return <FileText className="h-5 w-5" />;
+        return <Document24Regular />;
       case 'Change':
-        return <Settings className="h-5 w-5" />;
+        return <Settings24Regular />;
       case 'Problem':
-        return <HelpCircle className="h-5 w-5" />;
+        return <QuestionCircle24Regular />;
       default:
-        return <FileText className="h-5 w-5" />;
+        return <Document24Regular />;
     }
   };
 
   return (
-    <PanelGroup direction="horizontal" className={styles.container}>
-      <Panel defaultSize={25} minSize={15} maxSize={40}>
+    <div className={styles.container}>
+      {/* Sidebar */}
+      <div style={{ width: '280px', minWidth: '200px', maxWidth: '400px', flexShrink: 0 }}>
         <Sidebar
           questionnaire={questionnaire}
           activePageId={activePageId}
@@ -1247,15 +1269,17 @@ const QuestionnaireBuilder = () => {
           onPublish={handlePublish}
           canPublish={!!editingRecordId}
         />
-      </Panel>
+      </div>
 
-      <PanelResizeHandle className={styles.resizeHandle}>
+      {/* Resize Handle */}
+      <div className={styles.resizeHandle}>
         <div className={styles.handleIcon}>
-          <GripVertical className="h-2.5 w-2.5" />
+          <ReOrder24Regular style={{ width: 10, height: 10 }} />
         </div>
-      </PanelResizeHandle>
+      </div>
 
-      <Panel defaultSize={75} minSize={50}>
+      {/* Main Content */}
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div className={styles.mainContent}>
         {questionnaire && (
           <PageTabs
@@ -1287,14 +1311,14 @@ const QuestionnaireBuilder = () => {
                       <Button
                         appearance="subtle"
                         size="small"
-                        icon={<X className="h-4 w-4" />}
+                        icon={<Dismiss24Regular />}
                         onClick={() => setPublishValidationErrors(null)}
                       />
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: tokens.spacingHorizontalS }}>
                       {publishValidationErrors.pages.length > 0 && (
                         <div className={styles.errorBanner}>
-                          <Files className="h-4 w-4 shrink-0" />
+                          <DocumentMultiple24Regular style={{ width: 16, height: 16, flexShrink: 0 }} />
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: tokens.fontWeightSemibold, fontSize: tokens.fontSizeBase200, marginBottom: "4px" }}>Pages ({publishValidationErrors.pages.length})</div>
                             {publishValidationErrors.pages.map((err, i) => (
@@ -1305,7 +1329,7 @@ const QuestionnaireBuilder = () => {
                       )}
                       {publishValidationErrors.sections.length > 0 && (
                         <div className={styles.errorBanner}>
-                          <Layers className="h-4 w-4 shrink-0" />
+                          <Layer24Regular style={{ width: 16, height: 16, flexShrink: 0 }} />
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: tokens.fontWeightSemibold, fontSize: tokens.fontSizeBase200, marginBottom: "4px" }}>Sections ({publishValidationErrors.sections.length})</div>
                             {publishValidationErrors.sections.map((err, i) => (
@@ -1316,7 +1340,7 @@ const QuestionnaireBuilder = () => {
                       )}
                       {publishValidationErrors.branches.length > 0 && (
                         <div className={styles.errorBanner}>
-                          <GitBranch className="h-4 w-4 shrink-0" />
+                          <BranchFork24Regular style={{ width: 16, height: 16, flexShrink: 0 }} />
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: tokens.fontWeightSemibold, fontSize: tokens.fontSizeBase200, marginBottom: "4px" }}>Branches ({publishValidationErrors.branches.length})</div>
                             {publishValidationErrors.branches.map((err, i) => (
@@ -1327,7 +1351,7 @@ const QuestionnaireBuilder = () => {
                       )}
                       {publishValidationErrors.questions.length > 0 && (
                         <div className={styles.errorBanner}>
-                          <HelpCircle className="h-4 w-4 shrink-0" />
+                          <QuestionCircle24Regular style={{ width: 16, height: 16, flexShrink: 0 }} />
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: tokens.fontWeightSemibold, fontSize: tokens.fontSizeBase200, marginBottom: "4px" }}>Questions ({publishValidationErrors.questions.length})</div>
                             {publishValidationErrors.questions.map((err, i) => (
@@ -1348,7 +1372,7 @@ const QuestionnaireBuilder = () => {
                         exportQuestionnaire(questionnaire);
                         toast.success("Questionnaire exported successfully!");
                       }}
-                      icon={<Download className="h-4 w-4" />}
+                      icon={<ArrowDownload24Regular />}
                     >
                       Export JSON
                     </Button>
@@ -1361,14 +1385,14 @@ const QuestionnaireBuilder = () => {
                           window.open('/execute', '_blank');
                         }
                       }}
-                      icon={<Play className="h-4 w-4" />}
+                      icon={<Play24Regular />}
                     >
                       Preview
                     </Button>
-                    <Button appearance="secondary" onClick={handleSaveAsDraft} icon={<Save className="h-4 w-4" />}>
+                    <Button appearance="secondary" onClick={handleSaveAsDraft} icon={<Save24Regular />}>
                       Save as Draft
                     </Button>
-                    <Button appearance="primary" onClick={handleAddSection} icon={<Plus className="h-4 w-4" />}>
+                    <Button appearance="primary" onClick={handleAddSection} icon={<Add24Regular />}>
                       Add Section
                     </Button>
                   </div>
@@ -1377,12 +1401,12 @@ const QuestionnaireBuilder = () => {
                 {activePage.sections.length === 0 && (
                   <Card className={mergeClasses(styles.card, styles.cardDashed)}>
                     <div className={styles.emptyState}>
-                      <Layers style={{ height: "48px", width: "48px", color: tokens.colorNeutralForeground3, margin: "0 auto 16px" }} />
+                      <Layer24Regular style={{ height: "48px", width: "48px", color: tokens.colorNeutralForeground3, margin: "0 auto 16px" }} />
                       <h3 style={{ fontWeight: tokens.fontWeightMedium, marginBottom: tokens.spacingVerticalS }}>No sections yet</h3>
                       <p style={{ fontSize: tokens.fontSizeBase200, color: tokens.colorNeutralForeground3, marginBottom: tokens.spacingVerticalM }}>
                         Add a section to start adding questions and conditional branches.
                       </p>
-                      <Button appearance="primary" onClick={handleAddSection} icon={<Plus className="h-4 w-4" />}>
+                      <Button appearance="primary" onClick={handleAddSection} icon={<Add24Regular />}>
                         Add Section
                       </Button>
                     </div>
@@ -1735,8 +1759,8 @@ const QuestionnaireBuilder = () => {
           </div>
         </div>
         </div>
-      </Panel>
-    </PanelGroup>
+      </div>
+    </div>
   );
 };
 
