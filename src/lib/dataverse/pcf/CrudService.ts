@@ -29,12 +29,10 @@ import type {
 // ============================================================================
 
 /**
- * Base constraint for entity records
- * Uses intersection to allow specific interfaces while requiring index signature
+ * Base constraint for entity records.
+ * Type alias for records that can have any properties.
  */
-export interface EntityRecord extends Record<string, unknown> {
-  // Marker interface for entity records
-}
+export type EntityRecord = Record<string, unknown>;
 
 /**
  * Configuration for CrudService
