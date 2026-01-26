@@ -8,7 +8,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { makeStyles, tokens } from '@fluentui/react-components';
 import { Copy16Regular, Checkmark16Regular } from '@fluentui/react-icons';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 const useStyles = makeStyles({
   container: {

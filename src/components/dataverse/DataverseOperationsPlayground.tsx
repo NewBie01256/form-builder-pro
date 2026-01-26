@@ -9,7 +9,7 @@
  * Works in real-time when deployed to Dataverse, uses mock data in development.
  */
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Button,
   Input,
