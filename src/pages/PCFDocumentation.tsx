@@ -23,7 +23,7 @@ import {
   Document24Regular,
   Warning24Regular,
 } from "@fluentui/react-icons";
-import { useNavigation } from "@/lib/navigation";
+import { useNavigation } from "../lib/navigation";
 
 const useStyles = makeStyles({
   container: {

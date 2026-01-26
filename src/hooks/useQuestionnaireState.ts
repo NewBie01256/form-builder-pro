@@ -11,19 +11,19 @@ import {
   Section, 
   Question, 
   ConditionalBranch 
-} from '@/types/questionnaire';
+} from '../types/questionnaire';
 import { 
   DraftService, 
   SavedDraft,
   PublishedService,
   PublishedRecord,
   PublishedRecordsMap,
-} from '@/lib/storage';
+} from '../lib/storage';
 import { 
   QuestionnaireFactory,
   collectAllQuestions,
-} from '@/lib/questionnaire';
-import { createLogger } from '@/lib/core/logger';
+} from '../lib/questionnaire';
+import { createLogger } from '../lib/core/logger';
 
 const logger = createLogger('QuestionnaireState');
 

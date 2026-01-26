@@ -31,7 +31,7 @@ import {
   Flash24Regular,
   ArrowUpload24Regular,
 } from "@fluentui/react-icons";
-import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer, AnswerLevelOperator, QuestionType } from "@/types/questionnaire";
+import { AnswerLevelRuleGroup, AnswerLevelRule, Question, AnswerSet, Answer, AnswerLevelOperator, QuestionType } from "../../types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 import DynamicRuleValueInput from "./DynamicRuleValueInput";
 

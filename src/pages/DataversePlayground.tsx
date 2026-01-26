@@ -23,7 +23,7 @@ import {
   Tab,
   shorthands,
 } from "@fluentui/react-components";
-import { useNavigation } from "@/lib/navigation";
+import { useNavigation } from "../lib/navigation";
 import { 
   ArrowLeft24Regular,
   Database24Regular,
@@ -37,9 +37,9 @@ import {
   Checkmark16Regular,
   DocumentBriefcase24Regular,
 } from "@fluentui/react-icons";
-import { DataverseOperationsPlayground } from "@/components/dataverse";
-import { QuestionnaireWrapperPlayground } from "@/components/questionnaire/QuestionnaireWrapperPlayground";
-import { CodeBlock } from "@/features/pcf-docs";
+import { DataverseOperationsPlayground } from "../components/dataverse";
+import { QuestionnaireWrapperPlayground } from "../components/questionnaire/QuestionnaireWrapperPlayground";
+import { CodeBlock } from "../features/pcf-docs";
 
 const useStyles = makeStyles({
   page: {

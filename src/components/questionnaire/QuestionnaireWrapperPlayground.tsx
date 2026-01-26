@@ -28,9 +28,9 @@ import {
   ArrowDownload24Regular,
   Info24Regular,
 } from '@fluentui/react-icons';
-import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
-import { QuestionnaireFactory } from '@/lib/questionnaire';
-import { CodeBlock } from '@/features/pcf-docs';
+import { QuestionnaireWrapper } from '../../lib/QuestionnaireWrapper';
+import { QuestionnaireFactory } from '../../lib/questionnaire';
+import { CodeBlock } from '../../features/pcf-docs';
 
 const useStyles = makeStyles({
   container: {

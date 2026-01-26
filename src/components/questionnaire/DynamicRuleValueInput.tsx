@@ -7,7 +7,7 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { Question, Answer, QuestionType } from "@/types/questionnaire";
+import { Question, Answer, QuestionType } from "../../types/questionnaire";
 
 const useStyles = makeStyles({
   container: {

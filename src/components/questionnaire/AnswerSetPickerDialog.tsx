@@ -13,9 +13,9 @@ import {
   Text,
 } from "@fluentui/react-components";
 import { Search24Regular } from "@fluentui/react-icons";
-import { AnswerSet } from "@/types/questionnaire";
-import { sampleAnswerSets, getUniqueTags } from "@/data/sampleAnswerSets";
-import { cn } from "@/lib/utils";
+import { AnswerSet } from "../../types/questionnaire";
+import { sampleAnswerSets, getUniqueTags } from "../../data/sampleAnswerSets";
+import { cn } from "../../lib/utils";
 
 const useStyles = makeStyles({
   surface: {

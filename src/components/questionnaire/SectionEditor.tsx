@@ -21,11 +21,11 @@ import {
   BranchFork24Regular,
   QuestionCircle24Regular,
 } from "@fluentui/react-icons";
-import { Section, Question, ConditionalBranch, AnswerSet } from "@/types/questionnaire";
+import { Section, Question, ConditionalBranch, AnswerSet } from "../../types/questionnaire";
 import QuestionEditor from "./QuestionEditor";
 import BranchEditor from "./BranchEditor";
-import { cn } from "@/lib/utils";
-import { ConfirmDialog } from "@/components/fluent";
+import { cn } from "../../lib/utils";
+import { ConfirmDialog } from "../fluent";
 
 const useStyles = makeStyles({
   card: {

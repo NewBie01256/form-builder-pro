@@ -29,9 +29,9 @@ import {
   Search24Regular,
   Dismiss24Regular,
 } from "@fluentui/react-icons";
-import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
-import { Question, ConditionalBranch, Questionnaire, Page, Section } from "@/types/questionnaire";
-import { cn } from "@/lib/utils";
+import { AutoResizeTextarea } from "../ui/auto-resize-textarea";
+import { Question, ConditionalBranch, Questionnaire, Page, Section } from "../../types/questionnaire";
+import { cn } from "../../lib/utils";
 
 const useStyles = makeStyles({
   container: {

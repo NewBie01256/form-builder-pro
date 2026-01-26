@@ -1,4 +1,4 @@
-import { Questionnaire } from "@/types/questionnaire";
+import { Questionnaire } from "../types/questionnaire";
 
 export interface ExportedQuestionnaire {
   version: "1.0";

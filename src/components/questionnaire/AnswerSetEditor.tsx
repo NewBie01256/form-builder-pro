@@ -29,10 +29,10 @@ import {
   ArrowUpload24Regular,
   Delete24Regular,
 } from "@fluentui/react-icons";
-import { AnswerSet, Answer, QuestionType, TextValidationType, TextAreaFormat } from "@/types/questionnaire";
+import { AnswerSet, Answer, QuestionType, TextValidationType, TextAreaFormat } from "../../types/questionnaire";
 import ActionRecordEditor from "./ActionRecordEditor";
 import DynamicValuesPanel, { DynamicValueConfig, DynamicValueFilterGroup } from "./DynamicValuesPanel";
-import RichTextEditor from "@/components/ui/rich-text-editor";
+import RichTextEditor from "../ui/rich-text-editor";
 
 const useStyles = makeStyles({
   container: {

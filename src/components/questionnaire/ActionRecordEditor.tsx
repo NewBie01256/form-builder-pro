@@ -18,7 +18,7 @@ import {
   Text,
 } from "@fluentui/react-components";
 import { Flash24Regular, Edit24Regular } from "@fluentui/react-icons";
-import { ActionRecord, ImpactLevel, UrgencyLevel } from "@/types/questionnaire";
+import { ActionRecord, ImpactLevel, UrgencyLevel } from "../../types/questionnaire";
 
 const useStyles = makeStyles({
   surface: {

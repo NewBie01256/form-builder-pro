@@ -9,7 +9,7 @@ import {
   ArrowUndo24Regular,
   ArrowRedo24Regular,
 } from "@fluentui/react-icons";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 import { useEffect } from "react";
 
 const useStyles = makeStyles({

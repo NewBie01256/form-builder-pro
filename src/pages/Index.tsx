@@ -1,4 +1,4 @@
-import QuestionnaireBuilder from "@/components/questionnaire/QuestionnaireBuilder";
+import QuestionnaireBuilder from "../components/questionnaire/QuestionnaireBuilder";
 
 const Index = () => {
   return <QuestionnaireBuilder />;
