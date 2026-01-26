@@ -9,7 +9,7 @@
 
 import { BaseDataverseService, type BaseServiceConfig } from './BaseDataverseService';
 import type { IPCFContext, DataverseResult, QueryResult } from './types';
-import type { DynamicValueConfig, DynamicValueFilterGroup, DynamicValueFilter } from '@/types/questionnaire';
+import type { DynamicValueConfig, DynamicValueFilterGroup, DynamicValueFilter } from '../../../types/questionnaire';
 
 // ============================================================================
 // Types

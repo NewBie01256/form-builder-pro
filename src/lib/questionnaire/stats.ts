@@ -9,7 +9,7 @@ import {
   ConditionalBranch,
   Question,
   AnswerSet,
-} from '@/types/questionnaire';
+} from '../../types/questionnaire';
 import { 
   traverseQuestions, 
   countBranchesInBranch,

@@ -16,12 +16,12 @@ import {
   Answer,
   QuestionType,
   ActionRecord,
-} from '@/types/questionnaire';
+} from '../../types/questionnaire';
 import { 
   QuestionConditionGroup, 
   AnswerSetConditionGroup,
   createEmptyQuestionConditionGroup,
-} from '@/types/condition';
+} from '../../types/condition';
 import { QuestionnaireStatus, Defaults } from './constants';
 
 /**

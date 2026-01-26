@@ -36,7 +36,7 @@ import type {
   IUtility,
   ExpandOption,
 } from './types';
-import type { DynamicValueConfig } from '@/types/questionnaire';
+import type { DynamicValueConfig } from '../../types/questionnaire';
 import { generateODataUrl, generateODataParts } from './odataGenerator';
 import { generateFetchXml } from './fetchXmlGenerator';
 

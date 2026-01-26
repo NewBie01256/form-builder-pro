@@ -393,7 +393,7 @@ export function QuestionnaireWrapperPlayground() {
   const codePreview = useMemo(() => {
     switch (selectedMethod) {
       case 'fromId':
-        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+        return `import { QuestionnaireWrapper } from '../lib/QuestionnaireWrapper';
 
 // Load questionnaire by ID from localStorage (drafts or published)
 const result = QuestionnaireWrapper.fromId("draft-abc123");
@@ -408,7 +408,7 @@ if (result.success) {
 }`;
 
       case 'fromName':
-        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+        return `import { QuestionnaireWrapper } from '../lib/QuestionnaireWrapper';
 
 // Load questionnaire by name from localStorage
 const result = QuestionnaireWrapper.fromName("IT Support Request");
@@ -422,7 +422,7 @@ if (result.success) {
 }`;
 
       case 'listAll':
-        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+        return `import { QuestionnaireWrapper } from '../lib/QuestionnaireWrapper';
 
 // List all available questionnaires from localStorage
 const allItems = QuestionnaireWrapper.listAll();
@@ -439,8 +439,8 @@ if (allItems.length > 0) {
 }`;
 
       case 'toDataverseRecord':
-        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
-import { CrudService } from '@/lib/dataverse/pcf/CrudService';
+        return `import { QuestionnaireWrapper } from '../lib/QuestionnaireWrapper';
+import { CrudService } from '../lib/dataverse/pcf/CrudService';
 
 // Generate Dataverse record for ctna_questionnaire entity
 const wrapper = new QuestionnaireWrapper(questionnaire);
@@ -469,7 +469,7 @@ if (result.success) {
 }`;
 
       case 'toJSON':
-        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+        return `import { QuestionnaireWrapper } from '../lib/QuestionnaireWrapper';
 
 // Get full export format (ExportedQuestionnaire)
 const wrapper = new QuestionnaireWrapper(questionnaire);
@@ -480,7 +480,7 @@ console.log(exportData.exportedAt);    // ISO timestamp
 console.log(exportData.questionnaire); // Full questionnaire`;
 
       case 'toJSONString':
-        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+        return `import { QuestionnaireWrapper } from '../lib/QuestionnaireWrapper';
 
 const wrapper = new QuestionnaireWrapper(questionnaire);
 
@@ -489,7 +489,7 @@ const jsonString = wrapper.toJSONString();
 const compactJson = wrapper.toJSONString(0); // No indentation`;
 
       case 'getRawQuestionnaire':
-        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+        return `import { QuestionnaireWrapper } from '../lib/QuestionnaireWrapper';
 
 const wrapper = new QuestionnaireWrapper(questionnaire);
 
@@ -499,7 +499,7 @@ console.log(raw.name);
 console.log(raw.pages.length);`;
 
       case 'getMetadata':
-        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+        return `import { QuestionnaireWrapper } from '../lib/QuestionnaireWrapper';
 
 const wrapper = new QuestionnaireWrapper(questionnaire);
 
@@ -510,7 +510,7 @@ console.log(metadata.version);
 console.log(metadata.status);`;
 
       case 'toBlob':
-        return `import { QuestionnaireWrapper } from '@/lib/QuestionnaireWrapper';
+        return `import { QuestionnaireWrapper } from '../lib/QuestionnaireWrapper';
 
 const wrapper = new QuestionnaireWrapper(questionnaire);
 
@@ -558,7 +558,7 @@ link.click();`;
             </Text>
             <CodeBlock 
               language="typescript" 
-              code={`import { QuestionnaireWrapper } from "@/lib/QuestionnaireWrapper";
+              code={`import { QuestionnaireWrapper } from "../lib/QuestionnaireWrapper";
 
 // Option 1: Load by ID from localStorage
 const byIdResult = QuestionnaireWrapper.fromId("draft-abc123");

@@ -4,7 +4,7 @@
  * Manages questionnaire draft persistence.
  */
 
-import { Questionnaire } from '@/types/questionnaire';
+import { Questionnaire } from '../../types/questionnaire';
 import { createStorageService, getWithFallback } from './storageService';
 import { StorageKeys } from '../questionnaire/constants';
 import { getQuestionnaireStats } from '../questionnaire/stats';

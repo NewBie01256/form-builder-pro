@@ -7,8 +7,8 @@
  * @see https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query-data-web-api
  */
 
-import type { DynamicValueConfig, DynamicValueFilter, DynamicValueFilterGroup } from '@/types/questionnaire';
-import { getEntityByLogicalName, parseLookupPath } from '@/data/dataverseEntities';
+import type { DynamicValueConfig, DynamicValueFilter, DynamicValueFilterGroup } from '../../types/questionnaire';
+import { getEntityByLogicalName, parseLookupPath } from '../../data/dataverseEntities';
 
 /**
  * Maps internal operators to OData $filter operators/functions
