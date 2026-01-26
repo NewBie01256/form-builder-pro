@@ -946,6 +946,18 @@ pac solution import --path ./bin/Release/CTNASolution.zip`}
                 <div className={styles.checklistItem}>
                   <Circle24Regular /> No Node.js-only packages (glob, fs, path)
                 </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Replaced <code>lucide-react</code> with <code>@fluentui/react-icons</code>
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Replaced <code>tailwind-merge</code> with <code>clsx</code>
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Test files deleted (<code>src/test/</code>, <code>vitest.config.ts</code>)
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> React imports use namespace pattern: <code>import * as React from 'react'</code>
+                </div>
 
                 <Title3 style={{ marginTop: tokens.spacingVerticalL }}>🚫 Forbidden APIs</Title3>
                 <div className={styles.checklistItem}>
@@ -976,6 +988,15 @@ pac solution import --path ./bin/Release/CTNASolution.zip`}
                 </div>
                 <div className={styles.checklistItem}>
                   <Circle24Regular /> Logger configured for production (WARN/ERROR only)
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Environment detection uses <code>window.location.hostname</code> (not <code>import.meta.env</code>)
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Optional chaining used for potentially undefined objects
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Flex layout used instead of <code>react-resizable-panels</code>
                 </div>
 
                 <Title3 style={{ marginTop: tokens.spacingVerticalL }}>🎨 Styling</Title3>
@@ -1058,7 +1079,107 @@ pac solution import --path ./bin/Release/CTNASolution.zip`}
                 Common Issues & Solutions
               </AccordionHeader>
               <AccordionPanel className={styles.accordionPanel}>
-                <Title3>Module Resolution Errors</Title3>
+                <Title3>TS2307: Cannot find module 'vitest'</Title3>
+                <Body1>
+                  Test files using <code>vitest</code> are not compatible with PCF. Delete the <code>src/test/</code> folder:
+                </Body1>
+                <div className={styles.codeContainer}>
+                  <CodeBlock
+                    code={`# Windows
+rmdir /s /q src\\test
+
+# macOS/Linux
+rm -rf src/test`}
+                    language="bash"
+                  />
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
+                  TS2339: Property 'env' does not exist on 'ImportMeta'
+                </Title3>
+                <Body1>
+                  PCF doesn't support <code>import.meta.env</code>. Use hostname detection instead:
+                </Body1>
+                <div className={styles.codeContainer}>
+                  <CodeBlock
+                    code={`// ❌ BROKEN in PCF
+const isDev = import.meta.env.DEV;
+
+// ✅ PCF-compatible
+const isDevelopment = (): boolean => {
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1';
+  }
+  return false;
+};`}
+                    language="typescript"
+                  />
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
+                  TS2532: Object is possibly 'undefined'
+                </Title3>
+                <Body1>
+                  PCF's stricter TypeScript requires explicit null checks. Use optional chaining and nullish coalescing:
+                </Body1>
+                <div className={styles.codeContainer}>
+                  <CodeBlock
+                    code={`// ❌ May fail in PCF
+if (answers.children.length > 0) { ... }
+
+// ✅ PCF-safe with nullish coalescing
+if ((answers?.children?.length ?? 0) > 0) { ... }`}
+                    language="typescript"
+                  />
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
+                  ESLint: Use "@ts-expect-error" instead of "@ts-ignore"
+                </Title3>
+                <Body1>
+                  PCF ESLint rules prohibit <code>@ts-ignore</code>. Either fix the underlying type issue or use <code>@ts-expect-error</code> with a comment explaining why.
+                </Body1>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
+                  Module not found: lucide-react or tailwind-merge
+                </Title3>
+                <Body1>
+                  These packages are not PCF-compatible. Replace with:
+                </Body1>
+                <div className={styles.codeContainer}>
+                  <CodeBlock
+                    code={`// ❌ Not PCF-safe
+import { Plus, Trash } from "lucide-react";
+import { cn } from "tailwind-merge";
+
+// ✅ PCF-compatible replacements
+import { Add24Regular, Delete24Regular } from "@fluentui/react-icons";
+import clsx from "clsx";`}
+                    language="typescript"
+                  />
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
+                  TS2686: 'React' refers to a UMD global
+                </Title3>
+                <Body1>
+                  PCF requires explicit React imports. Use namespace import pattern:
+                </Body1>
+                <div className={styles.codeContainer}>
+                  <CodeBlock
+                    code={`// ❌ May fail in PCF
+import React from 'react';
+
+// ✅ PCF-compatible namespace import
+import * as React from 'react';`}
+                    language="typescript"
+                  />
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
+                  Module Resolution Errors
+                </Title3>
                 <Body1>
                   If you see "Cannot find module" errors, verify all imports use relative paths
                   and barrel exports (index.ts) are correctly configured.
@@ -1079,6 +1200,26 @@ pac solution import --path ./bin/Release/CTNASolution.zip`}
                   Ensure FluentThemeProvider wraps your entire component tree and that
                   @fluentui/react-components is properly installed.
                 </Body1>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
+                  react-resizable-panels Module Error
+                </Title3>
+                <Body1>
+                  This package may cause issues in PCF. Replace with standard flex layout:
+                </Body1>
+                <div className={styles.codeContainer}>
+                  <CodeBlock
+                    code={`// ❌ May not work in PCF
+import { ResizablePanelGroup, ResizablePanel } from "react-resizable-panels";
+
+// ✅ Use flex layout instead
+<div style={{ display: 'flex', height: '100%' }}>
+  <aside style={{ width: '280px', flexShrink: 0 }}>Sidebar</aside>
+  <main style={{ flex: 1 }}>Content</main>
+</div>`}
+                    language="typescript"
+                  />
+                </div>
 
                 <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
                   Large Bundle Size
