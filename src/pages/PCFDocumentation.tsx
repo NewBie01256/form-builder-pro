@@ -374,152 +374,104 @@ npm install react-syntax-highlighter`}
           <Card className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepNumber}>2</div>
-              <Title3>Create Folder Structure</Title3>
+              <Title3>Copy Source Folder As-Is</Title3>
             </div>
             <Body1>
-              Organize your PCF project with the following structure:
+              The <code>src/</code> folder structure is kept exactly as-is. Simply copy the entire folder into your PCF project:
             </Body1>
             <div className={styles.codeContainer}>
               <CodeBlock
                 code={`QuestionnaireStudio/
-├── ControlManifest.Input.xml      # PCF manifest
-├── index.ts                       # PCF control entry point
-├── css/
-│   └── QuestionnaireStudio.css    # Global styles (converted from index.css)
+├── ControlManifest.Input.xml      # PCF manifest (new)
+├── index.ts                       # PCF control entry point (new)
+├── generated/                     # PCF generated types (auto-created)
+│   └── ManifestTypes.d.ts
 │
-├── types/
-│   ├── questionnaire.ts           # Questionnaire, Page, Section, Question
-│   ├── condition.ts               # RuleGroup, QuestionLevelRule
-│   └── questionnaireResponse.ts   # Response types for executor
-│
-├── lib/
-│   ├── core/
-│   │   ├── result.ts              # Result<T> pattern
-│   │   ├── id.ts                  # EntityId generation
-│   │   ├── guards.ts              # Type guards
-│   │   └── logger.ts              # Environment-aware logging
-│   │
-│   ├── questionnaire/
-│   │   ├── factory.ts             # Create default entities
-│   │   ├── traversal.ts           # Tree traversal utilities
-│   │   ├── stats.ts               # Count calculations
-│   │   └── constants.ts           # Question types, operators
-│   │
-│   ├── dataverse/
-│   │   ├── types.ts               # Dataverse-specific types
-│   │   ├── CrudService.ts         # Create, Read, Update, Delete
-│   │   ├── QueryService.ts        # OData & FetchXML queries
-│   │   ├── MetadataService.ts     # Entity metadata discovery
-│   │   ├── ErrorHandler.ts        # Result pattern wrapper
-│   │   └── index.ts               # Barrel exports
-│   │
-│   ├── storage/
-│   │   ├── storageService.ts      # Abstract storage interface
-│   │   ├── draftService.ts        # Draft persistence (→ Dataverse)
-│   │   └── publishedService.ts    # Published persistence (→ Dataverse)
-│   │
-│   ├── navigation/
-│   │   ├── types.ts               # ViewState definitions
-│   │   └── NavigationContext.tsx  # State-based navigation
-│   │
-│   ├── conditionEvaluator.ts      # Runtime rule evaluation
-│   ├── QuestionnaireWrapper.ts    # Export/serialization helper
-│   └── questionnaireExport.ts     # JSON/CSV export utilities
-│
-├── components/
-│   ├── fluent/
-│   │   ├── FluentThemeProvider.tsx
-│   │   ├── ConfirmDialog.tsx
-│   │   ├── icons.ts
-│   │   └── index.ts
-│   │
-│   ├── questionnaire/
-│   │   ├── QuestionnaireBuilder.tsx    # Main builder component
-│   │   ├── PageTabs.tsx
-│   │   ├── Sidebar.tsx
-│   │   ├── SectionEditor.tsx
-│   │   ├── QuestionEditor.tsx
-│   │   ├── AnswerSetEditor.tsx
-│   │   ├── BranchEditor.tsx
-│   │   ├── RuleGroupEditor.tsx
-│   │   ├── DynamicValuesPanel.tsx
-│   │   └── ... (other editors)
-│   │
-│   ├── executor/
-│   │   └── QuestionRenderer.tsx        # Runtime question renderer
-│   │
-│   └── ui/
-│       ├── code-block.tsx
-│       ├── rich-text-editor.tsx
-│       ├── auto-resize-textarea.tsx
-│       └── required-label.tsx
-│
-├── hooks/
-│   ├── useQuestionnaireState.ts   # Main builder state
-│   ├── useConfirmation.ts
-│   ├── useFluentToast.ts
-│   ├── useNotification.ts
-│   └── useFileUpload.ts
-│
-├── data/
-│   ├── sampleAnswerSets.ts        # Library answer sets
-│   └── sampleITSMRecords.ts       # Template questionnaires
-│
-└── pages/
-    ├── Index.tsx                  # Home screen
-    ├── Execute.tsx                # Questionnaire executor
-    └── Documentation.tsx          # (Optional) embedded docs`}
-                language="bash"
-              />
-            </div>
-          </Card>
-
-          {/* Step 3: Copy Core Files */}
-          <Card className={styles.stepCard}>
-            <div className={styles.stepHeader}>
-              <div className={styles.stepNumber}>3</div>
-              <Title3>Copy Source Files</Title3>
-            </div>
-            <Body1>
-              Copy files from the source project to your PCF project. Use this mapping:
-            </Body1>
-            <div className={styles.codeContainer}>
-              <CodeBlock
-                code={`# Core Types (copy as-is)
-src/types/                    →  QuestionnaireStudio/types/
-
-# Library Utilities (copy as-is)
-src/lib/core/                 →  QuestionnaireStudio/lib/core/
-src/lib/questionnaire/        →  QuestionnaireStudio/lib/questionnaire/
-src/lib/dataverse/pcf/        →  QuestionnaireStudio/lib/dataverse/
-src/lib/storage/              →  QuestionnaireStudio/lib/storage/
-src/lib/navigation/           →  QuestionnaireStudio/lib/navigation/
-src/lib/conditionEvaluator.ts →  QuestionnaireStudio/lib/
-src/lib/QuestionnaireWrapper.ts → QuestionnaireStudio/lib/
-src/lib/questionnaireExport.ts  → QuestionnaireStudio/lib/
-
-# Components (copy as-is)
-src/components/fluent/        →  QuestionnaireStudio/components/fluent/
-src/components/questionnaire/ →  QuestionnaireStudio/components/questionnaire/
-src/components/executor/      →  QuestionnaireStudio/components/executor/
-src/components/ui/            →  QuestionnaireStudio/components/ui/
-
-# Hooks (copy as-is)
-src/hooks/                    →  QuestionnaireStudio/hooks/
-
-# Data (copy as-is)
-src/data/                     →  QuestionnaireStudio/data/
-
-# Pages (copy and adapt)
-src/pages/Index.tsx           →  QuestionnaireStudio/pages/
-src/pages/Execute.tsx         →  QuestionnaireStudio/pages/`}
+└── src/                           # ⬅️ COPY ENTIRE FOLDER AS-IS
+    ├── App.tsx                    # Main app component
+    ├── App.css
+    ├── index.css                  # Tailwind → CSS variables
+    ├── main.tsx                   # (Not used in PCF, entry is index.ts)
+    │
+    ├── types/
+    │   ├── questionnaire.ts
+    │   ├── condition.ts
+    │   └── questionnaireResponse.ts
+    │
+    ├── lib/
+    │   ├── core/                  # Result pattern, ID, guards, logging
+    │   ├── questionnaire/         # Factory, traversal, stats, constants
+    │   ├── dataverse/pcf/         # CRUD, Query, Metadata services
+    │   ├── storage/               # Draft & Published services
+    │   ├── navigation/            # State-based navigation
+    │   ├── conditionEvaluator.ts
+    │   ├── QuestionnaireWrapper.ts
+    │   └── questionnaireExport.ts
+    │
+    ├── components/
+    │   ├── fluent/                # FluentThemeProvider, ConfirmDialog
+    │   ├── questionnaire/         # Builder UI components
+    │   ├── executor/              # Runtime question renderer
+    │   ├── dataverse/             # Dataverse playground
+    │   └── ui/                    # Shared UI components
+    │
+    ├── hooks/                     # Custom React hooks
+    ├── data/                      # Sample data & templates
+    ├── pages/                     # Index, Execute, Documentation
+    └── features/                  # Feature-specific modules`}
                 language="bash"
               />
             </div>
             <div className={styles.successBox}>
               <CheckmarkCircle24Regular />
               <Body1>
-                All source files already use relative imports, making them PCF-compatible out of the box.
+                <b>Key advantage:</b> No restructuring needed! The folder hierarchy stays identical, preserving all relative imports.
+              </Body1>
+            </div>
+          </Card>
+
+          {/* Step 3: Copy Command */}
+          <Card className={styles.stepCard}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepNumber}>3</div>
+              <Title3>Copy Files to PCF Project</Title3>
+            </div>
+            <Body1>
+              Use these commands to copy the source folder:
+            </Body1>
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`# From the Questionnaire Studio source project root
+# Copy entire src folder to PCF project
+
+# Windows (PowerShell)
+Copy-Item -Path "src" -Destination "path/to/QuestionnaireStudio/src" -Recurse
+
+# macOS/Linux
+cp -r src/ path/to/QuestionnaireStudio/src/
+
+# ──────────────────────────────────────
+# Files to EXCLUDE (Vite-specific, not needed in PCF)
+# ──────────────────────────────────────
+# - src/main.tsx          (PCF uses index.ts as entry)
+# - src/vite-env.d.ts     (Vite types not needed)
+# - vite.config.ts        (PCF has own build)
+# - tailwind.config.ts    (Convert to CSS)
+# - postcss.config.js     (Not needed)
+
+# ──────────────────────────────────────
+# Files to ADAPT
+# ──────────────────────────────────────
+# - src/index.css         → Convert Tailwind directives to CSS
+# - src/App.tsx           → Remove Vite-specific imports if any
+# - src/lib/storage/*     → Replace localStorage with Dataverse`}
+                language="bash"
+              />
+            </div>
+            <div className={styles.successBox}>
+              <CheckmarkCircle24Regular />
+              <Body1>
+                All source files already use relative imports (e.g., <code>../types/questionnaire</code>), making them PCF-compatible out of the box.
               </Body1>
             </div>
           </Card>
@@ -647,15 +599,15 @@ export const createDraftService = (context: ComponentFramework.Context<IInputs>)
             </Body1>
             <div className={styles.codeContainer}>
               <CodeBlock
-                code={`// index.ts - PCF Control Entry Point
+                code={`// index.ts - PCF Control Entry Point (at project root, next to src/)
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as React from "react";
-import { createCrudService, createQueryService } from "./lib/dataverse";
-import { NavigationProvider } from "./lib/navigation/NavigationContext";
-import { FluentThemeProvider } from "./components/fluent";
-import { DataverseProvider } from "./lib/dataverse/DataverseContext";
+import { createCrudService, createQueryService } from "./src/lib/dataverse/pcf";
+import { NavigationProvider } from "./src/lib/navigation/NavigationContext";
+import { FluentThemeProvider } from "./src/components/fluent";
+import { DataverseProvider } from "./src/lib/dataverse/pcf/DataverseContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { App } from "./App";
+import App from "./src/App";
 
 // PCF-safe QueryClient configuration
 const queryClient = new QueryClient({
