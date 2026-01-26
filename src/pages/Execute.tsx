@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useNavigation } from "@/lib/navigation";
 import {
   Button,
   Card,
@@ -163,6 +163,15 @@ const useStyles = makeStyles({
 
 type ResponseValue = string | string[] | number | boolean | null;
 type ResponseMap = Record<string, ResponseValue>;
+
+const BackToBuilderButton = () => {
+  const { navigate } = useNavigation();
+  return (
+    <Button appearance="subtle" icon={<Home24Regular />} onClick={() => navigate('home')}>
+      Back to Builder
+    </Button>
+  );
+};
 
 const Execute = () => {
   const styles = useStyles();
@@ -457,11 +466,7 @@ const Execute = () => {
             >
               Import Questionnaire JSON
             </Button>
-            <Link to="/">
-              <Button appearance="subtle" icon={<Home24Regular />}>
-                Back to Builder
-              </Button>
-            </Link>
+            <BackToBuilderButton />
           </div>
         </div>
       </div>

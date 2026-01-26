@@ -23,7 +23,7 @@ import {
   Tab,
   shorthands,
 } from "@fluentui/react-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigation } from "@/lib/navigation";
 import { 
   ArrowLeft24Regular,
   Database24Regular,
@@ -434,7 +434,7 @@ export class MyPCFControl implements ComponentFramework.StandardControl<IInputs,
 
 export default function DataversePlaygroundPage() {
   const styles = useStyles();
-  const navigate = useNavigate();
+  const { navigate } = useNavigation();
   const [activeTab, setActiveTab] = useState<string>("playground");
 
   return (
@@ -452,7 +452,7 @@ export default function DataversePlaygroundPage() {
           <Button
             appearance="subtle"
             icon={<ArrowLeft24Regular />}
-            onClick={() => navigate('/docs/pcf')}
+            onClick={() => navigate('docs-pcf')}
           >
             Back to Full Docs
           </Button>
