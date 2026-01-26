@@ -469,13 +469,19 @@ Copy-Item -Path "src" -Destination "path/to/QuestionnaireStudioControl/src" -Rec
 cp -r src/ path/to/QuestionnaireStudioControl/src/
 
 # ──────────────────────────────────────
-# Files to EXCLUDE (Vite-specific, not needed in PCF)
+# Files/Folders to EXCLUDE (Vite/test-specific, not needed in PCF)
 # ──────────────────────────────────────
 # - src/main.tsx          (PCF uses index.ts as entry)
 # - src/vite-env.d.ts     (Vite types not needed)
+# - src/test/             (vitest not available in PCF)
 # - vite.config.ts        (PCF has own build)
+# - vitest.config.ts      (Test config not needed)
 # - tailwind.config.ts    (Convert to CSS)
 # - postcss.config.js     (Not needed)
+
+# Delete test folder if copied:
+# Windows: rmdir /s /q src\\test
+# macOS/Linux: rm -rf src/test
 
 # ──────────────────────────────────────
 # Files to ADAPT
