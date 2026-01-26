@@ -249,13 +249,13 @@ const QuestionnaireBuilder = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [dataverseRecordId, setDataverseRecordId] = useState<string | null>(null);
   
-  // Resizable sidebar state
-  const [sidebarWidth, setSidebarWidth] = useState(280);
+  // Resizable sidebar state - default 30% of viewport
+  const [sidebarWidth, setSidebarWidth] = useState(() => Math.round(window.innerWidth * 0.3));
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  const MIN_SIDEBAR_WIDTH = 200;
-  const MAX_SIDEBAR_WIDTH = 500;
+  const MIN_SIDEBAR_PERCENT = 0.15; // 15% minimum
+  const MAX_SIDEBAR_PERCENT = 0.50; // 50% maximum
   
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -266,9 +266,13 @@ const QuestionnaireBuilder = () => {
     if (!isResizing || !containerRef.current) return;
     
     const containerRect = containerRef.current.getBoundingClientRect();
+    const containerWidth = containerRect.width;
     const newWidth = e.clientX - containerRect.left;
     
-    setSidebarWidth(Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, newWidth)));
+    const minWidth = containerWidth * MIN_SIDEBAR_PERCENT;
+    const maxWidth = containerWidth * MAX_SIDEBAR_PERCENT;
+    
+    setSidebarWidth(Math.min(maxWidth, Math.max(minWidth, newWidth)));
   }, [isResizing]);
   
   const handleMouseUp = useCallback(() => {
@@ -1293,7 +1297,7 @@ const QuestionnaireBuilder = () => {
   return (
     <div className={styles.container} ref={containerRef}>
       {/* Sidebar */}
-      <div style={{ width: `${sidebarWidth}px`, minWidth: `${MIN_SIDEBAR_WIDTH}px`, maxWidth: `${MAX_SIDEBAR_WIDTH}px`, flexShrink: 0 }}>
+      <div style={{ width: `${sidebarWidth}px`, flexShrink: 0 }}>
         <Sidebar
           questionnaire={questionnaire}
           activePageId={activePageId}
