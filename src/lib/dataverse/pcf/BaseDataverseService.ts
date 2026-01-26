@@ -47,8 +47,8 @@ export interface BaseServiceConfig {
  * Simple in-memory cache for entity metadata
  */
 class MetadataCache {
-  private _cache: Map<string, EntityMetadata> = new Map();
-  private _timestamps: Map<string, number> = new Map();
+  private _cache = new Map<string, EntityMetadata>();
+  private _timestamps = new Map<string, number>();
   private _ttlMs: number = 5 * 60 * 1000; // 5 minutes default
 
   get(entityName: string): EntityMetadata | undefined {

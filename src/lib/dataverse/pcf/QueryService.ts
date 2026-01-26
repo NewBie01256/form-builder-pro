@@ -628,7 +628,7 @@ export class QueryService extends BaseDataverseService {
     entityType: string,
     options?: ODataOptions,
     displayField?: string
-  ): Promise<DataverseResult<Array<{ id: string; name: string }>>> {
+  ): Promise<DataverseResult<{ id: string; name: string }[]>> {
     // Get metadata to find primary name attribute if not specified
     let nameField = displayField;
     
@@ -652,7 +652,7 @@ export class QueryService extends BaseDataverseService {
     );
 
     if (!result.success) {
-      return result as DataverseResult<Array<{ id: string; name: string }>>;
+      return result as DataverseResult<{ id: string; name: string }[]>;
     }
 
     const lookupOptions = result.data.entities.map(entity => ({

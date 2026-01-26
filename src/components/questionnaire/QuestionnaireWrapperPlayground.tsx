@@ -354,7 +354,7 @@ export function QuestionnaireWrapperPlayground() {
       case 'getMetadata':
         result = wrapper.getMetadata();
         break;
-      case 'toBlob':
+      case 'toBlob': {
         const blob = wrapper.toBlob();
         result = {
           type: blob.type,
@@ -362,6 +362,7 @@ export function QuestionnaireWrapperPlayground() {
           preview: 'Blob created successfully! Click "Download Blob" to save.',
         };
         break;
+      }
     }
 
     if (typeof result === 'string') {

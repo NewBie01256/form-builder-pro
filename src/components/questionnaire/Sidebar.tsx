@@ -300,8 +300,8 @@ const Sidebar = ({
     branch: ConditionalBranch,
     sectionId: string,
     pageId: string,
-    depth: number = 0,
-    isLast: boolean = true,
+    depth = 0,
+    isLast = true,
     parentLines: boolean[] = []
   ): JSX.Element => {
     const allItems = [

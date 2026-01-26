@@ -63,7 +63,7 @@ export interface DynamicValueConditionGroup {
   type: 'group';
   id: string;
   matchType: ConditionMatchType;
-  children: Array<DynamicValueCondition | DynamicValueConditionGroup>;
+  children: (DynamicValueCondition | DynamicValueConditionGroup)[];
 }
 
 /**
@@ -105,7 +105,7 @@ export interface QuestionConditionGroup {
   type: 'group';
   id: string;
   matchType: ConditionMatchType;
-  children: Array<QuestionCondition | QuestionConditionGroup>;
+  children: (QuestionCondition | QuestionConditionGroup)[];
 }
 
 // ============================================================================
@@ -133,7 +133,7 @@ export interface AnswerSetConditionGroup<TAnswerSet = unknown> {
   type: 'group';
   id: string;
   matchType: ConditionMatchType;
-  children: Array<AnswerSetConditionGroup<TAnswerSet> | AnswerSetCondition>;
+  children: (AnswerSetConditionGroup<TAnswerSet> | AnswerSetCondition)[];
   inlineAnswerSet?: TAnswerSet;
 }
 

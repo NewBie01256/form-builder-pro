@@ -101,7 +101,7 @@ const USER_MESSAGES: Record<DataverseErrorCode, string> = {
 /**
  * Retryable error codes (transient failures)
  */
-const RETRYABLE_CODES: Set<DataverseErrorCode> = new Set([
+const RETRYABLE_CODES = new Set<DataverseErrorCode>([
   'TIMEOUT',
   'RATE_LIMITED',
   'NETWORK_ERROR',

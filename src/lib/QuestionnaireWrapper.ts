@@ -67,7 +67,7 @@ export class QuestionnaireWrapper {
    * Returns the questionnaire JSON as a formatted string.
    * @param indent - Number of spaces for indentation (default: 2)
    */
-  toJSONString(indent: number = 2): string {
+  toJSONString(indent = 2): string {
     return JSON.stringify(this.toJSON(), null, indent);
   }
 
