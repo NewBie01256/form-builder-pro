@@ -1444,13 +1444,13 @@ const QuestionnaireBuilder = () => {
                       <p style={{ color: tokens.colorNeutralForeground3 }}>Manage your IT Service Management questionnaires</p>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                      <Button appearance="secondary" size="large" icon={<BookOpen className="h-4 w-4" />} onClick={() => navigate('docs')}>
+                      <Button appearance="secondary" size="large" icon={<Book24Regular />} onClick={() => navigate('docs')}>
                         Documentation
                       </Button>
                       <Button 
                         appearance="secondary"
                         size="large"
-                        icon={<Upload className="h-4 w-4" />}
+                        icon={<ArrowUpload24Regular />}
                         onClick={() => document.getElementById('import-json-input')?.click()}
                       >
                         Import JSON
@@ -1478,7 +1478,7 @@ const QuestionnaireBuilder = () => {
                           e.target.value = '';
                         }}
                       />
-                      <Button size="large" appearance="primary" onClick={handleCreateQuestionnaire} icon={<Plus className="h-4 w-4" />}>
+                      <Button size="large" appearance="primary" onClick={handleCreateQuestionnaire} icon={<Add24Regular />}>
                         Create New
                       </Button>
                     </div>
@@ -1488,7 +1488,7 @@ const QuestionnaireBuilder = () => {
                 {savedDrafts.length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
                     <h3 style={{ fontSize: tokens.fontSizeBase500, fontWeight: tokens.fontWeightSemibold, display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                      <Save className="h-5 w-5" style={{ color: tokens.colorNeutralForeground3 }} />
+                      <Save24Regular style={{ color: tokens.colorNeutralForeground3 }} />
                       Saved Drafts
                     </h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
@@ -1502,7 +1502,7 @@ const QuestionnaireBuilder = () => {
                             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: tokens.spacingHorizontalM }}>
                               <div style={{ display: "flex", alignItems: "flex-start", gap: tokens.spacingHorizontalM, flex: 1, minWidth: 0 }}>
                                 <div className={mergeClasses(styles.categoryIcon, styles.draft)}>
-                                  <FileText className="h-5 w-5" />
+                                  <Document24Regular />
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS, flexWrap: "wrap" }}>
@@ -1518,24 +1518,24 @@ const QuestionnaireBuilder = () => {
                                   </p>
                                   <div className={styles.statsRow} style={{ marginTop: tokens.spacingVerticalS }}>
                                     <span className={styles.statItem} title="Pages">
-                                      <Files className="h-3 w-3" />
+                                      <DocumentMultiple24Regular />
                                       {draft.pageCount}
                                     </span>
                                     <span className={styles.statItem} title="Sections">
-                                      <Layers className="h-3 w-3" />
+                                      <Layer24Regular />
                                       {draft.sectionCount}
                                     </span>
                                     <span className={styles.statItem} title="Questions">
-                                      <HelpCircle className="h-3 w-3" />
+                                      <QuestionCircle24Regular />
                                       {draft.questionCount}
                                     </span>
                                     <span className={styles.statItem} title="Branches">
-                                      <GitBranch className="h-3 w-3" />
+                                      <BranchFork24Regular />
                                       {draft.branchCount}
                                     </span>
                                     <span style={{ opacity: 0.5 }}>|</span>
                                     <span className={styles.statItem}>
-                                      <Clock className="h-3 w-3" />
+                                      <Clock24Regular />
                                       Saved {draft.savedAt}
                                     </span>
                                   </div>
@@ -1545,7 +1545,7 @@ const QuestionnaireBuilder = () => {
                                 <Button 
                                   appearance="subtle"
                                   size="small"
-                                  icon={<Edit className="h-4 w-4" />}
+                                  icon={<Edit24Regular />}
                                   onClick={() => handleEditDraft(draft)}
                                 >
                                   Edit
@@ -1555,7 +1555,7 @@ const QuestionnaireBuilder = () => {
                                     <Button 
                                       appearance="subtle"
                                       size="small"
-                                      icon={<Trash2 className="h-4 w-4" />}
+                                      icon={<Delete24Regular />}
                                     />
                                   }
                                   title="Delete Draft"
@@ -1575,7 +1575,7 @@ const QuestionnaireBuilder = () => {
                 {Object.values(publishedRecords).filter(r => !sampleITSMRecords.some(s => s.id === r.metadata.id)).length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
                     <h3 style={{ fontSize: tokens.fontSizeBase500, fontWeight: tokens.fontWeightSemibold, display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                      <FileText className="h-5 w-5" style={{ color: tokens.colorNeutralForeground3 }} />
+                      <Document24Regular style={{ color: tokens.colorNeutralForeground3 }} />
                       Published Records
                     </h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS }}>
@@ -1590,8 +1590,8 @@ const QuestionnaireBuilder = () => {
                           <div className={styles.cardContent}>
                             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: tokens.spacingHorizontalM }}>
                               <div style={{ display: "flex", alignItems: "flex-start", gap: tokens.spacingHorizontalM, flex: 1, minWidth: 0 }}>
-                                <div className={mergeClasses(styles.categoryIcon, styles.draft)}>
-                                  <FileText className="h-5 w-5" />
+                              <div className={mergeClasses(styles.categoryIcon, styles.draft)}>
+                                  <Document24Regular />
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS, flexWrap: "wrap" }}>
@@ -1607,24 +1607,24 @@ const QuestionnaireBuilder = () => {
                                   <p style={{ fontSize: tokens.fontSizeBase200, color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalXS, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{publishedRecord.metadata.description || 'No description'}</p>
                                   <div className={styles.statsRow} style={{ marginTop: tokens.spacingVerticalS }}>
                                     <span className={styles.statItem} title="Pages">
-                                      <Files className="h-3 w-3" />
+                                      <DocumentMultiple24Regular />
                                       {publishedRecord.metadata.pageCount}
                                     </span>
                                     <span className={styles.statItem} title="Sections">
-                                      <Layers className="h-3 w-3" />
+                                      <Layer24Regular />
                                       {publishedRecord.metadata.sectionCount}
                                     </span>
                                     <span className={styles.statItem} title="Questions">
-                                      <HelpCircle className="h-3 w-3" />
+                                      <QuestionCircle24Regular />
                                       {publishedRecord.metadata.questionCount}
                                     </span>
                                     <span className={styles.statItem} title="Branches">
-                                      <GitBranch className="h-3 w-3" />
+                                      <BranchFork24Regular />
                                       {publishedRecord.metadata.branchCount}
                                     </span>
                                     <span style={{ opacity: 0.5 }}>|</span>
                                     <span className={styles.statItem}>
-                                      <Clock className="h-3 w-3" />
+                                      <Clock24Regular />
                                       {publishedRecord.metadata.updatedAt}
                                     </span>
                                   </div>
@@ -1634,7 +1634,7 @@ const QuestionnaireBuilder = () => {
                                 <Button 
                                   appearance="subtle"
                                   size="small"
-                                  icon={<Edit className="h-4 w-4" />}
+                                  icon={<Edit24Regular />}
                                   onClick={() => handleEditPublishedRecord(publishedRecord)}
                                 >
                                   Edit
@@ -1644,7 +1644,7 @@ const QuestionnaireBuilder = () => {
                                     <Button 
                                       appearance="subtle"
                                       size="small"
-                                      icon={<Trash2 className="h-4 w-4" />}
+                                      icon={<Delete24Regular />}
                                     />
                                   }
                                   title="Delete Published Record"
@@ -1701,33 +1701,33 @@ const QuestionnaireBuilder = () => {
                               <p style={{ fontSize: tokens.fontSizeBase200, color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalXS, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{record.description}</p>
                               <div className={styles.statsRow} style={{ marginTop: tokens.spacingVerticalS }}>
                                 <span className={styles.statItem} title="Pages">
-                                  <Files className="h-3 w-3" />
+                                  <DocumentMultiple24Regular />
                                   {record.pageCount}
                                 </span>
                                 <span className={styles.statItem} title="Sections">
-                                  <Layers className="h-3 w-3" />
+                                  <Layer24Regular />
                                   {record.sectionCount}
                                 </span>
                                 <span className={styles.statItem} title="Questions">
-                                  <HelpCircle className="h-3 w-3" />
+                                  <QuestionCircle24Regular />
                                   {record.questionCount}
                                 </span>
                                 <span className={styles.statItem} title="Branches">
-                                  <GitBranch className="h-3 w-3" />
+                                  <BranchFork24Regular />
                                   {record.branchCount}
                                 </span>
                                 <span className={styles.statItem} title="Answer Sets">
-                                  <ListChecks className="h-3 w-3" />
+                                  <TaskListSquareLtr24Regular />
                                   {record.answerSetCount}
                                 </span>
                                 <span className={styles.statItem} title="Actions">
-                                  <Zap className="h-3 w-3" />
+                                  <Flash24Regular />
                                   {record.actionCount}
                                 </span>
                                 <span style={{ opacity: 0.5 }}>|</span>
                                 <span>{record.serviceCatalog}</span>
                                 <span className={styles.statItem}>
-                                  <Clock className="h-3 w-3" />
+                                  <Clock24Regular />
                                   {record.updatedAt}
                                 </span>
                               </div>
@@ -1736,7 +1736,7 @@ const QuestionnaireBuilder = () => {
                           <Button 
                             appearance="subtle"
                             size="small"
-                            icon={<Edit className="h-4 w-4" />}
+                            icon={<Edit24Regular />}
                             onClick={() => {
                               // If we have a published version with full questionnaire, use it
                               if (publishedRecords[baseRecord.id]) {
