@@ -69,7 +69,7 @@ const customStyle = {
 
 interface CodeBlockProps {
   code: string;
-  language?: 'typescript' | 'tsx' | 'javascript' | 'json' | 'xml' | 'bash' | 'text';
+  language?: 'typescript' | 'tsx' | 'javascript' | 'json' | 'xml' | 'bash' | 'text' | 'css';
   showLineNumbers?: boolean;
 }
 
@@ -95,6 +95,7 @@ export const CodeBlock = ({
     xml: 'xml',
     bash: 'bash',
     text: 'text',
+    css: 'css',
   };
 
   return (

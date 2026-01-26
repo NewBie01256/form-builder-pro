@@ -280,10 +280,54 @@ const PCFDocumentation = () => {
 
         {/* PCF Migration Guide */}
         <section className={styles.section}>
-          <Title2>📦 PCF Migration Guide</Title2>
+          <Title2>📦 Complete PCF Migration Guide</Title2>
           <Body1>
-            Follow this step-by-step guide to migrate the Dataverse wrapper services to a new PCF project.
+            Follow this comprehensive guide to migrate the entire Questionnaire Studio to a new PCF project.
+            This covers all components, services, types, and best practices.
           </Body1>
+
+          {/* Overview */}
+          <Card className={styles.stepCard}>
+            <div className={styles.stepHeader}>
+              <Rocket24Regular />
+              <Title3>Migration Overview</Title3>
+            </div>
+            <Body1>
+              The Questionnaire Studio consists of the following major modules that need to be migrated:
+            </Body1>
+            <div className={styles.fileList}>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>types/</b> — Core type definitions (Questionnaire, AnswerSet, Conditions)
+              </div>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>lib/core/</b> — Result pattern, ID generation, guards, logging
+              </div>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>lib/questionnaire/</b> — Factory, traversal, stats, constants
+              </div>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>lib/dataverse/pcf/</b> — CRUD, Query, Metadata services
+              </div>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>lib/storage/</b> — Draft & Published persistence services
+              </div>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>lib/navigation/</b> — State-based PCF navigation
+              </div>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>components/questionnaire/</b> — Builder UI components
+              </div>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>components/executor/</b> — Runtime questionnaire renderer
+              </div>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>components/fluent/</b> — Fluent UI wrappers & theming
+              </div>
+              <div className={styles.fileItem}>
+                <Folder24Regular /> <b>hooks/</b> — Custom React hooks
+              </div>
+            </div>
+          </Card>
 
           {/* Step 1: Create PCF Project */}
           <Card className={styles.stepCard}>
@@ -300,140 +344,330 @@ const PCFDocumentation = () => {
 npm install -g @microsoft/power-platform-cli
 
 # Create new PCF project directory
-mkdir my-pcf-control
-cd my-pcf-control
+mkdir questionnaire-studio-pcf
+cd questionnaire-studio-pcf
 
-# Initialize PCF control (React)
-pac pcf init --namespace MyNamespace --name MyControl --template field --framework react
+# Initialize PCF control (React + Virtual)
+pac pcf init --namespace CTNAQuestionnaire --name QuestionnaireStudio --template field --framework react --run-npm-install
 
-# Install dependencies
-npm install`}
+# Install required dependencies
+npm install @fluentui/react-components @fluentui/react-icons
+npm install @tanstack/react-query
+npm install @tiptap/react @tiptap/starter-kit @tiptap/pm
+npm install zod date-fns clsx
+npm install react-hook-form @hookform/resolvers
+npm install react-resizable-panels
+npm install react-syntax-highlighter`}
                 language="bash"
               />
             </div>
             <div className={styles.warningBox}>
               <Warning24Regular />
               <Body1>
-                Make sure you have Node.js 18+ and the Power Platform CLI installed globally.
+                Ensure you use <code>--framework react</code> for React-based controls. 
+                The <code>virtual</code> control type is recommended for complex UIs.
               </Body1>
             </div>
           </Card>
 
-          {/* Step 2: Copy Core Files */}
+          {/* Step 2: Project Structure */}
           <Card className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepNumber}>2</div>
-              <Title3>Copy Dataverse Wrapper Files</Title3>
+              <Title3>Create Folder Structure</Title3>
             </div>
             <Body1>
-              Copy the following files from <code>src/lib/dataverse/pcf/</code> to your PCF project:
+              Organize your PCF project with the following structure:
             </Body1>
-            <div className={styles.fileList}>
-              <div className={styles.fileItem}>
-                <Folder24Regular /> types.ts — Core type definitions
-              </div>
-              <div className={styles.fileItem}>
-                <Folder24Regular /> Logger.ts — Environment-aware logging
-              </div>
-              <div className={styles.fileItem}>
-                <Folder24Regular /> ErrorHandler.ts — Result pattern & error handling
-              </div>
-              <div className={styles.fileItem}>
-                <Folder24Regular /> BaseDataverseService.ts — Service base class
-              </div>
-              <div className={styles.fileItem}>
-                <Folder24Regular /> CrudService.ts — Generic CRUD operations
-              </div>
-              <div className={styles.fileItem}>
-                <Folder24Regular /> QueryService.ts — OData & FetchXML queries
-              </div>
-              <div className={styles.fileItem}>
-                <Folder24Regular /> MetadataService.ts — Entity metadata discovery
-              </div>
-              <div className={styles.fileItem}>
-                <Folder24Regular /> DynamicValuesService.ts — Dynamic value resolution
-              </div>
-              <div className={styles.fileItem}>
-                <Folder24Regular /> index.ts — Barrel exports
-              </div>
-            </div>
             <div className={styles.codeContainer}>
               <CodeBlock
-                code={`# Recommended folder structure in your PCF project
-MyControl/
-├── services/
-│   └── dataverse/
-│       ├── types.ts
-│       ├── Logger.ts
-│       ├── ErrorHandler.ts
-│       ├── BaseDataverseService.ts
-│       ├── CrudService.ts
-│       ├── QueryService.ts
-│       ├── MetadataService.ts
-│       ├── DynamicValuesService.ts
-│       └── index.ts
-├── index.ts              # PCF control entry
-└── MyControl.tsx         # React component`}
+                code={`QuestionnaireStudio/
+├── ControlManifest.Input.xml      # PCF manifest
+├── index.ts                       # PCF control entry point
+├── css/
+│   └── QuestionnaireStudio.css    # Global styles (converted from index.css)
+│
+├── types/
+│   ├── questionnaire.ts           # Questionnaire, Page, Section, Question
+│   ├── condition.ts               # RuleGroup, QuestionLevelRule
+│   └── questionnaireResponse.ts   # Response types for executor
+│
+├── lib/
+│   ├── core/
+│   │   ├── result.ts              # Result<T> pattern
+│   │   ├── id.ts                  # EntityId generation
+│   │   ├── guards.ts              # Type guards
+│   │   └── logger.ts              # Environment-aware logging
+│   │
+│   ├── questionnaire/
+│   │   ├── factory.ts             # Create default entities
+│   │   ├── traversal.ts           # Tree traversal utilities
+│   │   ├── stats.ts               # Count calculations
+│   │   └── constants.ts           # Question types, operators
+│   │
+│   ├── dataverse/
+│   │   ├── types.ts               # Dataverse-specific types
+│   │   ├── CrudService.ts         # Create, Read, Update, Delete
+│   │   ├── QueryService.ts        # OData & FetchXML queries
+│   │   ├── MetadataService.ts     # Entity metadata discovery
+│   │   ├── ErrorHandler.ts        # Result pattern wrapper
+│   │   └── index.ts               # Barrel exports
+│   │
+│   ├── storage/
+│   │   ├── storageService.ts      # Abstract storage interface
+│   │   ├── draftService.ts        # Draft persistence (→ Dataverse)
+│   │   └── publishedService.ts    # Published persistence (→ Dataverse)
+│   │
+│   ├── navigation/
+│   │   ├── types.ts               # ViewState definitions
+│   │   └── NavigationContext.tsx  # State-based navigation
+│   │
+│   ├── conditionEvaluator.ts      # Runtime rule evaluation
+│   ├── QuestionnaireWrapper.ts    # Export/serialization helper
+│   └── questionnaireExport.ts     # JSON/CSV export utilities
+│
+├── components/
+│   ├── fluent/
+│   │   ├── FluentThemeProvider.tsx
+│   │   ├── ConfirmDialog.tsx
+│   │   ├── icons.ts
+│   │   └── index.ts
+│   │
+│   ├── questionnaire/
+│   │   ├── QuestionnaireBuilder.tsx    # Main builder component
+│   │   ├── PageTabs.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── SectionEditor.tsx
+│   │   ├── QuestionEditor.tsx
+│   │   ├── AnswerSetEditor.tsx
+│   │   ├── BranchEditor.tsx
+│   │   ├── RuleGroupEditor.tsx
+│   │   ├── DynamicValuesPanel.tsx
+│   │   └── ... (other editors)
+│   │
+│   ├── executor/
+│   │   └── QuestionRenderer.tsx        # Runtime question renderer
+│   │
+│   └── ui/
+│       ├── code-block.tsx
+│       ├── rich-text-editor.tsx
+│       ├── auto-resize-textarea.tsx
+│       └── required-label.tsx
+│
+├── hooks/
+│   ├── useQuestionnaireState.ts   # Main builder state
+│   ├── useConfirmation.ts
+│   ├── useFluentToast.ts
+│   ├── useNotification.ts
+│   └── useFileUpload.ts
+│
+├── data/
+│   ├── sampleAnswerSets.ts        # Library answer sets
+│   └── sampleITSMRecords.ts       # Template questionnaires
+│
+└── pages/
+    ├── Index.tsx                  # Home screen
+    ├── Execute.tsx                # Questionnaire executor
+    └── Documentation.tsx          # (Optional) embedded docs`}
                 language="bash"
               />
             </div>
           </Card>
 
-          {/* Step 3: Update Import Paths */}
+          {/* Step 3: Copy Core Files */}
           <Card className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepNumber}>3</div>
-              <Title3>Update Import Paths (Critical!)</Title3>
+              <Title3>Copy Source Files</Title3>
             </div>
             <Body1>
-              PCF projects don't support path aliases like <code>@/</code>. Ensure all imports use relative paths.
+              Copy files from the source project to your PCF project. Use this mapping:
+            </Body1>
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`# Core Types (copy as-is)
+src/types/                    →  QuestionnaireStudio/types/
+
+# Library Utilities (copy as-is)
+src/lib/core/                 →  QuestionnaireStudio/lib/core/
+src/lib/questionnaire/        →  QuestionnaireStudio/lib/questionnaire/
+src/lib/dataverse/pcf/        →  QuestionnaireStudio/lib/dataverse/
+src/lib/storage/              →  QuestionnaireStudio/lib/storage/
+src/lib/navigation/           →  QuestionnaireStudio/lib/navigation/
+src/lib/conditionEvaluator.ts →  QuestionnaireStudio/lib/
+src/lib/QuestionnaireWrapper.ts → QuestionnaireStudio/lib/
+src/lib/questionnaireExport.ts  → QuestionnaireStudio/lib/
+
+# Components (copy as-is)
+src/components/fluent/        →  QuestionnaireStudio/components/fluent/
+src/components/questionnaire/ →  QuestionnaireStudio/components/questionnaire/
+src/components/executor/      →  QuestionnaireStudio/components/executor/
+src/components/ui/            →  QuestionnaireStudio/components/ui/
+
+# Hooks (copy as-is)
+src/hooks/                    →  QuestionnaireStudio/hooks/
+
+# Data (copy as-is)
+src/data/                     →  QuestionnaireStudio/data/
+
+# Pages (copy and adapt)
+src/pages/Index.tsx           →  QuestionnaireStudio/pages/
+src/pages/Execute.tsx         →  QuestionnaireStudio/pages/`}
+                language="bash"
+              />
+            </div>
+            <div className={styles.successBox}>
+              <CheckmarkCircle24Regular />
+              <Body1>
+                All source files already use relative imports, making them PCF-compatible out of the box.
+              </Body1>
+            </div>
+          </Card>
+
+          {/* Step 4: Update Import Paths */}
+          <Card className={styles.stepCard}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepNumber}>4</div>
+              <Title3>Verify Import Paths</Title3>
+            </div>
+            <Body1>
+              PCF projects don't support path aliases like <code>@/</code>. All imports must be relative.
             </Body1>
             <div className={styles.codeContainer}>
               <CodeBlock
                 code={`// ❌ BROKEN in PCF - alias won't resolve
-import { AnswerSet } from "@/types/questionnaire";
-import { Logger } from "@/lib/core/logger";
+import { Questionnaire } from "@/types/questionnaire";
+import { useQuestionnaireState } from "@/hooks/useQuestionnaireState";
 
-// ✅ WORKS in PCF - relative imports are portable
-import { AnswerSet } from "../types/questionnaire";
-import { Logger } from "./Logger";
-import { CrudService, QueryService } from "./services/dataverse";`}
+// ✅ WORKS in PCF - relative imports
+import { Questionnaire } from "../types/questionnaire";
+import { useQuestionnaireState } from "../hooks/useQuestionnaireState";
+
+// ✅ From components/questionnaire/QuestionEditor.tsx:
+import { Question, AnswerSet } from "../../types/questionnaire";
+import { createAnswer } from "../../lib/questionnaire/factory";
+import { FluentThemeProvider } from "../fluent";`}
                 language="typescript"
               />
             </div>
             <div className={styles.successBox}>
               <CheckmarkCircle24Regular />
               <Body1>
-                This codebase has already been converted to use relative imports throughout, making it PCF-ready.
+                This codebase has already been converted to relative imports. Run ESLint to verify no <code>@/</code> aliases remain.
               </Body1>
             </div>
           </Card>
 
-          {/* Step 4: Configure PCF Control */}
+          {/* Step 5: Adapt Storage Services */}
           <Card className={styles.stepCard}>
             <div className={styles.stepHeader}>
-              <div className={styles.stepNumber}>4</div>
-              <Title3>Configure PCF Control Entry Point</Title3>
+              <div className={styles.stepNumber}>5</div>
+              <Title3>Adapt Storage to Dataverse</Title3>
             </div>
             <Body1>
-              Update your PCF control's <code>index.ts</code> to initialize services with the context.
+              Replace localStorage-based storage with Dataverse persistence using the CRUD service.
+            </Body1>
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`// lib/storage/draftService.ts - BEFORE (localStorage)
+export const draftService = {
+  save: (id: string, data: Questionnaire) => {
+    localStorage.setItem(\`draft-\${id}\`, JSON.stringify(data));
+  },
+  load: (id: string) => {
+    const item = localStorage.getItem(\`draft-\${id}\`);
+    return item ? JSON.parse(item) : null;
+  }
+};
+
+// lib/storage/draftService.ts - AFTER (Dataverse)
+import { createCrudService } from "../dataverse";
+
+export const createDraftService = (context: ComponentFramework.Context<IInputs>) => {
+  const crud = createCrudService(context);
+  
+  return {
+    save: async (id: string, data: Questionnaire) => {
+      const record = {
+        ctna_name: data.name,
+        ctna_status: 1, // Draft
+        ctna_definition: JSON.stringify(data),
+        ctna_version: data.version,
+      };
+      
+      if (id) {
+        return await crud.update("ctna_questionnaire", id, record);
+      } else {
+        return await crud.create("ctna_questionnaire", record);
+      }
+    },
+    
+    load: async (id: string) => {
+      const result = await crud.retrieve<{ ctna_definition: string }>(
+        "ctna_questionnaire", 
+        id, 
+        ["ctna_definition"]
+      );
+      
+      if (result.success && result.data.ctna_definition) {
+        return JSON.parse(result.data.ctna_definition);
+      }
+      return null;
+    },
+    
+    list: async () => {
+      const result = await createQueryService(context).retrieveMultiple<{
+        ctna_questionnaireid: string;
+        ctna_name: string;
+        ctna_status: number;
+        modifiedon: string;
+      }>("ctna_questionnaire", {
+        select: ["ctna_questionnaireid", "ctna_name", "ctna_status", "modifiedon"],
+        filter: "ctna_status eq 1", // Drafts only
+        orderBy: "modifiedon desc",
+      });
+      
+      return result.success ? result.data : [];
+    }
+  };
+};`}
+                language="typescript"
+              />
+            </div>
+          </Card>
+
+          {/* Step 6: Create PCF Entry Point */}
+          <Card className={styles.stepCard}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepNumber}>6</div>
+              <Title3>Create PCF Control Entry Point</Title3>
+            </div>
+            <Body1>
+              Set up the main PCF control class that initializes services and renders the React app.
             </Body1>
             <div className={styles.codeContainer}>
               <CodeBlock
                 code={`// index.ts - PCF Control Entry Point
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { createCrudService, createQueryService } from "./services/dataverse";
-import { MyControl } from "./MyControl";
+import { createCrudService, createQueryService } from "./lib/dataverse";
+import { NavigationProvider } from "./lib/navigation/NavigationContext";
+import { FluentThemeProvider } from "./components/fluent";
+import { DataverseProvider } from "./lib/dataverse/DataverseContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { App } from "./App";
 
-export class MyPCFControl implements ComponentFramework.ReactControl<IInputs, IOutputs> {
-  private container: HTMLDivElement;
+// PCF-safe QueryClient configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { gcTime: 0, staleTime: 0, retry: false, refetchOnWindowFocus: false },
+    mutations: { retry: false },
+  },
+});
+
+export class QuestionnaireStudio implements ComponentFramework.ReactControl<IInputs, IOutputs> {
   private context: ComponentFramework.Context<IInputs>;
-  
-  // Services initialized with context
-  private crudService: ReturnType<typeof createCrudService>;
-  private queryService: ReturnType<typeof createQueryService>;
+  private notifyOutputChanged: () => void;
 
   public init(
     context: ComponentFramework.Context<IInputs>,
@@ -441,25 +675,41 @@ export class MyPCFControl implements ComponentFramework.ReactControl<IInputs, IO
     state: ComponentFramework.Dictionary
   ): void {
     this.context = context;
+    this.notifyOutputChanged = notifyOutputChanged;
     
-    // ✅ Initialize services with PCF context
-    this.crudService = createCrudService(context);
-    this.queryService = createQueryService(context);
+    // Request full-screen mode for complex UI
+    context.mode.trackContainerResize(true);
   }
 
   public updateView(context: ComponentFramework.Context<IInputs>): React.ReactElement {
     this.context = context;
     
-    return React.createElement(MyControl, {
-      context: this.context,
-      crudService: this.crudService,
-      queryService: this.queryService,
-    });
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      React.createElement(
+        FluentThemeProvider,
+        null,
+        React.createElement(
+          DataverseProvider,
+          { context: this.context },
+          React.createElement(
+            NavigationProvider,
+            null,
+            React.createElement(App, { context: this.context })
+          )
+        )
+      )
+    );
+  }
+
+  public getOutputs(): IOutputs {
+    return {};
   }
 
   public destroy(): void {
-    // Cleanup - important for memory management
-    ReactDOM.unmountComponentAtNode(this.container);
+    // Critical cleanup for PCF lifecycle
+    queryClient.clear();
   }
 }`}
                 language="typescript"
@@ -467,134 +717,210 @@ export class MyPCFControl implements ComponentFramework.ReactControl<IInputs, IO
             </div>
           </Card>
 
-          {/* Step 5: Use Services in Components */}
+          {/* Step 7: Update Manifest */}
           <Card className={styles.stepCard}>
             <div className={styles.stepHeader}>
-              <div className={styles.stepNumber}>5</div>
-              <Title3>Use Services in React Components</Title3>
+              <div className={styles.stepNumber}>7</div>
+              <Title3>Configure PCF Manifest</Title3>
             </div>
             <Body1>
-              Access the Dataverse services through props or React Context in your components.
+              Update <code>ControlManifest.Input.xml</code> with required resources and properties.
             </Body1>
             <div className={styles.codeContainer}>
               <CodeBlock
-                code={`// MyControl.tsx - React Component
-import * as React from "react";
-import { CrudService, QueryService, DataverseResult } from "./services/dataverse";
-
-interface MyControlProps {
-  context: ComponentFramework.Context<IInputs>;
-  crudService: CrudService;
-  queryService: QueryService;
-}
-
-export const MyControl: React.FC<MyControlProps> = ({ 
-  context, 
-  crudService, 
-  queryService 
-}) => {
-  const [accounts, setAccounts] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    loadAccounts();
-  }, []);
-
-  const loadAccounts = async () => {
-    setLoading(true);
+                code={`<?xml version="1.0" encoding="utf-8" ?>
+<manifest>
+  <control namespace="CTNAQuestionnaire" 
+           constructor="QuestionnaireStudio" 
+           version="1.0.0" 
+           display-name-key="Questionnaire Studio"
+           description-key="CTNA Questionnaire Builder and Executor"
+           control-type="virtual"
+           api-version="1.3.0">
     
-    // ✅ Using Result pattern - never throws
-    const result = await queryService.retrieveMultiple<{ name: string }>(
-      "account",
-      { select: ["name", "accountid"], top: 10 }
-    );
-
-    if (result.success) {
-      setAccounts(result.data);
-      setError(null);
-    } else {
-      setError(result.error.userMessage);
-      setAccounts([]);
-    }
+    <!-- Input Properties -->
+    <property name="questionnaireId" 
+              display-name-key="Questionnaire ID" 
+              description-key="ID of questionnaire to load"
+              of-type="SingleLine.Text" 
+              usage="bound" 
+              required="false" />
     
-    setLoading(false);
-  };
+    <property name="mode" 
+              display-name-key="Mode" 
+              description-key="builder or executor"
+              of-type="Enum"
+              usage="input"
+              required="false"
+              default-value="builder">
+      <value name="builder" display-name-key="Builder">builder</value>
+      <value name="executor" display-name-key="Executor">executor</value>
+    </property>
 
-  const createAccount = async (name: string) => {
-    const result = await crudService.create("account", { name });
+    <!-- Resources -->
+    <resources>
+      <code path="index.ts" order="1" />
+      <css path="css/QuestionnaireStudio.css" order="1" />
+      <resx path="strings/QuestionnaireStudio.1033.resx" version="1.0.0" />
+    </resources>
     
-    if (result.success) {
-      console.log("Created account:", result.data.id);
-      await loadAccounts(); // Refresh list
-    } else {
-      setError(result.error.userMessage);
-    }
-  };
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  return (
-    <div>
-      <h2>Accounts ({accounts.length})</h2>
-      <ul>
-        {accounts.map(acc => (
-          <li key={acc.accountid}>{acc.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-};`}
-                language="typescript"
+    <!-- Feature Usage -->
+    <feature-usage>
+      <uses-feature name="WebAPI" required="true" />
+      <uses-feature name="Utility" required="true" />
+      <uses-feature name="Device" required="false" />
+    </feature-usage>
+  </control>
+</manifest>`}
+                language="xml"
               />
             </div>
           </Card>
 
-          {/* Step 6: Build and Deploy */}
+          {/* Step 8: Convert CSS */}
           <Card className={styles.stepCard}>
             <div className={styles.stepHeader}>
-              <div className={styles.stepNumber}>6</div>
-              <Title3>Build and Deploy</Title3>
+              <div className={styles.stepNumber}>8</div>
+              <Title3>Convert Tailwind to CSS</Title3>
             </div>
             <Body1>
-              Build your PCF control and deploy it to your Power Platform environment.
+              PCF doesn't support Tailwind. Convert <code>index.css</code> to standard CSS or use Fluent UI's <code>makeStyles</code>.
+            </Body1>
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`/* css/QuestionnaireStudio.css */
+
+/* Convert Tailwind tokens to CSS custom properties */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --muted: 210 40% 96.1%;
+  --accent: 210 40% 96.1%;
+  --destructive: 0 84.2% 60.2%;
+  --border: 214.3 31.8% 91.4%;
+  --radius: 0.5rem;
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Utility classes (if needed) */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.p-4 { padding: 1rem; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+
+/* Prefer Fluent UI makeStyles for component-level styling */`}
+                language="css"
+              />
+            </div>
+            <div className={styles.warningBox}>
+              <Warning24Regular />
+              <Body1>
+                <b>Recommended:</b> Use Fluent UI's <code>makeStyles</code> hook for component styling.
+                It's already used throughout this codebase and is PCF-native.
+              </Body1>
+            </div>
+          </Card>
+
+          {/* Step 9: Build and Test */}
+          <Card className={styles.stepCard}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepNumber}>9</div>
+              <Title3>Build, Test, and Deploy</Title3>
+            </div>
+            <Body1>
+              Build your PCF control and test it locally before deploying.
             </Body1>
             <div className={styles.codeContainer}>
               <CodeBlock
                 code={`# Build the control
 npm run build
 
-# Test locally with harness
+# Start local test harness
 npm start watch
 
-# Create solution for deployment
-pac solution init --publisher-name MyPublisher --publisher-prefix myp
+# ──────────────────────────────────────
+# Create Solution for Deployment
+# ──────────────────────────────────────
 
-# Add control to solution
-pac solution add-reference --path ./
+# Navigate to parent directory
+cd ..
 
-# Build managed solution
-msbuild /t:build /restore /p:configuration=Release
+# Create solution project
+pac solution init --publisher-name CTNAPublisher --publisher-prefix ctna
 
-# Deploy to environment
+# Add PCF control reference
+pac solution add-reference --path ./QuestionnaireStudio
+
+# Build solution (requires msbuild or dotnet)
+dotnet build --configuration Release
+
+# ──────────────────────────────────────
+# Deploy to Environment
+# ──────────────────────────────────────
+
+# Authenticate to your environment
 pac auth create --environment https://yourorg.crm.dynamics.com
-pac pcf push --publisher-prefix myp`}
+
+# Push control directly (for development)
+pac pcf push --publisher-prefix ctna
+
+# Or import the solution
+pac solution import --path ./bin/Release/CTNASolution.zip`}
                 language="bash"
               />
             </div>
           </Card>
 
           {/* Migration Checklist */}
-          <Accordion collapsible>
+          <Accordion collapsible defaultOpenItems={["checklist"]}>
             <AccordionItem value="checklist">
               <AccordionHeader icon={<Checkmark24Regular />}>
-                Migration Checklist
+                Complete Migration Checklist
               </AccordionHeader>
               <AccordionPanel className={styles.accordionPanel}>
+                <Title3>📁 File Structure</Title3>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> All source files copied to PCF project structure
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Barrel exports (index.ts) updated for new paths
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> ControlManifest.Input.xml configured
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>🔗 Imports & Dependencies</Title3>
                 <div className={styles.checklistItem}>
                   <Circle24Regular /> All imports use relative paths (no <code>@/</code> aliases)
                 </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> All npm dependencies installed in PCF project
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> No Node.js-only packages (glob, fs, path)
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>🚫 Forbidden APIs</Title3>
                 <div className={styles.checklistItem}>
                   <Circle24Regular /> No <code>Xrm.*</code> or <code>formContext</code> usage
                 </div>
@@ -602,8 +928,13 @@ pac pcf push --publisher-prefix myp`}
                   <Circle24Regular /> No <code>window.fetch</code> for Dataverse calls
                 </div>
                 <div className={styles.checklistItem}>
-                  <Circle24Regular /> No <code>localStorage</code> or <code>sessionStorage</code>
+                  <Circle24Regular /> No <code>localStorage</code> / <code>sessionStorage</code> (use Dataverse)
                 </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> No <code>eval()</code> or <code>new Function()</code>
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>✅ PCF Patterns</Title3>
                 <div className={styles.checklistItem}>
                   <Circle24Regular /> All Dataverse calls use <code>context.webAPI</code>
                 </div>
@@ -611,16 +942,86 @@ pac pcf push --publisher-prefix myp`}
                   <Circle24Regular /> Error handling uses Result pattern (no throws)
                 </div>
                 <div className={styles.checklistItem}>
-                  <Circle24Regular /> Logger configured for production (WARN/ERROR only)
+                  <Circle24Regular /> State navigation instead of URL routing
                 </div>
                 <div className={styles.checklistItem}>
                   <Circle24Regular /> QueryClient cleanup in <code>destroy()</code> method
                 </div>
                 <div className={styles.checklistItem}>
-                  <Circle24Regular /> PCF manifest (<code>ControlManifest.Input.xml</code>) configured
+                  <Circle24Regular /> Logger configured for production (WARN/ERROR only)
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>🎨 Styling</Title3>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Tailwind utilities converted to CSS or makeStyles
                 </div>
                 <div className={styles.checklistItem}>
-                  <Circle24Regular /> Solution built and tested in harness
+                  <Circle24Regular /> CSS custom properties defined in global stylesheet
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Fluent UI theme provider configured
+                </div>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>🧪 Testing & Deployment</Title3>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Control builds without errors
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Tested in PCF test harness
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Tested in actual Dynamics 365 environment
+                </div>
+                <div className={styles.checklistItem}>
+                  <Circle24Regular /> Solution packaged and imported
+                </div>
+              </AccordionPanel>
+            </AccordionItem>
+
+            <AccordionItem value="dataverse-schema">
+              <AccordionHeader icon={<Database24Regular />}>
+                Dataverse Entity Schema
+              </AccordionHeader>
+              <AccordionPanel className={styles.accordionPanel}>
+                <Body1>
+                  Create these tables in your Dataverse environment to persist questionnaires:
+                </Body1>
+                <div className={styles.codeContainer}>
+                  <CodeBlock
+                    code={`// ctna_questionnaire entity schema
+{
+  "LogicalName": "ctna_questionnaire",
+  "DisplayName": "Questionnaire",
+  "Attributes": [
+    { "LogicalName": "ctna_questionnaireid", "Type": "Uniqueidentifier", "IsPrimaryId": true },
+    { "LogicalName": "ctna_name", "Type": "String", "MaxLength": 200, "IsPrimaryName": true },
+    { "LogicalName": "ctna_description", "Type": "Memo", "MaxLength": 4000 },
+    { "LogicalName": "ctna_status", "Type": "Picklist", "Options": [
+      { "Value": 1, "Label": "Draft" },
+      { "Value": 2, "Label": "Published" },
+      { "Value": 3, "Label": "Archived" }
+    ]},
+    { "LogicalName": "ctna_version", "Type": "String", "MaxLength": 20 },
+    { "LogicalName": "ctna_schemaversion", "Type": "String", "MaxLength": 10 },
+    { "LogicalName": "ctna_definition", "Type": "Memo", "MaxLength": 1048576 }
+  ]
+}
+
+// ctna_questionnaireresponse entity schema
+{
+  "LogicalName": "ctna_questionnaireresponse",
+  "DisplayName": "Questionnaire Response",
+  "Attributes": [
+    { "LogicalName": "ctna_questionnaireresponseid", "Type": "Uniqueidentifier", "IsPrimaryId": true },
+    { "LogicalName": "ctna_name", "Type": "String", "MaxLength": 200, "IsPrimaryName": true },
+    { "LogicalName": "ctna_questionnaireid", "Type": "Lookup", "Target": "ctna_questionnaire" },
+    { "LogicalName": "ctna_respondent", "Type": "Lookup", "Target": "systemuser" },
+    { "LogicalName": "ctna_submittedon", "Type": "DateTime" },
+    { "LogicalName": "ctna_responses", "Type": "Memo", "MaxLength": 1048576 }
+  ]
+}`}
+                    language="json"
+                  />
                 </div>
               </AccordionPanel>
             </AccordionItem>
@@ -632,31 +1033,48 @@ pac pcf push --publisher-prefix myp`}
               <AccordionPanel className={styles.accordionPanel}>
                 <Title3>Module Resolution Errors</Title3>
                 <Body1>
-                  If you see "Cannot find module" errors, check that all imports use relative paths
-                  and the file extensions are correct for your tsconfig settings.
+                  If you see "Cannot find module" errors, verify all imports use relative paths
+                  and barrel exports (index.ts) are correctly configured.
                 </Body1>
                 
                 <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
                   context.webAPI is undefined
                 </Title3>
                 <Body1>
-                  Ensure you're testing in a real Dynamics 365 environment or the PCF test harness.
-                  The webAPI is not available in standalone browser testing.
+                  The webAPI is only available in Dynamics 365. Use the PCF test harness or
+                  implement mock services for local development.
                 </Body1>
 
                 <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
-                  CORS Errors
+                  Fluent UI Not Rendering
                 </Title3>
                 <Body1>
-                  Never use <code>window.fetch</code> for Dataverse calls. Always use 
-                  <code>context.webAPI</code> which handles authentication automatically.
+                  Ensure FluentThemeProvider wraps your entire component tree and that
+                  @fluentui/react-components is properly installed.
+                </Body1>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
+                  Large Bundle Size
+                </Title3>
+                <Body1>
+                  Use tree-shaking by importing specific components: 
+                  <code>import {'{ Button }'} from "@fluentui/react-components"</code>
+                  instead of importing the entire package.
+                </Body1>
+
+                <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
+                  React Hook Errors
+                </Title3>
+                <Body1>
+                  Ensure only one version of React is installed. Check <code>package-lock.json</code>
+                  for duplicate React versions.
                 </Body1>
 
                 <Title3 style={{ marginTop: tokens.spacingVerticalL }}>
                   Type Errors with ComponentFramework
                 </Title3>
                 <Body1>
-                  Install the PCF types package: <code>npm install @types/powerapps-component-framework</code>
+                  Install PCF types: <code>npm install @types/powerapps-component-framework</code>
                 </Body1>
               </AccordionPanel>
             </AccordionItem>
