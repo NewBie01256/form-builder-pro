@@ -33,11 +33,17 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
  * PCF-compatible: works in both Vite and PCF environments
  */
 const isDevelopment = (): boolean => {
-  // Check for Vite environment
-  if (typeof import.meta !== 'undefined' && import.meta.env) {
-    return import.meta.env.DEV === true;
+  // PCF/Webpack environments don't support import.meta.env
+  // Use try-catch to safely detect Vite environment
+  try {
+    // @ts-ignore - Vite-specific, not available in PCF
+    if (typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined') {
+      // @ts-ignore
+      return import.meta.env.DEV === true;
+    }
+  } catch {
+    // Fallback for PCF/non-Vite environments
   }
-  // Fallback for PCF/non-Vite environments
   return false;
 };
 
