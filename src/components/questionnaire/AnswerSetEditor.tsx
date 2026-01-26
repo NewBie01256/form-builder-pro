@@ -856,7 +856,7 @@ const AnswerSetEditor = ({ answerSet, onUpdate, onAddFromExisting, questionType 
                 </Text>
               </div>
 
-              {(dynamicConfig.conditionGroup || dynamicConfig.filterGroup)?.children?.length > 0 && (
+              {((dynamicConfig.conditionGroup || dynamicConfig.filterGroup)?.children?.length ?? 0) > 0 && (
                 <div className={styles.flexRow}>
                   <Filter24Regular />
                   <Text size={200}>Conditions:</Text>
