@@ -5,7 +5,7 @@
  * Dataverse wrapper operations. Works in real-time when deployed to Dataverse.
  */
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   makeStyles, 
   tokens, 
