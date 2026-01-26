@@ -688,8 +688,8 @@ export class QuestionnaireStudio implements ComponentFramework.ReactControl<IInp
               <CodeBlock
                 code={`<?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="CTNAQuestionnaire" 
-           constructor="QuestionnaireStudio" 
+  <control namespace="ctnapcf" 
+           constructor="QuestionnaireStudioControl" 
            version="1.0.0" 
            display-name-key="Questionnaire Studio"
            description-key="CTNA Questionnaire Builder and Executor"
@@ -718,7 +718,7 @@ export class QuestionnaireStudio implements ComponentFramework.ReactControl<IInp
     <!-- Resources -->
     <resources>
       <code path="index.ts" order="1" />
-      <css path="css/QuestionnaireStudio.css" order="1" />
+      <css path="css/QuestionnaireStudioControl.css" order="1" />
       <resx path="strings/QuestionnaireStudio.1033.resx" version="1.0.0" />
     </resources>
     
