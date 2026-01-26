@@ -381,44 +381,50 @@ npm install react-syntax-highlighter`}
             </Body1>
             <div className={styles.codeContainer}>
               <CodeBlock
-                code={`QuestionnaireStudio/
-├── ControlManifest.Input.xml      # PCF manifest (new)
-├── index.ts                       # PCF control entry point (new)
-├── generated/                     # PCF generated types (auto-created)
+                code={`QuestionnaireStudioControl/          # Your PCF control folder
+├── ControlManifest.Input.xml         # PCF manifest
+├── index.ts                          # PCF control entry point (new)
+├── generated/                        # PCF generated types (auto-created by pac)
 │   └── ManifestTypes.d.ts
 │
-└── src/                           # ⬅️ COPY ENTIRE FOLDER AS-IS
-    ├── App.tsx                    # Main app component
-    ├── App.css
-    ├── index.css                  # Tailwind → CSS variables
-    ├── main.tsx                   # (Not used in PCF, entry is index.ts)
-    │
-    ├── types/
-    │   ├── questionnaire.ts
-    │   ├── condition.ts
-    │   └── questionnaireResponse.ts
-    │
-    ├── lib/
-    │   ├── core/                  # Result pattern, ID, guards, logging
-    │   ├── questionnaire/         # Factory, traversal, stats, constants
-    │   ├── dataverse/pcf/         # CRUD, Query, Metadata services
-    │   ├── storage/               # Draft & Published services
-    │   ├── navigation/            # State-based navigation
-    │   ├── conditionEvaluator.ts
-    │   ├── QuestionnaireWrapper.ts
-    │   └── questionnaireExport.ts
-    │
-    ├── components/
-    │   ├── fluent/                # FluentThemeProvider, ConfirmDialog
-    │   ├── questionnaire/         # Builder UI components
-    │   ├── executor/              # Runtime question renderer
-    │   ├── dataverse/             # Dataverse playground
-    │   └── ui/                    # Shared UI components
-    │
-    ├── hooks/                     # Custom React hooks
-    ├── data/                      # Sample data & templates
-    ├── pages/                     # Index, Execute, Documentation
-    └── features/                  # Feature-specific modules`}
+├── src/                              # ⬅️ COPY ENTIRE FOLDER AS-IS
+│   ├── App.tsx                       # Main app component
+│   ├── App.css
+│   ├── index.css                     # CSS variables (convert Tailwind)
+│   ├── main.tsx                      # (Not used in PCF, entry is index.ts)
+│   │
+│   ├── types/
+│   │   ├── questionnaire.ts
+│   │   ├── condition.ts
+│   │   └── questionnaireResponse.ts
+│   │
+│   ├── lib/
+│   │   ├── core/                     # Result pattern, ID, guards, logging
+│   │   ├── questionnaire/            # Factory, traversal, stats, constants
+│   │   ├── dataverse/pcf/            # CRUD, Query, Metadata services
+│   │   ├── storage/                  # Draft & Published services
+│   │   ├── navigation/               # State-based navigation
+│   │   ├── conditionEvaluator.ts
+│   │   ├── QuestionnaireWrapper.ts
+│   │   └── questionnaireExport.ts
+│   │
+│   ├── components/
+│   │   ├── fluent/                   # FluentThemeProvider, ConfirmDialog
+│   │   ├── questionnaire/            # Builder UI components
+│   │   ├── executor/                 # Runtime question renderer
+│   │   ├── dataverse/                # Dataverse playground
+│   │   └── ui/                       # Shared UI components
+│   │
+│   ├── hooks/                        # Custom React hooks
+│   ├── data/                         # Sample data & templates
+│   ├── pages/                        # Index, Execute, Documentation
+│   └── features/                     # Feature-specific modules
+│
+├── .gitignore
+├── eslint.config.mjs
+├── package.json
+├── pcfconfig.json
+└── tsconfig.json`}
                 language="bash"
               />
             </div>
