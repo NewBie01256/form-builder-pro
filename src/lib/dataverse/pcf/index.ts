@@ -9,11 +9,17 @@
 // Core Types
 // ============================================================================
 
+export {
+  // Helper function for normalizing PCF context
+  normalizePCFContext,
+} from './types';
+
 export type {
   // PCF Context types
   IPCFWebApi,
   IPCFUtility,
   IPCFContext,
+  PCFContextLike,
   
   // Entity types
   EntityReference,

@@ -41,7 +41,7 @@ export interface ExecuteQueryOptions {
 // ============================================================================
 
 export class DynamicValuesService extends BaseDataverseService {
-  constructor(context: IPCFContext, config?: BaseServiceConfig) {
+  constructor(context: IPCFContext | unknown, config?: BaseServiceConfig) {
     super(context, config);
   }
 

@@ -40,6 +40,36 @@ export interface IPCFContext {
   utils: IPCFUtility;
 }
 
+/**
+ * Flexible context type that accepts any object with webAPI and utils properties.
+ * Use this for PCF control entry points where ComponentFramework.Context is passed.
+ */
+export type PCFContextLike = unknown;
+
+/**
+ * Normalize any PCF-like context to IPCFContext.
+ * Safely extracts webAPI and utils from ComponentFramework.Context or similar objects.
+ * 
+ * @param context - The PCF context (ComponentFramework.Context<IInputs> or similar)
+ * @returns Normalized IPCFContext or null if extraction fails
+ */
+export function normalizePCFContext(context: PCFContextLike): IPCFContext | null {
+  if (!context || typeof context !== 'object') {
+    return null;
+  }
+  
+  const ctx = context as { webAPI?: unknown; utils?: unknown };
+  
+  if (ctx.webAPI && ctx.utils) {
+    return {
+      webAPI: ctx.webAPI as IPCFWebApi,
+      utils: ctx.utils as IPCFUtility,
+    };
+  }
+  
+  return null;
+}
+
 // ============================================================================
 // Entity Types
 // ============================================================================

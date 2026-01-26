@@ -94,8 +94,18 @@ export abstract class BaseDataverseService {
   protected readonly _logger: ILogger;
   protected readonly _errorHandler: IErrorHandler;
 
-  constructor(context: IPCFContext, config?: BaseServiceConfig) {
-    this._context = context;
+  /**
+   * Create a new service instance.
+   * @param context - PCF context (IPCFContext or ComponentFramework.Context)
+   * @param config - Optional configuration
+   */
+  constructor(context: IPCFContext | unknown, config?: BaseServiceConfig) {
+    // Normalize context if needed
+    if (context && typeof context === 'object' && 'webAPI' in context && 'utils' in context) {
+      this._context = context as IPCFContext;
+    } else {
+      throw new Error('Invalid context: must have webAPI and utils properties');
+    }
     this._enableMetadataCache = config?.enableMetadataCache ?? true;
     this._logger = config?.logger ?? createLogger(this.constructor.name);
     this._errorHandler = config?.errorHandler ?? createErrorHandler();
@@ -127,10 +137,15 @@ export abstract class BaseDataverseService {
 
   /**
    * Update the context (called from PCF updateView)
+   * @param context - PCF context (IPCFContext or ComponentFramework.Context)
    */
-  updateContext(context: IPCFContext): void {
-    this._context = context;
-    this._logger.debug('Context updated');
+  updateContext(context: IPCFContext | unknown): void {
+    if (context && typeof context === 'object' && 'webAPI' in context && 'utils' in context) {
+      this._context = context as IPCFContext;
+      this._logger.debug('Context updated');
+    } else {
+      this._logger.warn('Invalid context passed to updateContext');
+    }
   }
 
   // ============================================================================

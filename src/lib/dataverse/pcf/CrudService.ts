@@ -111,7 +111,7 @@ export class CrudService<T extends EntityRecord> extends BaseDataverseService {
   /** Primary ID attribute */
   readonly primaryIdAttribute: string;
 
-  constructor(context: IPCFContext, config: CrudServiceConfig) {
+  constructor(context: IPCFContext | unknown, config: CrudServiceConfig) {
     super(context, {
       ...config,
       logger: config.logger ?? createLogger(`CrudService:${config.entityLogicalName}`),
@@ -530,7 +530,7 @@ export class CrudService<T extends EntityRecord> extends BaseDataverseService {
  * ```
  */
 export function createCrudService<T extends EntityRecord>(
-  context: IPCFContext,
+  context: IPCFContext | unknown,
   entityLogicalName: string,
   options?: Partial<Omit<CrudServiceConfig, 'entityLogicalName'>>
 ): CrudService<T> {
