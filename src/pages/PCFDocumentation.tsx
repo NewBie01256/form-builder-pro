@@ -623,7 +623,7 @@ const queryClient = new QueryClient({
   },
 });
 
-export class QuestionnaireStudio implements ComponentFramework.ReactControl<IInputs, IOutputs> {
+export class QuestionnaireStudioControl implements ComponentFramework.ReactControl<IInputs, IOutputs> {
   private context: ComponentFramework.Context<IInputs>;
   private notifyOutputChanged: () => void;
 
@@ -650,11 +650,11 @@ export class QuestionnaireStudio implements ComponentFramework.ReactControl<IInp
         null,
         React.createElement(
           DataverseProvider,
-          { context: this.context },
+          { pcfContext: this.context },  // ← Use 'pcfContext' not 'context'
           React.createElement(
             NavigationProvider,
             null,
-            React.createElement(App, { context: this.context })
+            React.createElement(App, null)
           )
         )
       )
