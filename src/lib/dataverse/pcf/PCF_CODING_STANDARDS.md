@@ -9,6 +9,44 @@
 
 ---
 
+## 2. Import Path Guidelines
+
+### ⚠️ CRITICAL: Avoid Path Aliases in PCF Code
+
+**Problem**: Vite/webpack path aliases like `@/` don't work in PCF builds.
+
+```typescript
+// ❌ BROKEN in PCF - alias won't resolve
+import { AnswerSet } from "@/types/questionnaire";
+import { Logger } from "@/lib/core/logger";
+
+// ✅ WORKS in PCF - relative imports are portable
+import { AnswerSet } from "../types/questionnaire";
+import { Logger } from "../../core/logger";
+```
+
+**Why?**
+- PCF uses its own build tooling (pac CLI / webpack)
+- Path aliases like `@` are configured in `vite.config.ts` or `tsconfig.json`
+- PCF's bundler doesn't inherit these configurations
+
+**Best Practice for Portable Code:**
+1. Use relative imports (`../`, `./`) for all internal modules
+2. Keep related files close together to minimize path depth
+3. Use barrel exports (`index.ts`) to simplify imports
+
+```typescript
+// shared/services/index.ts - barrel export
+export { CrudService } from './crud/CrudService';
+export { QueryService } from './query/QueryService';
+export { Logger } from './core/Logger';
+
+// In your control - clean relative import
+import { CrudService, QueryService, Logger } from '../../shared/services';
+```
+
+---
+
 ## 2. Allowed vs Forbidden APIs
 
 ### ✅ ALLOWED APIs
