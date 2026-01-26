@@ -222,7 +222,11 @@ function detectPCFEnvironment(): boolean {
 const DataverseContext = createContext<DataverseContextValue | null>(null);
 
 export interface DataverseProviderProps {
-  children: ReactNode;
+  /** 
+   * Children to render. Optional when using React.createElement() 
+   * since children are passed as the third argument.
+   */
+  children?: ReactNode;
   /** 
    * Optional PCF context (ComponentFramework.Context<IInputs>).
    * Accepts 'unknown' to avoid type conflicts with PCF's complex context type.
