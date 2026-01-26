@@ -30,19 +30,14 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
 
 /**
  * Detect if we're in development mode
- * PCF-compatible: works in both Vite and PCF environments
+ * PCF-compatible: defaults to production behavior in PCF environments
  */
 const isDevelopment = (): boolean => {
-  // PCF/Webpack environments don't support import.meta.env
-  // Use try-catch to safely detect Vite environment
-  try {
-    // @ts-ignore - Vite-specific, not available in PCF
-    if (typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined') {
-      // @ts-ignore
-      return import.meta.env.DEV === true;
-    }
-  } catch {
-    // Fallback for PCF/non-Vite environments
+  // In PCF/Webpack environments, always use production settings
+  // Development mode is only enabled in local Vite dev server
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1';
   }
   return false;
 };
