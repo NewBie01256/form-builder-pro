@@ -23,7 +23,6 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
-    "glob": "^13.0.0",
     "js-yaml": "^4.1.1",
     "lucide-react": "^0.462.0",
     "react": "^18.3.1",
