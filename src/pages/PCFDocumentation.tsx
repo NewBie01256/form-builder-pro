@@ -882,7 +882,7 @@ body {
                 code={`# Build the control
 npm run build
 
-# Start local test harness
+# Start local test harness (opens browser at localhost:8181)
 npm start watch
 
 # ──────────────────────────────────────
@@ -915,6 +915,149 @@ pac pcf push --publisher-prefix ctna
 pac solution import --path ./bin/Release/CTNASolution.zip`}
                 language="bash"
               />
+            </div>
+          </Card>
+
+          {/* Step 10: Test Harness Debugging */}
+          <Card className={styles.stepCard}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepNumber}>10</div>
+              <Title3>Test Harness Troubleshooting</Title3>
+            </div>
+            <Body1>
+              If <code>npm start</code> shows a blank white page, the React component is not mounting correctly. 
+              Follow these debugging steps:
+            </Body1>
+
+            <Title3 style={{ marginTop: tokens.spacingVerticalL }}>1. Check Browser Console (F12)</Title3>
+            <Body1>
+              Open DevTools and check the Console tab for JavaScript errors. Common issues:
+            </Body1>
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`// Common errors and fixes:
+
+// "React is not defined" or "Cannot read property 'createElement' of undefined"
+// → Fix: Use namespace import in index.ts
+import * as React from 'react';
+
+// "Cannot find module './src/App'"
+// → Fix: Check path - should match your folder structure
+import App from "./src/App";  // If src/ is at root
+import App from "./App";       // If index.ts is inside src/
+
+// "ReactDOM is not defined"
+// → PCF uses React.createElement, NOT ReactDOM.createRoot
+// The updateView() method returns React.ReactElement directly`}
+                language="typescript"
+              />
+            </div>
+
+            <Title3 style={{ marginTop: tokens.spacingVerticalL }}>2. Verify index.ts Returns React Element</Title3>
+            <Body1>
+              The <code>updateView</code> method must return a <code>React.ReactElement</code>, not render to DOM:
+            </Body1>
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`// ❌ WRONG - This causes blank page!
+public updateView(context: ComponentFramework.Context<IInputs>): void {
+  ReactDOM.createRoot(container).render(<App />);  // DON'T DO THIS
+}
+
+// ✅ CORRECT - Return React element
+public updateView(context: ComponentFramework.Context<IInputs>): React.ReactElement {
+  return React.createElement(App, null);
+}`}
+                language="typescript"
+              />
+            </div>
+
+            <Title3 style={{ marginTop: tokens.spacingVerticalL }}>3. Implement ReactControl Interface</Title3>
+            <Body1>
+              For React controls, you must implement <code>ReactControl</code>, not <code>StandardControl</code>:
+            </Body1>
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`// ❌ WRONG - StandardControl doesn't support React rendering
+export class MyControl implements ComponentFramework.StandardControl<IInputs, IOutputs>
+
+// ✅ CORRECT - ReactControl returns React.ReactElement from updateView
+export class MyControl implements ComponentFramework.ReactControl<IInputs, IOutputs>`}
+                language="typescript"
+              />
+            </div>
+
+            <Title3 style={{ marginTop: tokens.spacingVerticalL }}>4. Minimal Working index.ts</Title3>
+            <Body1>
+              Start with this minimal template to verify React renders:
+            </Body1>
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`// index.ts - Minimal PCF React Control
+import { IInputs, IOutputs } from "./generated/ManifestTypes";
+import * as React from "react";
+
+// Simple test component
+const TestComponent: React.FC = () => {
+  return React.createElement(
+    "div",
+    { style: { padding: "20px", background: "#f0f0f0" } },
+    React.createElement("h1", null, "PCF Control Loaded!"),
+    React.createElement("p", null, "If you see this, React is working.")
+  );
+};
+
+export class QuestionnaireStudioControl 
+  implements ComponentFramework.ReactControl<IInputs, IOutputs> {
+  
+  public init(
+    context: ComponentFramework.Context<IInputs>,
+    notifyOutputChanged: () => void,
+    state: ComponentFramework.Dictionary
+  ): void {
+    console.log("PCF Control: init() called");
+  }
+
+  public updateView(
+    context: ComponentFramework.Context<IInputs>
+  ): React.ReactElement {
+    console.log("PCF Control: updateView() called");
+    return React.createElement(TestComponent, null);
+  }
+
+  public getOutputs(): IOutputs {
+    return {};
+  }
+
+  public destroy(): void {
+    console.log("PCF Control: destroy() called");
+  }
+}`}
+                language="typescript"
+              />
+            </div>
+
+            <Title3 style={{ marginTop: tokens.spacingVerticalL }}>5. Check ControlManifest.Input.xml</Title3>
+            <Body1>
+              Ensure the manifest points to the correct entry file:
+            </Body1>
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`<resources>
+  <!-- This MUST match your TypeScript entry file -->
+  <code path="index.ts" order="1"/>
+</resources>`}
+                language="xml"
+              />
+            </div>
+
+            <div className={styles.warningBox}>
+              <Warning24Regular />
+              <Body1>
+                <b>Pro Tip:</b> If the test harness still shows a blank page after these fixes, 
+                delete <code>node_modules</code> and <code>out</code> folders, run <code>npm install</code> 
+                again, then <code>npm run build && npm start watch</code>.
+              </Body1>
             </div>
           </Card>
 
