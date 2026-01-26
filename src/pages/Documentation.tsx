@@ -1,5 +1,6 @@
 import { useNavigation } from "../lib/navigation";
-import React, { useState, useEffect, useRef } from "react";
+import * as React from 'react';
+import { useState, useEffect, useRef } from "react";
 import {
   Button,
   Card,

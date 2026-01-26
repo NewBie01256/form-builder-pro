@@ -5,7 +5,7 @@
  * that aligns with the existing design system tokens.
  */
 
-import React from 'react';
+import * as React from 'react';
 import {
   FluentProvider,
   webLightTheme,

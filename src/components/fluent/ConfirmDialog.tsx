@@ -5,7 +5,8 @@
  * Supports both trigger-based and programmatic (hook-based) usage.
  */
 
-import React, { ReactNode, useState, useCallback, createContext, useContext, cloneElement, isValidElement, ReactElement } from "react";
+import * as React from 'react';
+import { ReactNode, useState, useCallback, createContext, useContext, cloneElement, isValidElement, ReactElement } from "react";
 import {
   Dialog,
   DialogSurface,

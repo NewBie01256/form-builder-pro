@@ -8,7 +8,8 @@
  * In production (deployed to Dataverse), uses real PCF context.
  */
 
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef, type ReactNode } from 'react';
+import * as React from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef, type ReactNode } from 'react';
 import { MetadataService, type EntityInfo, type FieldInfo } from './MetadataService';
 import { DynamicValuesService, type DropdownOption } from './DynamicValuesService';
 import { CrudService } from './CrudService';
