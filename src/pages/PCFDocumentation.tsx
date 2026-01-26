@@ -33,6 +33,7 @@ import {
   CheckmarkCircle24Regular,
   Circle24Regular,
   ArrowSync24Regular,
+  Lightbulb24Regular,
 } from "@fluentui/react-icons";
 import { useNavigation } from "../lib/navigation";
 import { CodeBlock } from "../components/ui/code-block";
@@ -162,6 +163,16 @@ const useStyles = makeStyles({
     marginTop: tokens.spacingVerticalM,
     display: "flex",
     gap: tokens.spacingHorizontalM,
+  },
+  tipBox: {
+    backgroundColor: tokens.colorPaletteBlueBorderActive,
+    border: `1px solid ${tokens.colorBrandStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
+    padding: tokens.spacingVerticalM,
+    marginTop: tokens.spacingVerticalM,
+    display: "flex",
+    gap: tokens.spacingHorizontalM,
+    color: tokens.colorNeutralForegroundOnBrand,
   },
   footer: {
     marginTop: tokens.spacingVerticalXXL,
@@ -670,6 +681,55 @@ export class QuestionnaireStudioControl implements ComponentFramework.ReactContr
     queryClient.clear();
   }
 }`}
+                language="typescript"
+              />
+            </div>
+            
+            {/* Important: Context Type Compatibility */}
+            <div className={styles.tipBox}>
+              <Lightbulb24Regular />
+              <div>
+                <Body1><b>Flexible Context Types:</b></Body1>
+                <Body1>
+                  All services accept <code>ComponentFramework.Context&lt;IInputs&gt;</code> directly - no type casting needed!
+                  The services internally extract <code>webAPI</code> and <code>utils</code> from the PCF context.
+                </Body1>
+              </div>
+            </div>
+            
+            <div className={styles.codeContainer}>
+              <CodeBlock
+                code={`// ✅ CORRECT: Pass PCF context directly to services
+const crud = createCrudService(this.context, 'account');
+const query = createQueryService(this.context);
+
+// ✅ CORRECT: Pass to DataverseProvider
+React.createElement(DataverseProvider, { pcfContext: this.context }, ...)
+
+// ✅ CORRECT: Update context in updateView
+public updateView(context: ComponentFramework.Context<IInputs>) {
+  this.crudService.updateContext(context);  // Works directly!
+}
+
+// ❌ WRONG: Don't manually cast or extract properties
+const ctx = { webAPI: this.context.webAPI, utils: this.context.utils }; // Unnecessary!
+
+// ============================================================================
+// Type Definitions (for reference)
+// ============================================================================
+
+// Services accept this flexible type:
+type ContextInput = IPCFContext | unknown;
+
+// IPCFContext interface (what services use internally):
+interface IPCFContext {
+  webAPI: IPCFWebApi;
+  utils: IPCFUtility;
+}
+
+// Helper function available if needed:
+import { normalizePCFContext } from './src/lib/dataverse/pcf';
+const normalized = normalizePCFContext(this.context);  // Returns IPCFContext | null`}
                 language="typescript"
               />
             </div>
