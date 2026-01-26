@@ -11,7 +11,23 @@ import PCFDocumentation from "./pages/PCFDocumentation";
 import DataversePlayground from "./pages/DataversePlayground";
 import Execute from "./pages/Execute";
 
-const queryClient = new QueryClient();
+// PCF-safe QueryClient configuration
+// - No caching (PCF can destroy/recreate controls)
+// - No stale time (always refetch fresh data)
+// - No auto-retry (handle errors explicitly with Result pattern)
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 0,        // formerly cacheTime in v4
+      staleTime: 0,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
 const ViewRouter = () => {
   const { currentView } = useNavigation();
