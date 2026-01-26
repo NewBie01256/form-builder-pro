@@ -1,4 +1,4 @@
-import { Questionnaire } from "@/types/questionnaire";
+import { Questionnaire } from "../types/questionnaire";
 import { ExportedQuestionnaire, buildExportData } from "./questionnaireExport";
 import { DraftService, SavedDraft } from "./storage/draftService";
 import { PublishedService, PublishedRecord } from "./storage/publishedService";

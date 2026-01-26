@@ -7,8 +7,8 @@ import {
   AnswerLevelRuleGroup,
   AnswerLevelRule,
   AnswerSet
-} from "@/types/questionnaire";
-import { getQuestionConditionGroup, getBranchConditionGroup } from "@/types/condition";
+} from "../types/questionnaire";
+import { getQuestionConditionGroup, getBranchConditionGroup } from "../types/condition";
 
 type ResponseValue = string | string[] | number | boolean | null;
 type ResponseMap = Record<string, ResponseValue>;

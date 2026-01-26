@@ -1,4 +1,4 @@
-import { Question, AnswerSet } from "@/types/questionnaire";
+import { Question, AnswerSet } from "../../types/questionnaire";
 import {
   Input,
   Textarea,
@@ -23,7 +23,7 @@ import {
   Emoji24Regular,
   EmojiSmileSlight24Regular,
 } from "@fluentui/react-icons";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 const useStyles = makeStyles({
   container: {

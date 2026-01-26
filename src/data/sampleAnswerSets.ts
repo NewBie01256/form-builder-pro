@@ -1,4 +1,4 @@
-import { AnswerSet } from "@/types/questionnaire";
+import { AnswerSet } from "../types/questionnaire";
 
 export const sampleAnswerSets: AnswerSet[] = [
   {

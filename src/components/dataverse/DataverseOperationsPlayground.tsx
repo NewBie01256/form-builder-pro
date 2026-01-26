@@ -47,7 +47,7 @@ import {
   Warning16Regular,
   ErrorCircle16Regular,
 } from '@fluentui/react-icons';
-import { useDataverse, useEntityFields } from '@/lib/dataverse/pcf';
+import { useDataverse, useEntityFields } from '../../lib/dataverse/pcf';
 
 // ============================================================================
 // Styles

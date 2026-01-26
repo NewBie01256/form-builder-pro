@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigation } from '@/lib/navigation';
+import { useNavigation } from '../../lib/navigation';
 import { Plus, HelpCircle, Layers, FileText, Clock, AlertCircle, Settings, Edit, GitBranch, ListChecks, Zap, Files, Save, Trash2, BookOpen, Download, Play, X, Upload, GripVertical, Code } from "lucide-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { 
@@ -11,23 +11,23 @@ import {
   makeStyles,
   tokens,
   mergeClasses,
-} from "@/components/fluent";
-import { exportQuestionnaire, buildExportData, parseQuestionnaireFile } from "@/lib/questionnaireExport";
-import { QuestionnaireWrapper } from "@/lib/QuestionnaireWrapper";
-import { useDataverse } from "@/lib/dataverse/pcf/DataverseContext";
+} from "../fluent";
+import { exportQuestionnaire, buildExportData, parseQuestionnaireFile } from "../../lib/questionnaireExport";
+import { QuestionnaireWrapper } from "../../lib/QuestionnaireWrapper";
+import { useDataverse } from "../../lib/dataverse/pcf/DataverseContext";
 import {
   Question,
   ConditionalBranch,
   Questionnaire,
   Page,
   Section,
-} from "@/types/questionnaire";
+} from "../../types/questionnaire";
 import Sidebar from "./Sidebar";
 import PageTabs from "./PageTabs";
 import SectionEditor from "./SectionEditor";
-import { sampleITSMRecords, ITSMRecord } from "@/data/sampleITSMRecords";
-import { cn } from "@/lib/utils";
-import { useFluentToast } from "@/hooks/useFluentToast";
+import { sampleITSMRecords, ITSMRecord } from "../../data/sampleITSMRecords";
+import { cn } from "../../lib/utils";
+import { useFluentToast } from "../../hooks/useFluentToast";
 
 const useStyles = makeStyles({
   container: {

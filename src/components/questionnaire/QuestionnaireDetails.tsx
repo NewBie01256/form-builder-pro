@@ -10,7 +10,7 @@ import {
   tokens,
   Text,
 } from "@fluentui/react-components";
-import { Questionnaire } from "@/types/questionnaire";
+import { Questionnaire } from "../../types/questionnaire";
 
 const useStyles = makeStyles({
   card: {

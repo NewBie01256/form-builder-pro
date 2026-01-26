@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useNavigation } from "@/lib/navigation";
+import { useNavigation } from "../lib/navigation";
 import {
   Button,
   Card,
@@ -23,17 +23,17 @@ import {
   ErrorCircle24Regular,
   Home24Regular,
 } from "@fluentui/react-icons";
-import { Questionnaire, Question, ConditionalBranch } from "@/types/questionnaire";
-import { ExportedQuestionnaire, parseQuestionnaireFile } from "@/lib/questionnaireExport";
+import { Questionnaire, Question, ConditionalBranch } from "../types/questionnaire";
+import { ExportedQuestionnaire, parseQuestionnaireFile } from "../lib/questionnaireExport";
 import {
   QuestionnaireResponse,
   QuestionResponse,
   exportResponseAsJSON,
   exportResponseAsCSV,
-} from "@/types/questionnaireResponse";
-import QuestionRenderer from "@/components/executor/QuestionRenderer";
-import { useFluentToast } from "@/hooks/useFluentToast";
-import { isQuestionVisible, isBranchVisible, getActiveAnswerSetForQuestion } from "@/lib/conditionEvaluator";
+} from "../types/questionnaireResponse";
+import QuestionRenderer from "../components/executor/QuestionRenderer";
+import { useFluentToast } from "../hooks/useFluentToast";
+import { isQuestionVisible, isBranchVisible, getActiveAnswerSetForQuestion } from "../lib/conditionEvaluator";
 
 const useStyles = makeStyles({
   container: {

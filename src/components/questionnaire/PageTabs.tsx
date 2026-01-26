@@ -10,9 +10,9 @@ import {
   Dismiss12Regular,
   Document24Regular,
 } from "@fluentui/react-icons";
-import { Page } from "@/types/questionnaire";
-import { cn } from "@/lib/utils";
-import { ConfirmDialog } from "@/components/fluent";
+import { Page } from "../../types/questionnaire";
+import { cn } from "../../lib/utils";
+import { ConfirmDialog } from "../fluent";
 
 const useStyles = makeStyles({
   container: {

@@ -36,18 +36,18 @@ import {
   Copy16Regular,
   Checkmark16Regular,
 } from "@fluentui/react-icons";
-import { generateFormattedFetchXml } from "@/lib/dataverse/fetchXmlGenerator";
-import { generateFormattedOData } from "@/lib/dataverse/odataGenerator";
+import { generateFormattedFetchXml } from "../../lib/dataverse/fetchXmlGenerator";
+import { generateFormattedOData } from "../../lib/dataverse/odataGenerator";
 import { 
   useDataverse, 
   useEntityFields, 
   useLookupTargetFields,
   type FieldInfo,
-} from "@/lib/dataverse/pcf";
+} from "../../lib/dataverse/pcf";
 
 // Re-export types for backward compatibility
-export type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig, DynamicValueOperator } from "@/types/questionnaire";
-import type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig } from "@/types/questionnaire";
+export type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig, DynamicValueOperator } from "../../types/questionnaire";
+import type { DynamicValueFilter, DynamicValueFilterGroup, DynamicValueConfig } from "../../types/questionnaire";
 
 // ============================================================================
 // Fluent UI Styles

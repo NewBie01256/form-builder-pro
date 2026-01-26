@@ -1,4 +1,4 @@
-import { useNavigation } from "@/lib/navigation";
+import { useNavigation } from "../lib/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
@@ -145,7 +145,7 @@ import {
   ClipboardCheck,
   ClipboardList,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 const useStyles = makeStyles({
   page: {

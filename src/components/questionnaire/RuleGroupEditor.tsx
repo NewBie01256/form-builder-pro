@@ -16,7 +16,7 @@ import {
   ChevronDown24Regular,
   Delete24Regular,
 } from "@fluentui/react-icons";
-import { RuleGroup, QuestionLevelRule, Question, AnswerLevelOperator } from "@/types/questionnaire";
+import { RuleGroup, QuestionLevelRule, Question, AnswerLevelOperator } from "../../types/questionnaire";
 import DynamicRuleValueInput from "./DynamicRuleValueInput";
 
 const useStyles = makeStyles({
