@@ -12,9 +12,7 @@
 /**
  * Represents a Dataverse entity record
  */
-export interface DataverseRecord {
-  [key: string]: unknown;
-}
+export type DataverseRecord = Record<string, unknown>;
 
 /**
  * Entity reference for lookup fields

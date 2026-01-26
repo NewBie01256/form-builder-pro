@@ -31,7 +31,7 @@ const DEFAULT_STATE: ConfirmationState = {
   confirmLabel: 'Confirm',
   cancelLabel: 'Cancel',
   variant: 'default',
-  onConfirm: () => {},
+  onConfirm: () => { /* no-op default */ },
 };
 
 /**

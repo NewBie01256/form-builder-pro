@@ -103,7 +103,7 @@ class PCFLogger implements ILogger {
   private _context: string;
   private _isDev: boolean;
 
-  constructor(context: string = 'PCF', config?: Partial<LoggerConfig>) {
+  constructor(context = 'PCF', config?: Partial<LoggerConfig>) {
     this._context = context;
     this._isDev = detectEnvironment();
     

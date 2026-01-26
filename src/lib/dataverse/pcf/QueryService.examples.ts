@@ -97,7 +97,7 @@ export const FetchXmlTemplates = {
   /**
    * Get recently modified records
    */
-  recentlyModified: (entityName: string, days: number = 7) => {
+  recentlyModified: (entityName: string, days = 7) => {
     const date = new Date();
     date.setDate(date.getDate() - days);
     const isoDate = date.toISOString().split('T')[0];

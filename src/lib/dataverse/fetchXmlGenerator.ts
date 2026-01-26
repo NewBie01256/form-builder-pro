@@ -109,7 +109,7 @@ ${indent}<condition entityname="${lookupField}" attribute="${escapeXml(targetFie
  */
 const generateFilterGroup = (
   group: DynamicValueFilterGroup, 
-  indent: string = '      '
+  indent = '      '
 ): string => {
   const filterType = group.matchType.toLowerCase(); // 'and' or 'or'
   const lines: string[] = [];

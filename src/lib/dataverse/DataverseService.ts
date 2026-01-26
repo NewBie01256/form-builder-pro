@@ -55,7 +55,7 @@ export type DataverseResult<T> =
 export class DataverseService {
   private webApi: IWebApi;
   private utility: IUtility;
-  private metadataCache: Map<string, EntityMetadata> = new Map();
+  private metadataCache = new Map<string, EntityMetadata>();
 
   constructor(webApi: IWebApi, utility: IUtility) {
     this.webApi = webApi;
@@ -218,7 +218,7 @@ export class DataverseService {
    */
   async executeFromConfig(
     config: DynamicValueConfig
-  ): Promise<DataverseResult<Array<{ label: string; value: string }>>> {
+  ): Promise<DataverseResult<{ label: string; value: string }[]>> {
     try {
       const parts = generateODataParts(config);
       const options: ODataQueryOptions = {
@@ -231,7 +231,7 @@ export class DataverseService {
       const result = await this.retrieveMultiple(config.tableName, options);
       
       if (!result.success) {
-        return result as DataverseResult<Array<{ label: string; value: string }>>;
+        return result as DataverseResult<{ label: string; value: string }[]>;
       }
 
       const mappedResults = result.data.entities.map((entity) => ({
@@ -256,13 +256,13 @@ export class DataverseService {
    */
   async executeFromConfigFetchXml(
     config: DynamicValueConfig
-  ): Promise<DataverseResult<Array<{ label: string; value: string }>>> {
+  ): Promise<DataverseResult<{ label: string; value: string }[]>> {
     try {
       const fetchXml = generateFetchXml(config);
       const result = await this.retrieveMultipleWithFetchXml(config.tableName, { fetchXml });
       
       if (!result.success) {
-        return result as DataverseResult<Array<{ label: string; value: string }>>;
+        return result as DataverseResult<{ label: string; value: string }[]>;
       }
 
       const mappedResults = result.data.entities.map((entity) => ({
@@ -348,7 +348,7 @@ export class DataverseService {
    */
   async retrieveLookupOptions(
     config: LookupConfig,
-    maxRecords: number = 50
+    maxRecords = 50
   ): Promise<DataverseResult<LookupResolution[]>> {
     try {
       const options: ODataQueryOptions = {
@@ -429,7 +429,7 @@ export class DataverseService {
    */
   async getEntityMetadata(
     entityName: string,
-    forceRefresh: boolean = false
+    forceRefresh = false
   ): Promise<DataverseResult<EntityMetadata>> {
     try {
       // Check cache first
@@ -517,11 +517,11 @@ export class DataverseService {
   async getOptionSetValues(
     entityName: string,
     attributeName: string
-  ): Promise<DataverseResult<Array<{ value: number; label: string }>>> {
+  ): Promise<DataverseResult<{ value: number; label: string }[]>> {
     const attrMetadata = await this.getAttributeMetadata(entityName, attributeName);
     
     if (!attrMetadata.success) {
-      return attrMetadata as DataverseResult<Array<{ value: number; label: string }>>;
+      return attrMetadata as DataverseResult<{ value: number; label: string }[]>;
     }
 
     if (!attrMetadata.data || !attrMetadata.data.options) {

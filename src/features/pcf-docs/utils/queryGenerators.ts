@@ -72,7 +72,7 @@ const generateFetchCondition = (filter: DynamicValueFilter, indent: string): str
   return `${indent}<condition attribute="${escapeXml(filter.field)}" operator="${operator}" value="${escapeXml(formattedValue)}" />`;
 };
 
-const generateFetchFilterGroup = (group: DynamicValueFilterGroup, indent: string = '      '): string => {
+const generateFetchFilterGroup = (group: DynamicValueFilterGroup, indent = '      '): string => {
   const filterType = group.matchType.toLowerCase();
   const lines: string[] = [];
   

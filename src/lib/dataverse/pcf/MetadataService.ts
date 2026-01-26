@@ -44,7 +44,7 @@ export interface FieldInfo {
   isPrimaryName: boolean;
   isRequired: boolean;
   lookupTarget?: string;
-  optionSetOptions?: Array<{ value: number; label: string }>;
+  optionSetOptions?: { value: number; label: string }[];
 }
 
 /**
@@ -62,7 +62,7 @@ export interface EntityWithFields {
 export class MetadataService extends BaseDataverseService {
   // Cache for entities list
   private _entitiesCache: EntityInfo[] | null = null;
-  private _entitiesCacheTime: number = 0;
+  private _entitiesCacheTime = 0;
   private readonly _cacheValidityMs = 5 * 60 * 1000; // 5 minutes
 
   constructor(context: IPCFContext | unknown, config?: BaseServiceConfig) {

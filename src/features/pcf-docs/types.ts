@@ -85,6 +85,4 @@ export interface FilterState {
   value: string;
 }
 
-export interface SampleRecord {
-  [key: string]: string | number | boolean | null;
-}
+export type SampleRecord = Record<string, string | number | boolean | null>;

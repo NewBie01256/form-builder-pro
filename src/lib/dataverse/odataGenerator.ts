@@ -210,7 +210,7 @@ export const generateODataParts = (
 export const generateODataUrl = (
   config: DynamicValueConfig,
   options: ODataOptions = {},
-  baseUrl: string = '/api/data/v9.2'
+  baseUrl = '/api/data/v9.2'
 ): string => {
   const parts = generateODataParts(config, options);
   

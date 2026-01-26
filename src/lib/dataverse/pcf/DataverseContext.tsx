@@ -572,6 +572,7 @@ export function useEntityFields(entityName: string | undefined) {
     setIsLoading(true);
     getEntityFields(entityName)
       .then(setFields)
+      .catch(() => setFields([]))
       .finally(() => setIsLoading(false));
   }, [entityName, getEntityFields]);
 
@@ -595,6 +596,7 @@ export function useLookupTargetFields(entityName: string | undefined, lookupFiel
     setIsLoading(true);
     getLookupTargetFields(entityName, lookupField)
       .then(setTargetInfo)
+      .catch(() => setTargetInfo(null))
       .finally(() => setIsLoading(false));
   }, [entityName, lookupField, getLookupTargetFields]);
 

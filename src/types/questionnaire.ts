@@ -107,7 +107,7 @@ export interface AnswerLevelRuleGroup {
   type: 'group';
   id: string;
   matchType: 'AND' | 'OR';
-  children: Array<AnswerLevelRuleGroup | AnswerLevelRule>;
+  children: (AnswerLevelRuleGroup | AnswerLevelRule)[];
   inlineAnswerSet?: AnswerSet;
 }
 

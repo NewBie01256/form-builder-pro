@@ -32,9 +32,9 @@ import type {
  * Base constraint for entity records
  * Uses intersection to allow specific interfaces while requiring index signature
  */
-export type EntityRecord = {
-  [key: string]: unknown;
-};
+export interface EntityRecord extends Record<string, unknown> {
+  // Marker interface for entity records
+}
 
 /**
  * Configuration for CrudService

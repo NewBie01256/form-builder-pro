@@ -200,12 +200,12 @@ interface FieldValue {
 // Operation Configs
 // ============================================================================
 
-const OPERATIONS: Array<{
+const OPERATIONS: {
   type: OperationType;
   label: string;
   icon: React.ReactNode;
   description: string;
-}> = [
+}[] = [
   { type: 'create', label: 'Create', icon: <Add16Regular />, description: 'Create a new record' },
   { type: 'retrieve', label: 'Retrieve', icon: <Search16Regular />, description: 'Get record by ID' },
   { type: 'update', label: 'Update', icon: <Edit16Regular />, description: 'Update existing record' },

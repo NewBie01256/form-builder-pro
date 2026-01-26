@@ -197,12 +197,13 @@ const Execute = () => {
       switch (question.type) {
         case "Number":
         case "Decimal":
-        case "Rating":
+        case "Rating": {
           const numVal = parseFloat(defaultAnswer.value);
           if (!isNaN(numVal)) {
             defaults[question.id] = numVal;
           }
           break;
+        }
         case "Boolean":
           defaults[question.id] = defaultAnswer.value === "true";
           break;

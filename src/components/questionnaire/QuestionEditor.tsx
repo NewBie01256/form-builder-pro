@@ -25,7 +25,7 @@ import {
 } from "@fluentui/react-icons";
 import { ConfirmDialog } from "../fluent";
 import ActionRecordEditor from "./ActionRecordEditor";
-import { Question, AnswerLevelRuleGroup, AnswerSet } from "../../types/questionnaire";
+import { Question, AnswerLevelRuleGroup, AnswerSet, QuestionType } from "../../types/questionnaire";
 import AnswerSetEditor from "./AnswerSetEditor";
 import AnswerLevelRuleGroupEditor from "./AnswerLevelRuleGroupEditor";
 import AnswerSetPickerDialog from "./AnswerSetPickerDialog";
@@ -316,7 +316,7 @@ const QuestionEditor = ({ question, allQuestions, onUpdate, onDelete }: Question
               selectedOptions={[question.type]}
               onOptionSelect={(_, data) => {
                 if (data.optionValue) {
-                  onUpdate(question.id, { type: data.optionValue as any });
+                  onUpdate(question.id, { type: data.optionValue as QuestionType });
                 }
               }}
             >
