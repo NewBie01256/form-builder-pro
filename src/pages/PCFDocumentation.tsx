@@ -344,11 +344,11 @@ const PCFDocumentation = () => {
 npm install -g @microsoft/power-platform-cli
 
 # Create new PCF project directory
-mkdir questionnaire-studio-pcf
-cd questionnaire-studio-pcf
+mkdir QuestionnaireStudioControl
+cd QuestionnaireStudioControl
 
-# Initialize PCF control (React + Virtual)
-pac pcf init --namespace CTNAQuestionnaire --name QuestionnaireStudio --template field --framework react --run-npm-install
+# Initialize PCF control
+pac pcf init --namespace ctnapcf --name QuestionnaireStudioControl --template field
 
 # Install required dependencies
 npm install @fluentui/react-components @fluentui/react-icons
