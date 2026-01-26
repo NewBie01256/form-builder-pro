@@ -28,8 +28,21 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
   error: 3,
 };
 
+/**
+ * Detect if we're in development mode
+ * PCF-compatible: works in both Vite and PCF environments
+ */
+const isDevelopment = (): boolean => {
+  // Check for Vite environment
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return import.meta.env.DEV === true;
+  }
+  // Fallback for PCF/non-Vite environments
+  return false;
+};
+
 const DEFAULT_CONFIG: LoggerConfig = {
-  minLevel: import.meta.env.DEV ? 'debug' : 'warn',
+  minLevel: isDevelopment() ? 'debug' : 'warn',
   enabled: true,
   prefix: '[App]',
 };

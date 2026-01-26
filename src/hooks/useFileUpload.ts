@@ -19,7 +19,7 @@ export interface FileUploadConfig {
 }
 
 export interface FileUploadResult<T> {
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   triggerUpload: () => void;
   reset: () => void;
   isLoading: boolean;
@@ -41,7 +41,7 @@ export const useFileUpload = <T>(
     showToast = true,
   } = config;
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const toast = useFluentToast();
