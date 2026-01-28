@@ -177,6 +177,7 @@ const BackToBuilderButton = () => {
 const Execute = () => {
   const styles = useStyles();
   const toast = useFluentToast();
+  const { navigate } = useNavigation();
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [exportedData, setExportedData] = useState<ExportedQuestionnaire | null>(null);
   const [activePageIndex, setActivePageIndex] = useState(0);
@@ -439,6 +440,11 @@ const Execute = () => {
     }
   };
 
+  const handleCancel = () => {
+    // Navigate back to builder - the questionnaire is still in the builder's state
+    navigate('home');
+  };
+
   const progress = questionnaire ? ((activePageIndex + 1) / questionnaire.pages.length) * 100 : 0;
 
   // Landing state - no questionnaire loaded
@@ -614,7 +620,7 @@ const Execute = () => {
           </Button>
 
           <div className={styles.buttonRow}>
-            <Button appearance="subtle" onClick={handleReset}>
+            <Button appearance="subtle" onClick={handleCancel}>
               Cancel
             </Button>
             {isLastPage ? (
