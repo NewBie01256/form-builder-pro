@@ -1438,7 +1438,7 @@ const QuestionnaireBuilder = () => {
                         if (questionnaire) {
                           const exportData = buildExportData(questionnaire);
                           sessionStorage.setItem('executor-questionnaire', JSON.stringify(exportData));
-                          window.open('/execute', '_blank');
+                          navigate('execute');
                         }
                       }}
                       icon={<Play24Regular />}
