@@ -7,6 +7,7 @@ import {
   CardHeader,
   Badge,
   ProgressBar,
+  Spinner,
   makeStyles,
   tokens,
   Text,
@@ -184,6 +185,7 @@ const Execute = () => {
   const [responses, setResponses] = useState<ResponseMap>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getDefaultResponses = (q: Questionnaire): ResponseMap => {
@@ -257,6 +259,7 @@ const Execute = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setIsLoading(true);
     try {
       const parsed = await parseQuestionnaireFile(file);
       setExportedData(parsed);
@@ -268,6 +271,8 @@ const Execute = () => {
       toast.success("Questionnaire loaded successfully!");
     } catch (error) {
       toast.error("Failed to load questionnaire. Please check the file format.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -446,6 +451,15 @@ const Execute = () => {
   };
 
   const progress = questionnaire ? ((activePageIndex + 1) / questionnaire.pages.length) * 100 : 0;
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className={styles.centerCard}>
+        <Spinner size="large" label="Loading questionnaire..." />
+      </div>
+    );
+  }
 
   // Landing state - no questionnaire loaded
   if (!questionnaire) {

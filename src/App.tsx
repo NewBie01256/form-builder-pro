@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { 
   FluentThemeProvider, 
   Toaster,
+  PageLoader,
 } from "./components/fluent";
 import { DataverseProvider } from "./lib/dataverse/pcf";
 import { NavigationProvider, useNavigation, ViewState } from "./lib/navigation";
@@ -31,7 +32,11 @@ const queryClient = new QueryClient({
 });
 
 const ViewRouter = () => {
-  const { currentView } = useNavigation();
+  const { currentView, isNavigating } = useNavigation();
+  
+  if (isNavigating) {
+    return <PageLoader label="Loading..." />;
+  }
   
   switch (currentView) {
     case 'home':
