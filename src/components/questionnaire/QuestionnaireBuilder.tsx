@@ -312,6 +312,7 @@ const QuestionnaireBuilder = () => {
           setActivePageId(state.activePageId || state.questionnaire.pages[0]?.id || null);
           setEditingDraftId(state.editingDraftId || null);
           setEditingRecordId(state.editingRecordId || null);
+          toast.info("Returned to questionnaire builder");
         }
         sessionStorage.removeItem('builder-preview-return');
       } catch (e) {
