@@ -298,9 +298,27 @@ const QuestionnaireBuilder = () => {
     };
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
-  // Load drafts from localStorage on mount
+  // Load drafts from localStorage on mount and check for preview return state
   useEffect(() => {
     setSavedDrafts(loadDraftsFromStorage());
+    
+    // Check if returning from preview - restore questionnaire state
+    const previewReturnState = sessionStorage.getItem('builder-preview-return');
+    if (previewReturnState) {
+      try {
+        const state = JSON.parse(previewReturnState);
+        if (state.questionnaire) {
+          setQuestionnaire(state.questionnaire);
+          setActivePageId(state.activePageId || state.questionnaire.pages[0]?.id || null);
+          setEditingDraftId(state.editingDraftId || null);
+          setEditingRecordId(state.editingRecordId || null);
+        }
+        sessionStorage.removeItem('builder-preview-return');
+      } catch (e) {
+        console.error('Failed to restore preview state', e);
+        sessionStorage.removeItem('builder-preview-return');
+      }
+    }
   }, []);
 
   // Save drafts to localStorage whenever they change
@@ -1436,6 +1454,16 @@ const QuestionnaireBuilder = () => {
                       appearance="secondary"
                       onClick={() => {
                         if (questionnaire) {
+                          // Save current builder state for return from preview
+                          const builderState = {
+                            questionnaire,
+                            activePageId,
+                            editingDraftId,
+                            editingRecordId,
+                          };
+                          sessionStorage.setItem('builder-preview-return', JSON.stringify(builderState));
+                          
+                          // Send questionnaire to executor
                           const exportData = buildExportData(questionnaire);
                           sessionStorage.setItem('executor-questionnaire', JSON.stringify(exportData));
                           navigate('execute');
