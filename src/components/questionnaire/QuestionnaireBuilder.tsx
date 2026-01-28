@@ -247,6 +247,7 @@ const QuestionnaireBuilder = () => {
   const [publishedRecords, setPublishedRecords] = useState<Record<string, PublishedRecord>>(loadPublishedRecords());
   const [publishValidationErrors, setPublishValidationErrors] = useState<ValidationErrors | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [dataverseRecordId, setDataverseRecordId] = useState<string | null>(null);
   
   // Resizable sidebar state - default 30% of viewport
@@ -1061,8 +1062,13 @@ const QuestionnaireBuilder = () => {
     };
   };
 
-  const handleSaveAsDraft = () => {
-    if (!questionnaire) return;
+  const handleSaveAsDraft = async () => {
+    if (!questionnaire || isSaving) return;
+    
+    setIsSaving(true);
+    
+    // Simulate async operation for smooth UX
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     const stats = getQuestionnaireStats(questionnaire);
     
@@ -1114,6 +1120,8 @@ const QuestionnaireBuilder = () => {
       setEditingDraftId(newDraftId);
       toast.success("Questionnaire saved as draft!");
     }
+    
+    setIsSaving(false);
     
     // Return to list view
     setQuestionnaire(null);
@@ -1339,6 +1347,7 @@ const QuestionnaireBuilder = () => {
           }}
           onUpdateQuestionnaire={setQuestionnaire}
           onPublish={handlePublish}
+          isPublishing={isPublishing}
           canPublish={!!editingRecordId}
         />
       </div>
@@ -1474,8 +1483,13 @@ const QuestionnaireBuilder = () => {
                     >
                       Preview
                     </Button>
-                    <Button appearance="secondary" onClick={handleSaveAsDraft} icon={<Save24Regular />}>
-                      Save as Draft
+                    <Button 
+                      appearance="secondary" 
+                      onClick={() => void handleSaveAsDraft()} 
+                      icon={isSaving ? undefined : <Save24Regular />}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? "Saving..." : "Save as Draft"}
                     </Button>
                     <Button appearance="primary" onClick={handleAddSection} icon={<Add24Regular />}>
                       Add Section
