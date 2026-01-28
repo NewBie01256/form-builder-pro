@@ -7,7 +7,6 @@ import {
   CardHeader,
   Badge,
   ProgressBar,
-  Spinner,
   makeStyles,
   tokens,
   Text,
@@ -15,6 +14,7 @@ import {
   Body1,
   Caption1,
 } from "@fluentui/react-components";
+import { LoadingWrapper } from "../components/fluent";
 import {
   ArrowUpload24Regular,
   Document24Regular,
@@ -455,9 +455,7 @@ const Execute = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className={styles.centerCard}>
-        <Spinner size="large" label="Loading questionnaire..." />
-      </div>
+      <LoadingWrapper isLoading={true} variant="fullPage" label="Loading questionnaire..." />
     );
   }
 
